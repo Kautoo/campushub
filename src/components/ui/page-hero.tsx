@@ -1,0 +1,220 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { BlurText, ShinyText, AnimatedContent } from "@/components/ui/react-bits";
+
+export interface PageHeroStat {
+  label: string;
+  value: React.ReactNode;
+  sublabel?: string;
+  icon?: string;
+  accent?: boolean;
+}
+
+export interface PageHeroProps {
+  /** Top status pill primary text (rendered with React Bits ShinyText) */
+  badge: string;
+  /** Optional secondary pill text or link next to the divider */
+  badgeSubtext?: string;
+  badgeHref?: string;
+  /** Leading text before the italic editorial highlight (animated with BlurText) */
+  titleLead: string;
+  /** Italic Instrument Serif highlight text in primary olive */
+  titleHighlight: string;
+  /** Optional trailing text after the italic highlight */
+  titleTrail?: string;
+  /** Supporting description below the headline */
+  description: string;
+  /** Layout alignment: 'split' (default for inner pages) or 'center' (for landing/explore) */
+  align?: "center" | "split";
+  /** Optional telemetry stat cards or CTA cluster on the right (in split mode) or below */
+  stats?: PageHeroStat[];
+  /** Optional custom right-side action buttons or widget */
+  actions?: React.ReactNode;
+  /** Optional bottom slot (e.g., AI Search capsule, filter pills, or step progress arc) */
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function PageHero({
+  badge,
+  badgeSubtext,
+  badgeHref,
+  titleLead,
+  titleHighlight,
+  titleTrail,
+  description,
+  align = "split",
+  stats,
+  actions,
+  children,
+  className,
+}: PageHeroProps) {
+  const isCenter = align === "center";
+
+  return (
+    <section
+      className={cn(
+        "relative z-10 mb-10 pb-8 border-b border-outline-variant/30",
+        className
+      )}
+    >
+      {/* Unified Ambient Background Glow Orbs */}
+      <div className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-full max-w-5xl h-72 overflow-hidden -z-10">
+        <div className="w-full h-full bg-gradient-to-tr from-secondary-container/25 via-primary-fixed/15 to-transparent rounded-full blur-[100px]" />
+      </div>
+
+      <div
+        className={cn(
+          "flex flex-col gap-6",
+          isCenter
+            ? "items-center text-center max-w-4xl mx-auto"
+            : "lg:flex-row lg:items-end justify-between"
+        )}
+      >
+        {/* Left / Center Copy Column */}
+        <AnimatedContent
+          trigger="mount"
+          distance={45}
+          direction="vertical"
+          duration={0.8}
+          ease="power3.out"
+          stagger={0.08}
+          className={cn(isCenter ? "w-full" : "max-w-3xl")}
+        >
+          {/* Unified React Bits Animated Status Pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-2xs mb-5">
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <ShinyText className="text-[11px] font-bold uppercase tracking-widest text-primary font-label">
+              {badge}
+            </ShinyText>
+            {badgeSubtext && (
+              <>
+                <span className="text-outline-variant">|</span>
+                {badgeHref ? (
+                  <Link
+                    href={badgeHref}
+                    className="text-[11px] font-semibold text-on-surface-variant hover:text-primary flex items-center gap-0.5 transition-colors"
+                  >
+                    <span>{badgeSubtext}</span>
+                    <span className="material-symbols-outlined text-[13px]">
+                      arrow_outward
+                    </span>
+                  </Link>
+                ) : (
+                  <span className="text-[11px] font-mono font-semibold text-on-surface-variant">
+                    {badgeSubtext}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Unified Display Headline with BlurText + Instrument Serif Italic Accent */}
+          <h1
+            className={cn(
+              "font-extrabold tracking-tight text-on-surface font-headline leading-[1.05] mb-4",
+              isCenter
+                ? "text-5xl sm:text-6xl md:text-7xl"
+                : "text-4xl sm:text-5xl lg:text-[3.35rem]"
+            )}
+          >
+            <BlurText text={titleLead} delayStepMs={45} />{" "}
+            <span className="font-editorial italic font-normal text-primary px-0.5">
+              {titleHighlight}
+            </span>
+            {titleTrail && (
+              <>
+                {" "}
+                <BlurText text={titleTrail} delayStepMs={55} />
+              </>
+            )}
+          </h1>
+
+          {/* Unified Description */}
+          <p
+            className={cn(
+              "text-sm sm:text-base text-on-surface-variant font-normal leading-relaxed",
+              isCenter ? "max-w-2xl mx-auto" : "max-w-2xl"
+            )}
+          >
+            {description}
+          </p>
+        </AnimatedContent>
+
+        {/* Right / Bottom Telemetry Stat Pills or Action Buttons */}
+        {(stats || actions) && (
+          <AnimatedContent
+            trigger="mount"
+            distance={40}
+            direction="vertical"
+            duration={0.8}
+            delay={0.14}
+            stagger={0.08}
+            ease="power3.out"
+            className="flex flex-wrap items-center gap-3 shrink-0"
+          >
+            {stats?.map((st, idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  "flex items-center gap-3 p-3.5 rounded-2xl border shadow-2xs transition-all",
+                  st.accent
+                    ? "bg-secondary-container/35 border-primary/25"
+                    : "bg-surface-container-lowest border-outline-variant/40"
+                )}
+              >
+                {st.icon && (
+                  <div
+                    className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                      st.accent
+                        ? "bg-primary text-on-primary"
+                        : "bg-secondary-container text-on-secondary-fixed"
+                    )}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {st.icon}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-outline block">
+                    {st.label}
+                  </span>
+                  <div className="text-sm font-extrabold font-headline text-on-surface leading-tight">
+                    {st.value}
+                  </div>
+                  {st.sublabel && (
+                    <span className="text-[10px] text-primary font-semibold block">
+                      {st.sublabel}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+            {actions}
+          </AnimatedContent>
+        )}
+      </div>
+
+      {/* Optional Bottom Slot (Search Capsule, Filter Pills, Step Arc, etc.) */}
+      {children && (
+        <AnimatedContent
+          trigger="mount"
+          distance={35}
+          direction="vertical"
+          duration={0.8}
+          delay={0.22}
+          ease="power3.out"
+          className="mt-8"
+        >
+          {children}
+        </AnimatedContent>
+      )}
+    </section>
+  );
+}
+

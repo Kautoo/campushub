@@ -1,0 +1,444 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "../components/ui/GlideSelect.css";
+@import "../components/ui/Lanyard.css";
+@import "../components/ui/PromptBar.css";
+@import "../components/ui/ThoughtLine.css";
+@import "../components/ui/LatticeLoader.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-display-custom, system-ui, sans-serif);
+  --font-headline: var(--font-display-custom, system-ui, sans-serif);
+  --font-display: var(--font-display-custom, system-ui, sans-serif);
+  --font-serif: var(--font-editorial-custom, Georgia, serif);
+  --font-editorial: var(--font-editorial-custom, Georgia, serif);
+  --font-host-display: var(--font-host-custom, system-ui, sans-serif);
+  --font-sans: var(--font-sans-custom, system-ui, -apple-system, sans-serif);
+  --font-body: var(--font-sans-custom, system-ui, -apple-system, sans-serif);
+  --font-label: var(--font-sans-custom, system-ui, -apple-system, sans-serif);
+  --font-mono: var(--font-mono-custom, ui-monospace, SFMono-Regular, monospace);
+
+  /* Academic Horizon Stitch Design System Tokens */
+  --color-primary: #4b671b;
+  --color-primary-container: #83a350;
+  --color-primary-fixed: #cbef92;
+  --color-primary-fixed-dim: #b0d279;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #223600;
+  --color-on-primary-fixed: #121f00;
+  --color-on-primary-fixed-variant: #364e01;
+
+  --color-secondary: #466800;
+  --color-secondary-container: #c1ee78;
+  --color-secondary-fixed: #c4f17b;
+  --color-secondary-fixed-dim: #a9d562;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #496d00;
+  --color-on-secondary-fixed: #121f00;
+  --color-on-secondary-fixed-variant: #344f00;
+
+  --color-tertiary: #556341;
+  --color-tertiary-container: #8e9e77;
+  --color-tertiary-fixed: #d8e9bd;
+  --color-tertiary-fixed-dim: #bdcda2;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #283518;
+  --color-on-tertiary-fixed: #131f04;
+  --color-on-tertiary-fixed-variant: #3e4b2b;
+
+  --color-surface: #faf8ff;
+  --color-surface-bright: #faf8ff;
+  --color-surface-dim: #d2d9f4;
+  --color-surface-canvas: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-soft: #f2f3ff;
+  --color-surface-panel: #eaedff;
+  --color-surface-container-low: #f2f3ff;
+  --color-surface-container: #eaedff;
+  --color-surface-container-high: #e2e7ff;
+  --color-surface-container-highest: #dae2fd;
+  --color-surface-variant: #dae2fd;
+  --color-surface-tint: #4c6629;
+
+  --color-inverse-surface: #283044;
+  --color-inverse-on-surface: #eef0ff;
+  --color-inverse-primary: #b0d279;
+
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #44483b;
+  --color-on-background: #131b2e;
+  --color-outline: #75796a;
+  --color-outline-variant: #c4c8b7;
+
+  --color-border-default: #c4c8b7;
+  --color-text-primary: #131b2e;
+  --color-text-secondary: #44483b;
+  --color-text-muted: #75796a;
+
+  --color-status-success: #197b55;
+  --color-status-warning: #946200;
+  --color-status-error: #ba1a1a;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+  --color-focus-ring: #83a350;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2rem;
+}
+
+:root {
+  --background: #faf8ff;
+  --foreground: #131b2e;
+  --card: #ffffff;
+  --card-foreground: #131b2e;
+  --popover: #ffffff;
+  --popover-foreground: #131b2e;
+  --primary: #4b671b;
+  --primary-foreground: #ffffff;
+  --secondary: #466800;
+  --secondary-foreground: #ffffff;
+  --muted: #f2f3ff;
+  --muted-foreground: #44483b;
+  --accent: #eaedff;
+  --accent-foreground: #4b671b;
+  --destructive: #ba1a1a;
+  --border: #c4c8b7;
+  --input: #c4c8b7;
+  --ring: #83a350;
+  --radius: 1rem;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
+}
+
+.font-editorial {
+  font-family: var(--font-editorial-custom), Georgia, serif;
+}
+
+.font-host-display {
+  font-family: var(--font-host-custom), var(--font-display-custom), sans-serif;
+}
+
+.font-headline {
+  font-family: var(--font-display-custom), system-ui, sans-serif;
+}
+
+.font-body {
+  font-family: var(--font-sans-custom), system-ui, sans-serif;
+}
+
+.font-label {
+  font-family: var(--font-sans-custom), system-ui, sans-serif;
+}
+
+/* React Bits Interactive Card (Clean hover without green flash) */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.font-money,
+.font-currency,
+.font-price {
+  font-family: var(--font-host-custom), var(--font-display-custom), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: -0.02em;
+}
+
+/* Ambient Floating Soft Green Spots */
+@keyframes ambient-drift-slow {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(60px, -40px, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-40px, 50px, 0) scale(0.94);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes ambient-drift-reverse {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(-50px, 45px, 0) scale(0.92);
+  }
+  66% {
+    transform: translate3d(45px, -35px, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.ambient-orb-1 {
+  animation: ambient-drift-slow 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+.ambient-orb-2 {
+  animation: ambient-drift-reverse 34s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Luma "Art of Hosting" Poster Bento Cards */
+.luma-card {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.luma-card:hover {
+  transform: translateY(-6px) scale(1.005);
+  box-shadow: 0 28px 60px -15px rgba(19, 27, 46, 0.16);
+}
+
+/* React Bits Glass Pill Header */
+.glass-pill {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(196, 200, 183, 0.45);
+  box-shadow: 0 8px 32px -4px rgba(19, 27, 46, 0.06),
+    0 2px 6px -1px rgba(19, 27, 46, 0.03);
+}
+
+.react-bits-input {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.react-bits-input:focus-within {
+  box-shadow: 0 0 0 3px rgba(131, 163, 80, 0.25),
+    0 16px 40px -8px rgba(75, 103, 27, 0.12);
+  border-color: #4b671b;
+}
+
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: linear-gradient(
+      to right,
+      rgba(196, 200, 183, 0.16) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(196, 200, 183, 0.16) 1px, transparent 1px);
+}
+
+.nfc-shimmer {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(193, 238, 120, 0.18) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+}
+
+@keyframes shiny-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.react-bits-shiny {
+  background: linear-gradient(
+    110deg,
+    currentColor 35%,
+    #83a350 50%,
+    currentColor 65%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  animation: shiny-sweep 5s infinite linear;
+}
+
+@layer utilities {
+  .font-display-lg,
+  .text-display-lg {
+    font-family: var(--font-display-custom), system-ui, sans-serif;
+    font-size: clamp(2.1rem, 3.8vw, 3.1rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+
+  .font-display-sm,
+  .text-display-sm {
+    font-family: var(--font-display-custom), system-ui, sans-serif;
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+
+  .font-headline-lg,
+  .text-headline-lg {
+    font-family: var(--font-display-custom), system-ui, sans-serif;
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  .font-headline-md,
+  .text-headline-md {
+    font-family: var(--font-display-custom), system-ui, sans-serif;
+    font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .font-headline-sm,
+  .text-headline-sm {
+    font-family: var(--font-display-custom), system-ui, sans-serif;
+    font-size: 1.025rem;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    font-weight: 700;
+  }
+
+  .font-body-lg,
+  .text-body-lg {
+    font-family: var(--font-sans-custom), system-ui, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    letter-spacing: -0.008em;
+    font-weight: 400;
+  }
+
+  .font-body-md,
+  .text-body-md {
+    font-family: var(--font-sans-custom), system-ui, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    letter-spacing: -0.005em;
+    font-weight: 400;
+  }
+
+  .font-body-sm,
+  .text-body-sm {
+    font-family: var(--font-sans-custom), system-ui, sans-serif;
+    font-size: 0.84375rem;
+    line-height: 1.52;
+    letter-spacing: 0em;
+    font-weight: 400;
+  }
+
+  .font-label-lg,
+  .text-label-lg {
+    font-family: var(--font-sans-custom), system-ui, sans-serif;
+    font-size: 0.84375rem;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+    font-weight: 700;
+  }
+
+  .font-label-md,
+  .text-label-md {
+    font-family: var(--font-sans-custom), system-ui, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+    font-weight: 700;
+  }
+
+  .font-label-sm,
+  .text-label-sm {
+    font-family: var(--font-sans-custom), system-ui, sans-serif;
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  .bg-hub-grid {
+    background-image: radial-gradient(
+      rgba(75, 103, 27, 0.1) 1px,
+      transparent 1px
+    );
+    background-size: 20px 20px;
+  }
+
+  .pin-shadow {
+    box-shadow: 0 2px 12px -2px rgba(19, 27, 46, 0.05),
+      0 1px 3px rgba(19, 27, 46, 0.03);
+  }
+
+  .pin-shadow-hover {
+    box-shadow: 0 20px 38px -12px rgba(19, 27, 46, 0.14),
+      0 4px 12px -2px rgba(75, 103, 27, 0.08);
+  }
+
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar,
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c4c8b7;
+    border-radius: 9999px;
+  }
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar,
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  }
+}
