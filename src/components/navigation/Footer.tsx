@@ -144,7 +144,7 @@ export function Footer() {
                   href="/register"
                   className="hover:text-primary transition-colors"
                 >
-                  Student Onboarding & NFC ID
+                  Student Onboarding &amp; QR Pass
                 </Link>
               </li>
               <li>

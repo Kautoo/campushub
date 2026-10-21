@@ -369,20 +369,6 @@ export default function AICopilotPage() {
     timersRef.current = [];
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get("q");
-    if (q && q.trim()) {
-      handleSendPrompt(q.trim(), {
-        attachments: [],
-        model: PROMPT_MODELS[0],
-        effort: "High",
-      });
-    }
-    return () => clearPendingTimers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const buildResponseForPrompt = (
     rawText: string,
     currentCourses: CourseRow[]
@@ -672,6 +658,24 @@ def rbf_kernel(X1: np.ndarray, X2: np.ndarray, sigma: float = 1.0) -> np.ndarray
     );
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q");
+    if (q && q.trim()) {
+      handleSendPrompt(q.trim(), {
+        attachments: [],
+        model: PROMPT_MODELS[0],
+        effort: "High",
+      });
+    }
+    return () => clearPendingTimers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [messages, busy]);
+
   const handleAddCourse = (e: React.FormEvent) => {
     e.preventDefault();
     const code = newCourseCode.trim().toUpperCase() || `COURSE ${courses.length + 1}`;
@@ -952,7 +956,7 @@ def rbf_kernel(X1: np.ndarray, X2: np.ndarray, sigma: float = 1.0) -> np.ndarray
             Registrar Honors & Target Requirements
           </h3>
           <p className="text-xs text-on-surface-variant leading-relaxed">
-            With your current course load of {liveCgpa.semesterUnits} units, scoring all A's yields a term GPA of 4.00, raising your cumulative CGPA to{" "}
+            With your current course load of {liveCgpa.semesterUnits} units, scoring all A&apos;s yields a term GPA of 4.00, raising your cumulative CGPA to{" "}
             {((priorGpa * priorUnits + 4.0 * liveCgpa.semesterUnits) / (priorUnits + liveCgpa.semesterUnits)).toFixed(2)}.
           </p>
           <button
@@ -1336,8 +1340,6 @@ def rbf_kernel(X1: np.ndarray, X2: np.ndarray, sigma: float = 1.0) -> np.ndarray
     <main className="relative pt-28 pb-32 max-w-7xl mx-auto px-6">
       {/* 1. UNIFIED WORKSPACE HERO HEADER */}
       <PageHero
-        badge="CampusHub Neural Engine v4.0 • General + Academic AI"
-        badgeSubtext={`Live CGPA: ${liveCgpa.cumulativeGpa.toFixed(2)}`}
         titleLead="Ask anything, calculate"
         titleHighlight="your CGPA"
         titleTrail="& master your quarter."

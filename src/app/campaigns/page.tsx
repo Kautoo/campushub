@@ -57,8 +57,6 @@ export default function CampaignsPage() {
       {/* 1. UNIFIED HERO & ESCROW TELEMETRY */}
       <div className="max-w-7xl mx-auto px-6">
         <PageHero
-          badge="Student Grant Incubator • Milestone Escrow"
-          badgeSubtext="0.00% Platform Fee"
           titleLead="Back Student Ambition."
           titleHighlight="Track Every Milestone"
           titleTrail="on campus."

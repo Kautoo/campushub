@@ -318,8 +318,10 @@ export function Magnet({
 }
 
 /* ============================================================================
- * 7. STITCH UI KIT: FAST-PASS NFC / QR MODAL
- * Reusable verified pass modal for events, smart lockers, and student ID
+ * 7. STITCH UI KIT: FAST-PASS DUAL-MODE DYNAMIC QR PASS & ATTENDANT SCANNER
+ * Reusable verified pass modal with dual behaviour:
+ * - Normal phone camera: opens public student verification & event registration form
+ * - CampusHub Attendant Scanner: records verified event attendance on-chain
  * ============================================================================ */
 export interface FastPassModalProps {
   isOpen: boolean;
@@ -338,38 +340,53 @@ export function FastPassModal({
   onClose,
   title = "AI & Robotics Symposium '25",
   subtitle = "OCT 24, 2025 • 4:00 PM",
-  passCode = "CH-8821-94A",
+  passCode = "CH-8821-94A-QR",
   studentName = "Alex Rivera",
   studentId = "#STU-882194",
   location = "Huang Engineering Center • Gate B",
   badgeLabel = "ACTIVE ENTRY PASS",
 }: FastPassModalProps) {
+  const [activeTab, setActiveTab] = useState<"pass" | "attendant">("pass");
   const [addedToWallet, setAddedToWallet] = useState(false);
+  const [scanStatus, setScanStatus] = useState<"idle" | "scanning" | "verified">("idle");
+  const [checkedInCount, setCheckedInCount] = useState(142);
 
   if (!isOpen) return null;
 
+  const publicVerificationUrl = `https://campushub.edu/events?pass=${encodeURIComponent(
+    passCode
+  )}&student=${encodeURIComponent(studentName)}`;
+
+  const handleSimulateScan = () => {
+    setScanStatus("scanning");
+    setTimeout(() => {
+      setScanStatus("verified");
+      setCheckedInCount((prev) => prev + 1);
+    }, 1100);
+  };
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#131b2e]/60 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#131b2e]/65 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-white rounded-[2rem] border border-[#c4c8b7]/40 shadow-2xl overflow-hidden"
+        className="w-full max-w-lg bg-surface-container-lowest rounded-[2.25rem] border border-outline-variant/40 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Olive/Navy Header */}
-        <div className="bg-gradient-to-br from-[#131b2e] via-[#1e2942] to-[#283044] p-6 text-white relative overflow-hidden">
-          <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-[#c1ee78]/15 blur-2xl pointer-events-none" />
-          <div className="flex justify-between items-start relative z-10">
+        <div className="bg-gradient-to-br from-[#131b2e] via-[#1e2942] to-[#283814] p-6 text-white relative overflow-hidden">
+          <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-[#c1ee78]/15 blur-2xl pointer-events-none" />
+          <div className="flex justify-between items-start relative z-10 mb-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#c1ee78]/20 text-[#c1ee78] text-[10px] font-bold uppercase tracking-widest mb-2 border border-[#c1ee78]/30">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#c1ee78]/20 text-[#c1ee78] text-[10px] font-bold uppercase tracking-widest mb-1.5 border border-[#c1ee78]/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#c1ee78] animate-pulse" />
                 {badgeLabel}
               </span>
               <h3 className="font-headline font-extrabold text-xl leading-tight">
                 {title}
               </h3>
-              <p className="text-xs text-[#c1ee78] font-mono mt-1">{subtitle}</p>
+              <p className="text-xs text-[#c1ee78] font-mono mt-0.5">{subtitle}</p>
             </div>
             <button
               type="button"
@@ -379,71 +396,252 @@ export function FastPassModal({
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
-        </div>
 
-        {/* QR & NFC Body */}
-        <div className="p-6 flex flex-col items-center">
-          <div className="p-5 bg-[#faf8ff] rounded-3xl border-2 border-dashed border-[#4b671b]/30 mb-4 relative group">
-            <div className="w-44 h-44 bg-white rounded-2xl p-3 flex flex-col items-center justify-center border border-[#c4c8b7]/40 shadow-inner">
-              <span
-                className="material-symbols-outlined text-[#131b2e] text-[128px] leading-none select-none"
-                style={{ fontVariationSettings: "'wght' 300" }}
-              >
-                qr_code_2
-              </span>
-            </div>
-            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#c1ee78] text-[#121f00] font-mono text-[10px] font-bold uppercase tracking-wider shadow-sm whitespace-nowrap">
-              NFC + Optical Ready
-            </span>
-          </div>
-
-          <p className="font-mono text-sm font-bold text-[#131b2e] tracking-widest mt-2">
-            {passCode}
-          </p>
-          <p className="text-xs text-[#44483b] mt-1 text-center">{location}</p>
-
-          <div className="w-full mt-5 p-3.5 rounded-2xl bg-[#f2f3ff] border border-[#c4c8b7]/30 flex items-center justify-between text-xs">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#75796a]">
-                Verified Holder
-              </p>
-              <p className="font-bold text-[#131b2e] mt-0.5">{studentName}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#75796a]">
-                Institutional ID
-              </p>
-              <p className="font-mono font-bold text-[#4b671b] mt-0.5">
-                {studentId}
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full grid grid-cols-2 gap-3 mt-5">
+          {/* Mode Switcher Tabs */}
+          <div className="relative z-10 grid grid-cols-2 p-1 rounded-xl bg-black/30 border border-white/10">
             <button
               type="button"
-              onClick={() => setAddedToWallet(true)}
+              onClick={() => setActiveTab("pass")}
               className={cn(
-                "py-3 px-4 rounded-xl font-headline font-bold text-xs flex items-center justify-center gap-2 transition-all",
-                addedToWallet
-                  ? "bg-[#c1ee78] text-[#121f00]"
-                  : "bg-[#131b2e] text-white hover:bg-[#283044]"
+                "py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                activeTab === "pass"
+                  ? "bg-[#c1ee78] text-[#121f00] shadow-xs"
+                  : "text-white/70 hover:text-white"
               )}
             >
-              <span className="material-symbols-outlined text-base">
-                {addedToWallet ? "check_circle" : "account_balance_wallet"}
-              </span>
-              {addedToWallet ? "Added to Wallet" : "Apple / Google Wallet"}
+              <span className="material-symbols-outlined text-sm">qr_code_2</span>
+              <span>My Dynamic QR Pass</span>
             </button>
             <button
               type="button"
-              onClick={onClose}
-              className="py-3 px-4 rounded-xl bg-[#f2f3ff] hover:bg-[#e2e7ff] text-[#131b2e] font-headline font-bold text-xs transition-colors"
+              onClick={() => setActiveTab("attendant")}
+              className={cn(
+                "py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                activeTab === "attendant"
+                  ? "bg-[#c1ee78] text-[#121f00] shadow-xs"
+                  : "text-white/70 hover:text-white"
+              )}
             >
-              Done
+              <span className="material-symbols-outlined text-sm">qr_code_scanner</span>
+              <span>Attendant Scanner Mode</span>
             </button>
           </div>
         </div>
+
+        {/* Tab 1: Dynamic Student QR Pass */}
+        {activeTab === "pass" && (
+          <div className="p-6 flex flex-col items-center">
+            {/* High-res Optical QR Pass Frame */}
+            <div className="p-4 bg-surface-container-low rounded-3xl border-2 border-dashed border-primary/30 mb-3 relative group">
+              <div className="w-48 h-48 bg-white rounded-2xl p-3 flex flex-col items-center justify-center border border-outline-variant/40 shadow-inner relative overflow-hidden">
+                <span
+                  className="material-symbols-outlined text-[#131b2e] text-[156px] leading-none select-none"
+                  style={{ fontVariationSettings: "'wght' 300" }}
+                >
+                  qr_code_2
+                </span>
+                {/* Center CampusHub shield stamp */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-10 h-10 rounded-xl bg-[#131b2e] border-2 border-[#c1ee78] flex items-center justify-center shadow-md">
+                    <span className="material-symbols-outlined text-[#c1ee78] text-xl">
+                      school
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-on-primary font-mono text-[10px] font-bold uppercase tracking-wider shadow-sm whitespace-nowrap">
+                CampusHub Dynamic QR • SHA-256
+              </span>
+            </div>
+
+            <p className="font-mono text-sm font-extrabold text-on-surface tracking-widest mt-2">
+              {passCode}
+            </p>
+            <p className="text-xs text-on-surface-variant mt-0.5 text-center">{location}</p>
+
+            {/* Smart Dual-Mode Behavior Explainer Banner */}
+            <div className="w-full mt-4 p-3 rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 space-y-2 text-left">
+              <div className="flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="material-symbols-outlined text-sm">photo_camera</span>
+                </div>
+                <div className="text-[11px] leading-snug">
+                  <span className="font-bold text-on-surface">Normal Phone Camera: </span>
+                  <span className="text-on-surface-variant">
+                    Scans direct to verified event RSVP &amp; registration form.
+                  </span>
+                  <a
+                    href={publicVerificationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-primary hover:underline font-mono font-bold text-[10px] mt-0.5"
+                  >
+                    Test normal camera link ↗
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 pt-1 border-t border-outline-variant/20">
+                <div className="w-6 h-6 rounded-lg bg-secondary-container/30 text-secondary flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="material-symbols-outlined text-sm">badge</span>
+                </div>
+                <div className="text-[11px] leading-snug">
+                  <span className="font-bold text-on-surface">CampusHub Attendant Scanner: </span>
+                  <span className="text-on-surface-variant">
+                    Event staff scan instantly logs confirmed attendance.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Holder Metadata */}
+            <div className="w-full mt-3 p-3 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-between text-xs">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-outline">
+                  Verified Holder
+                </p>
+                <p className="font-bold text-on-surface mt-0.5">{studentName}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-outline">
+                  Institutional ID
+                </p>
+                <p className="font-mono font-bold text-primary mt-0.5">
+                  {studentId}
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full grid grid-cols-2 gap-3 mt-4">
+              <button
+                type="button"
+                onClick={() => setAddedToWallet(true)}
+                className={cn(
+                  "py-3 px-4 rounded-xl font-headline font-bold text-xs flex items-center justify-center gap-2 transition-all",
+                  addedToWallet
+                    ? "bg-secondary-container text-on-secondary-fixed"
+                    : "bg-on-surface text-surface hover:bg-on-surface/90"
+                )}
+              >
+                <span className="material-symbols-outlined text-base">
+                  {addedToWallet ? "check_circle" : "account_balance_wallet"}
+                </span>
+                {addedToWallet ? "Added to Wallet" : "Apple / Google Wallet"}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="py-3 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-headline font-bold text-xs transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: CampusHub Attendant Scanner (Staff Mode) */}
+        {activeTab === "attendant" && (
+          <div className="p-6 flex flex-col items-center">
+            {/* Viewfinder / Camera Simulation */}
+            <div className="w-full aspect-[4/3] rounded-3xl bg-neutral-950 relative overflow-hidden flex flex-col items-center justify-center border-2 border-primary/40 shadow-inner">
+              {/* Subtle camera video scanline */}
+              <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:16px_16px] opacity-15 pointer-events-none" />
+
+              {/* Viewfinder Target Reticle */}
+              <div className="w-44 h-44 border-2 border-primary/80 rounded-2xl relative flex items-center justify-center">
+                {/* Target Corners */}
+                <div className="absolute -top-1 -left-1 w-4 h-4 border-t-4 border-l-4 border-secondary-container rounded-tl" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 border-t-4 border-r-4 border-secondary-container rounded-tr" />
+                <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-4 border-l-4 border-secondary-container rounded-bl" />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-4 border-r-4 border-secondary-container rounded-br" />
+
+                {/* Laser scan line animation */}
+                <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-[#c1ee78] to-transparent animate-bounce shadow-[0_0_12px_#c1ee78]" />
+              </div>
+
+              {/* Attendant HUD Overlay */}
+              <div className="absolute top-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono font-bold text-white/80">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  PROCTOR GATE B • OPTICAL SCANNER
+                </span>
+                <span>LATENCY: 12ms</span>
+              </div>
+
+              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono font-bold text-white/80">
+                <span>CHECKED IN: {checkedInCount}</span>
+                <span>SECURITY: SHA-256 OK</span>
+              </div>
+            </div>
+
+            {/* Verification Status Feedback Card */}
+            {scanStatus === "verified" ? (
+              <div className="w-full mt-4 p-4 rounded-2xl bg-secondary-container/30 border border-secondary/40 text-left animate-in fade-in zoom-in-95 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary text-xl font-bold">
+                      check_circle
+                    </span>
+                    <span className="font-headline font-extrabold text-xs text-on-surface uppercase tracking-wide">
+                      Attendance Logged &amp; Verified
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed">
+                    ENTRY #00{checkedInCount}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-outline-variant/30">
+                  <div>
+                    <span className="text-[10px] text-outline font-mono block">ATTENDEE</span>
+                    <span className="font-bold text-on-surface">{studentName}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-outline font-mono block">INSTITUTION ID</span>
+                    <span className="font-mono font-bold text-primary">{studentId}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-outline font-mono block">TIER &amp; KIT</span>
+                    <span className="font-bold text-on-surface">Tee Size M + Medal Granted</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-outline font-mono block">LEDGER STATUS</span>
+                    <span className="font-mono text-emerald-600 font-bold">Confirmed ✓</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full mt-4 p-3 rounded-2xl bg-surface-container-low border border-outline-variant/30 text-center text-xs text-on-surface-variant">
+                Align student QR pass in the reticle or click simulate below.
+              </div>
+            )}
+
+            {/* Scanner Controls */}
+            <div className="w-full grid grid-cols-2 gap-3 mt-4">
+              <button
+                type="button"
+                onClick={handleSimulateScan}
+                disabled={scanStatus === "scanning"}
+                className="py-3 px-4 rounded-xl bg-primary hover:bg-primary-fixed-dim text-on-primary font-headline font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-base">
+                  {scanStatus === "scanning" ? "sync" : "center_focus_strong"}
+                </span>
+                {scanStatus === "scanning"
+                  ? "Verifying Token…"
+                  : scanStatus === "verified"
+                  ? "Scan Next Attendee"
+                  : "Simulate Gate Check-In"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("pass")}
+                className="py-3 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-headline font-bold text-xs transition-colors"
+              >
+                Back to Pass
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

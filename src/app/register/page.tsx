@@ -55,12 +55,10 @@ export default function StudentOnboardingPage() {
     <main className="relative pt-28 pb-24 max-w-7xl mx-auto px-6">
       {/* 1. UNIFIED HERO & STEP TRACKER */}
       <PageHero
-        badge="Institutional Identity Provisioning • NFC Pass v4"
-        badgeSubtext="Step 2 of 3 • Guild Radar"
         titleLead="Create your verified"
         titleHighlight="Student Identity"
-        titleTrail="& NFC Pass."
-        description="Connect your university SSO, calibrate your Interest Guilds for AI Copilot recommendations, and provision your contactless CampusHub ID card."
+        titleTrail="& CampusHub QR Pass."
+        description="Connect your university SSO, calibrate your Interest Guilds for AI Copilot recommendations, and provision your contactless CampusHub Dynamic QR pass."
         stats={[
           {
             label: "Step 1 • SSO",
@@ -71,7 +69,7 @@ export default function StudentOnboardingPage() {
           {
             label: "Step 2 • Calibration",
             value: `${selectedGuilds.length} Guilds Active`,
-            sublabel: "Live NFC Card Synced",
+            sublabel: "Live QR Pass Synced",
             icon: "badge",
             accent: true,
           },
@@ -321,7 +319,7 @@ export default function StudentOnboardingPage() {
           </div>
         </div>
 
-        {/* RIGHT 5 COLS: Live Sticky CampusHub ID NFC Pass Preview */}
+        {/* RIGHT 5 COLS: Live Sticky CampusHub ID Dynamic QR Pass Preview */}
         <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-6">
           <TiltedCard maxTilt={3.5}>
             <SpotlightCard
@@ -340,12 +338,12 @@ export default function StudentOnboardingPage() {
                       Stanford University
                     </span>
                     <span className="text-sm font-extrabold font-headline">
-                      CampusHub NFC ID
+                      CampusHub QR ID
                     </span>
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/20 font-mono text-[10px] text-secondary-container font-bold">
-                  NFC ACTIVE
+                  DYNAMIC QR ACTIVE
                 </span>
               </div>
 
@@ -436,7 +434,7 @@ export default function StudentOnboardingPage() {
             <span className="material-symbols-outlined text-[18px]">
               badge
             </span>
-            <span>Issue Encrypted NFC Student ID Pass</span>
+            <span>Issue Encrypted CampusHub Dynamic QR Pass</span>
           </button>
 
           <div className="text-center">
@@ -455,11 +453,11 @@ export default function StudentOnboardingPage() {
         onClose={() => setPassModalOpen(false)}
         title={`${fullName} • Verified Campus ID`}
         subtitle={`${cohort} • ${major}`}
-        passCode={`NFC-${studentId.replace("#", "")}`}
+        passCode={`QR-${studentId.replace("#", "")}`}
         studentName={fullName}
         studentId={studentId}
         location={residence}
-        badgeLabel="INSTITUTIONAL NFC STUDENT ID"
+        badgeLabel="INSTITUTIONAL DYNAMIC QR ID"
       />
     </main>
   );

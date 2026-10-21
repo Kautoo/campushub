@@ -149,8 +149,6 @@ export default function CampusMapPage() {
     <main className="relative pt-28 pb-20 max-w-7xl mx-auto px-6">
       {/* 1. UNIFIED TOP TELEMETRY & HERO BAR */}
       <PageHero
-        badge="Live Spatial Telemetry • Marguerite Shuttle GPS"
-        badgeSubtext="Shuttle Line X • 2m"
         titleLead="Interactive Campus"
         titleHighlight="Grounds & Venues"
         titleTrail="in real time."
@@ -571,7 +569,7 @@ export default function CampusMapPage() {
         onClose={() => setFastPassModalOpen(false)}
         title={activeVenue.name}
         subtitle={`${activeVenue.buildingCode} • ${activeVenue.statusMetric}`}
-        passCode="CAMPUS-NFC-882194"
+        passCode="CAMPUS-QR-882194"
         location={activeVenue.walkTime}
         badgeLabel="SPATIAL ACCESS FAST-PASS"
       />

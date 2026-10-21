@@ -100,9 +100,6 @@ export function ProductDetailClient({ id }: { id: string }) {
     <main className="min-h-screen bg-surface pt-28 pb-20">
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
         <PageHero
-          badge={`${product.category} • ${badgeText}`}
-          badgeSubtext="Back to Campus Store"
-          badgeHref="/shop"
           titleLead={product.name.split(" ").slice(0, -1).join(" ")}
           titleHighlight={product.name.split(" ").slice(-1)[0]}
           description={product.description}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MOCK_PRODUCTS, MOCK_CAMPAIGNS } from "@/data/mockData";
 
 interface SearchDialogProps {
@@ -11,27 +12,41 @@ interface SearchDialogProps {
 
 const QUICK_ROUTES = [
   { href: "/", label: "Explore Campus", icon: "explore" },
-  { href: "/clubs", label: "Clubs Directory", icon: "groups" },
-  { href: "/events", label: "Neon 5K Registration", icon: "confirmation_number" },
+  { href: "/events", label: "Campus Events & Passes", icon: "confirmation_number" },
   { href: "/map", label: "Interactive Venue Map", icon: "map" },
   { href: "/shop", label: "Campus Store", icon: "shopping_bag" },
-  { href: "/copilot", label: "AI Copilot Schedule", icon: "auto_awesome" },
-  { href: "/account", label: "Verified Student Profile", icon: "verified" },
-  { href: "/register", label: "Student ID Onboarding", icon: "badge" },
+  { href: "/copilot", label: "AI Copilot & CGPA", icon: "auto_awesome" },
+  { href: "/account", label: "Student Lanyard & Pass", icon: "badge" },
+  { href: "/campaigns", label: "Charity & Grants", icon: "volunteer_activism" },
   { href: "/organizer", label: "Organizer Studio", icon: "dashboard" },
 ];
 
 export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
 
+  const handleAskCopilot = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onClose();
+    router.push(`/copilot?q=${encodeURIComponent(trimmed)}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && query.trim()) {
+      e.preventDefault();
+      handleAskCopilot(query);
+    }
+  };
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -63,8 +78,14 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
         className="w-full max-w-2xl bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search Input Bar */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-outline-variant/25 bg-surface-container-low/60">
+        {/* Search Input Bar with form submit for Enter */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAskCopilot(query);
+          }}
+          className="flex items-center gap-3 px-5 py-4 border-b border-outline-variant/25 bg-surface-container-low/60"
+        >
           <span
             className="material-symbols-outlined text-primary text-xl"
             style={{ fontVariationSettings: "'FILL' 1" }}
@@ -73,10 +94,11 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
           </span>
           <input
             type="text"
-            placeholder="Ask AI Copilot or search clubs, events, smart lockers, archival hoodies..."
+            placeholder="Ask AI Copilot anything, calculate CGPA, or search events, gear..."
             className="flex-1 bg-transparent text-on-surface placeholder:text-outline font-body text-sm focus:outline-none"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             autoFocus
           />
           {query && (
@@ -95,7 +117,35 @@ export function SearchDialog({ isOpen, onClose }: SearchDialogProps) {
           >
             ESC
           </button>
-        </div>
+        </form>
+
+        {/* AI Copilot Direct Query Capsule */}
+        {query.trim() && (
+          <div className="p-3 bg-gradient-to-r from-primary/10 via-primary-fixed/20 to-secondary-container/20 border-b border-primary/25">
+            <button
+              type="button"
+              onClick={() => handleAskCopilot(query)}
+              className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-surface-container-lowest/90 hover:bg-surface-container-lowest border border-primary/30 text-left transition-all group shadow-2xs"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-xs">
+                  <span className="material-symbols-outlined text-base">auto_awesome</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-on-surface truncate">
+                    Ask AI Copilot: <span className="text-primary italic font-headline">&ldquo;{query.trim()}&rdquo;</span>
+                  </p>
+                  <p className="text-[11px] text-on-surface-variant truncate">
+                    Instant academic reasoning, course planning, or campus assistance
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-bold font-mono text-primary flex items-center gap-1 group-hover:translate-x-0.5 transition-transform shrink-0 pl-2">
+                Press Enter ↵
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Quick Platform Screens */}
         <div className="px-5 py-3 bg-surface-container-lowest border-b border-outline-variant/20 flex items-center gap-2 overflow-x-auto no-scrollbar">

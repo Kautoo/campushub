@@ -267,9 +267,6 @@ export default function OrganizerStudioPage() {
       <div className="flex-1 min-w-0 pb-20">
         <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
           <PageHero
-            badge="Robotics & AI Society (IEEE Student Chapter) • Autumn '25"
-            badgeSubtext="Back to Explore"
-            badgeHref="/"
             titleLead={
               activeTab === "create_event" ? "Publish New" : "Organizer Studio &"
             }
@@ -279,8 +276,8 @@ export default function OrganizerStudioPage() {
             titleTrail={activeTab === "create_event" ? "& Ticketing." : "Hub."}
             description={
               activeTab === "create_event"
-                ? "Configure your Luma-style campus poster, verify zero Registrar midterm conflicts, and issue NFC/QR entry passes."
-                : "Real-time NFC gate velocity, student RSVP rosters, Smart Locker dispatches, and AI-assisted copywriting."
+                ? "Configure your campus poster, verify zero Registrar midterm conflicts, and issue CampusHub Dynamic QR entry passes."
+                : "Real-time attendant QR gate velocity, student RSVP rosters, Smart Locker dispatches, and AI-assisted copywriting."
             }
             actions={
               <div className="flex items-center gap-3">
@@ -490,10 +487,10 @@ export default function OrganizerStudioPage() {
                   </div>
                 </div>
 
-                {/* Step 3: Ticket Tiers & NFC Gate Configuration */}
+                {/* Step 3: Ticket Tiers & CampusHub QR Gate Configuration */}
                 <div className="bg-surface-container-lowest rounded-[2rem] border border-outline-variant/40 p-6 sm:p-8 shadow-xs space-y-5">
                   <h2 className="text-lg font-extrabold font-headline text-on-surface">
-                    3. Ticket Tiers & NFC Fast-Pass Gate
+                    3. Ticket Tiers &amp; Dynamic QR Attendant Gate
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -551,7 +548,7 @@ export default function OrganizerStudioPage() {
                     <span className="text-secondary-container font-medium">
                       {eventVenue.split("(")[0]}
                     </span>
-                    <span className="font-mono font-bold">NFC READY</span>
+                    <span className="font-mono font-bold">DYNAMIC QR</span>
                   </div>
                 </SpotlightCard>
 
@@ -654,7 +651,7 @@ export default function OrganizerStudioPage() {
                     <CountUp to={94.2} decimals={1} suffix="%" />
                   </p>
                   <p className="text-xs text-on-surface-variant">
-                    NFC Fast-Pass Scanners Active
+                    CampusHub QR Scanners Active
                   </p>
                 </SpotlightCard>
               </section>
@@ -668,10 +665,10 @@ export default function OrganizerStudioPage() {
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold block">
-                          Live Optical & NFC Telemetry
+                          Live Optical &amp; Attendant Telemetry
                         </span>
                         <h2 className="text-lg font-extrabold font-headline text-on-surface">
-                          Fast-Pass Gate Check-In Velocity (Huang Gate B)
+                          Dynamic QR Gate Check-In Velocity (Huang Gate B)
                         </h2>
                       </div>
                       <span className="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-mono text-xs font-bold">
@@ -726,7 +723,7 @@ export default function OrganizerStudioPage() {
                           Recent Student Sign-Ups & Locker Handovers
                         </h2>
                         <p className="text-xs text-on-surface-variant">
-                          Click action button to toggle NFC gate verification
+                          Click action button to verify attendant QR check-in
                         </p>
                       </div>
                     </div>

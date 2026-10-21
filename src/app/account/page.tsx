@@ -56,7 +56,7 @@ const REGISTERED_EVENTS = [
     date: "SAT, NOV 08 • 6:30 PM",
     location: "Main Quad Archway • Wave B (Bib #1042)",
     passCode: "NEON5K-BIB1042",
-    role: "5K Timed Runner • Tee Size M",
+    role: "Plan B: Tech Tee + Medal + Acai Bowl",
   },
 ];
 
@@ -130,19 +130,19 @@ export default function StudentProfilePage() {
       <text x="360" y="606" fill="#94a3b8" font-family="monospace" font-size="15" font-weight="700" letter-spacing="2">SMART LOCKER</text>
       <text x="360" y="654" fill="#ffffff" font-family="monospace" font-size="34" font-weight="900">HUB #B-04</text>
 
-      <!-- Bottom NFC Fast-Pass Strip -->
+      <!-- Bottom Dynamic QR Pass Strip -->
       <rect x="48" y="714" width="544" height="134" rx="28" fill="#c1ee78"/>
-      <text x="82" y="766" fill="#121f00" font-family="sans-serif" font-size="24" font-weight="900" letter-spacing="1">NFC + OPTICAL FAST-PASS</text>
+      <text x="82" y="766" fill="#121f00" font-family="sans-serif" font-size="24" font-weight="900" letter-spacing="1">CAMPUSHUB DYNAMIC QR PASS</text>
       <text x="82" y="802" fill="#283c00" font-family="monospace" font-size="18" font-weight="700">IEEE LAB BAY 3 • UNION LOCKER • EVENTS</text>
-      <text x="82" y="828" fill="#121f00" font-family="monospace" font-size="15" font-weight="700">CLICK CARD TO FLIP FOR QR CODE →</text>
+      <text x="82" y="828" fill="#121f00" font-family="monospace" font-size="15" font-weight="700">CLICK CARD TO FLIP FOR ATTENDANT QR →</text>
       <circle cx="532" cy="781" r="36" fill="#131b2e"/>
-      <text x="532" y="790" fill="#c1ee78" font-family="monospace" font-size="22" font-weight="900" text-anchor="middle">NFC</text>
+      <text x="532" y="790" fill="#c1ee78" font-family="monospace" font-size="22" font-weight="900" text-anchor="middle">QR</text>
     </svg>`;
 
     const backSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="900" viewBox="0 0 640 900">
       <rect width="640" height="900" fill="#faf8ff"/>
       <rect x="0" y="0" width="640" height="150" fill="#131b2e"/>
-      <text x="320" y="112" fill="#c1ee78" font-family="sans-serif" font-size="24" font-weight="900" letter-spacing="3" text-anchor="middle">OPTICAL GATE &amp; LOCKER PASS</text>
+      <text x="320" y="112" fill="#c1ee78" font-family="sans-serif" font-size="24" font-weight="900" letter-spacing="3" text-anchor="middle">OPTICAL GATE &amp; ATTENDANT PASS</text>
 
       <!-- QR Code Frame -->
       <rect x="140" y="195" width="360" height="360" rx="36" fill="#ffffff" stroke="#4b671b" stroke-width="6"/>
@@ -163,8 +163,8 @@ export default function StudentProfilePage() {
       <rect x="348" y="432" width="104" height="28" fill="#131b2e"/>
       <rect x="358" y="478" width="64" height="34" fill="#4b671b"/>
 
-      <text x="320" y="608" fill="#131b2e" font-family="monospace" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle">CH-8821-94A-NFC</text>
-      <text x="320" y="644" fill="#4b671b" font-family="sans-serif" font-size="20" font-weight="800" text-anchor="middle">CRYPTOGRAPHIC REGISTRAR HASH: 0x88F4...29A1</text>
+      <text x="320" y="608" fill="#131b2e" font-family="monospace" font-size="28" font-weight="900" letter-spacing="4" text-anchor="middle">CH-8821-94A-QR</text>
+      <text x="320" y="644" fill="#4b671b" font-family="sans-serif" font-size="20" font-weight="800" text-anchor="middle">CAMPUSHUB DUAL-MODE PROTOCOL: 0x88F4...29A1</text>
 
       <rect x="56" y="688" width="528" height="156" rx="28" fill="#131b2e"/>
       <text x="320" y="738" fill="#c1ee78" font-family="monospace" font-size="20" font-weight="800" text-anchor="middle">TRESIDDER UNION LOCKER #B-04 • PIN 8492</text>
@@ -187,16 +187,13 @@ export default function StudentProfilePage() {
   }, []);
 
   return (
-    <main className="relative pt-28 pb-24 max-w-7xl mx-auto px-6 space-y-8">
-      {/* 1. UNIFIED STUDENT PROFILE HERO */}
+    <main className="relative pt-24 pb-24 max-w-7xl mx-auto px-6 space-y-10">
+      {/* 1. STUDENT PROFILE HERO (Request 2 compliant: promo badge removed) */}
       <PageHero
-        badge="Institutional Verified Scholar • #STU-882194"
-        badgeSubtext="Edit ID & Guild Radar"
-        badgeHref="/register"
         titleLead="Alex Rivera —"
         titleHighlight="Verified Scholar"
         titleTrail="& Credentials."
-        description="Stanford University • B.S. Computer Science & Interaction Design • Class of 2027. Drag, swing, or click your 3D holographic Student ID lanyard below, manage cryptographic badges, and unlock Smart Locker #B-04."
+        description="Stanford University • B.S. Computer Science & Interaction Design • Class of 2027. Your 3D Student ID is suspended directly from the top ceiling below with live physics, instant Smart Locker access, and on-chain verified credentials."
         stats={[
           {
             label: "Autumn Load",
@@ -219,9 +216,102 @@ export default function StudentProfilePage() {
         ]}
       />
 
-      {/* 2. MAIN 12-COLUMN PROFILE WORKSPACE */}
+      {/* 2. CENTERPIECE: 3D UNBOXED LANYARD HERO (Request 4 compliant) */}
+      <section className="relative w-full -mt-2 mb-8 flex flex-col items-center">
+        {/* Physical Top Ceiling Mount & Lanyard Connector Clamp */}
+        <div className="relative z-20 flex flex-col items-center">
+          <div className="w-24 h-3.5 bg-gradient-to-r from-neutral-800 via-neutral-600 to-neutral-800 rounded-b-lg border-x border-b border-neutral-500/60 shadow-lg flex items-center justify-center">
+            <div className="w-10 h-1 bg-primary/80 rounded-full" />
+          </div>
+          <div className="w-8 h-2.5 bg-neutral-700 rounded-b-sm border-x border-b border-neutral-600 flex items-center justify-center">
+            <div className="w-3 h-1 rounded-full bg-neutral-900 border border-neutral-500" />
+          </div>
+        </div>
+
+        {/* Unboxed 3D Physics Canvas — Suspended from top */}
+        <div className="relative w-full max-w-3xl h-[520px] sm:h-[580px] -mt-1 flex items-center justify-center">
+          <Lanyard
+            frontImage={lanyardTextures.front}
+            backImage={lanyardTextures.back}
+            strapImage={lanyardTextures.strap}
+            finish={cardFinish}
+            orientation="portrait"
+            cornerRadius={0.25}
+            size={0.68}
+            strapLength={0.46}
+            strapColor="#131b2e"
+            metal="silver"
+            breeze={0.3}
+            interactive
+            intro
+          />
+        </div>
+
+        {/* Lanyard HUD & Action Control Capsule */}
+        <div className="relative z-10 -mt-6 p-2 rounded-2xl glass-pill flex flex-wrap items-center justify-center gap-3 shadow-lg border border-outline-variant/40 max-w-2xl w-full">
+          <div className="flex items-center gap-2 pl-2">
+            <span className="material-symbols-outlined text-primary text-base">
+              pan_tool_alt
+            </span>
+            <span className="text-xs font-semibold text-on-surface truncate">
+              Drag to swing • Click card to flip
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-outline-variant/40 hidden sm:block" />
+
+          {/* Card Finish Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-outline uppercase font-bold">
+              Finish:
+            </span>
+            <GlideSelect
+              options={[
+                { value: "holographic", label: "Holographic", tag: "Foil" },
+                { value: "glossy", label: "Glossy Coat", tag: "Clear" },
+                { value: "metallic", label: "Brushed Metal", tag: "Anodized" },
+                { value: "matte", label: "Matte Finish", tag: "Satin" },
+              ]}
+              value={cardFinish}
+              onChange={(val) =>
+                setCardFinish(
+                  val as "holographic" | "glossy" | "metallic" | "matte"
+                )
+              }
+              ariaLabel="Card finish"
+              size="sm"
+              menuWidth={180}
+              surfaceColor="#1e2942"
+              highlightColor="#4b671b"
+              textColor="#faf8ff"
+              accentColor="#c1ee78"
+            />
+          </div>
+
+          <div className="h-4 w-px bg-outline-variant/40 hidden sm:block" />
+
+          {/* Quick Trigger for 2D Dynamic QR Pass */}
+          <button
+            type="button"
+            onClick={() =>
+              setActivePassModal({
+                title: "Alex Rivera — Stanford Student ID",
+                subtitle: "#STU-882194 • B.S. CS & Design",
+                passCode: "CH-8821-94A-QR",
+                location: "All Campus Gates & Union Locker #B-04",
+              })
+            }
+            className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-fixed-dim text-on-primary font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[15px]">qr_code_2</span>
+            <span>Show QR Pass</span>
+          </button>
+        </div>
+      </section>
+
+      {/* 3. MAIN BALANCED PROFILE CONTENT GRID */}
       <AnimatedContent
-        distance={60}
+        distance={40}
         direction="vertical"
         duration={0.8}
         ease="power3.out"
@@ -229,8 +319,8 @@ export default function StudentProfilePage() {
         threshold={0.1}
         className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
       >
-        {/* LEFT 7 COLS: Credentials, Club Roles & Event Passes */}
-        <div className="lg:col-span-7 space-y-8">
+        {/* LEFT 6 COLS: Blockchain Credentials & Registered Events */}
+        <div className="lg:col-span-6 space-y-8">
           {/* Blockchain Verified Credentials */}
           <div className="bg-surface-container-lowest rounded-[2rem] border border-outline-variant/40 p-6 sm:p-8 shadow-xs space-y-5">
             <div className="flex items-center justify-between">
@@ -239,7 +329,7 @@ export default function StudentProfilePage() {
                   Cryptographic Registrar Ledger
                 </span>
                 <h2 className="text-xl font-extrabold font-headline text-on-surface">
-                  Verified Credentials & Badges (3)
+                  Verified Credentials &amp; Badges (3)
                 </h2>
               </div>
               <span className="px-3 py-1 rounded-full bg-secondary-container/60 text-on-secondary-fixed text-[10px] font-mono font-bold">
@@ -276,20 +366,64 @@ export default function StudentProfilePage() {
             </div>
           </div>
 
+          {/* Active Club Memberships */}
+          <div className="bg-surface-container-lowest rounded-[2rem] border border-outline-variant/40 p-6 sm:p-8 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-extrabold font-headline text-on-surface">
+                Active Club Memberships &amp; Roles
+              </h2>
+              <Link
+                href="/events"
+                className="text-xs font-bold text-primary hover:underline"
+              >
+                Events Calendar →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 space-y-1.5">
+                <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-extrabold uppercase font-mono">
+                  Officer • Lab Access
+                </span>
+                <h3 className="text-sm font-extrabold font-headline text-on-surface pt-1">
+                  Robotics &amp; AI Society (IEEE)
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  Autonomous Quadruped Lead • Packard 108
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 space-y-1.5">
+                <span className="px-2.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-extrabold uppercase font-mono">
+                  Active Member
+                </span>
+                <h3 className="text-sm font-extrabold font-headline text-on-surface pt-1">
+                  Stanford UX &amp; Design
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  Design Systems Mentor • d.school Studio 2
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT 6 COLS: Registered Events, Smart Locker & Co-Op Orders */}
+        <div className="lg:col-span-6 space-y-8">
           {/* Registered Events & Fast-Pass Tickets */}
           <div className="bg-surface-container-lowest rounded-[2rem] border border-outline-variant/40 p-6 sm:p-8 shadow-xs space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold block">
-                  NFC & Optical Entry
+                  Dynamic QR Entry
                 </span>
                 <h2 className="text-xl font-extrabold font-headline text-on-surface">
-                  Registered Events & Fast-Passes
+                  Registered Events &amp; Passes
                 </h2>
               </div>
               <Link
                 href="/events"
-                className="text-xs font-bold text-primary hover:underline"
+                className="text-xs font-bold text-primary hover:underline font-mono"
               >
                 + Browse Events
               </Link>
@@ -335,128 +469,6 @@ export default function StudentProfilePage() {
             </div>
           </div>
 
-          {/* Active Club Memberships */}
-          <div className="bg-surface-container-lowest rounded-[2rem] border border-outline-variant/40 p-6 sm:p-8 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-extrabold font-headline text-on-surface">
-                Active Club Memberships & Roles
-              </h2>
-              <Link
-                href="/clubs"
-                className="text-xs font-bold text-primary hover:underline"
-              >
-                Clubs Directory →
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 space-y-1.5">
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-extrabold uppercase">
-                  Officer • Lab Access
-                </span>
-                <h3 className="text-sm font-extrabold font-headline text-on-surface pt-1">
-                  Robotics & AI Society (IEEE)
-                </h3>
-                <p className="text-xs text-on-surface-variant">
-                  Autonomous Perception Lead • Huang Basement Bay 3
-                </p>
-              </div>
-              <div className="p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 space-y-1.5">
-                <span className="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface text-[10px] font-bold uppercase">
-                  Core Member
-                </span>
-                <h3 className="text-sm font-extrabold font-headline text-on-surface pt-1">
-                  Stanford UX & Design Association
-                </h3>
-                <p className="text-xs text-on-surface-variant">
-                  Design Systems Mentor • d.school Studio 2
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT 5 COLS: Interactive 3D React Bits Lanyard ID + Smart Locker #B-04 + Orders */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* REACT BITS 3D INTERACTIVE STUDENT ID LANYARD CARD */}
-          <div className="rounded-[2.25rem] bg-gradient-to-b from-[#131b2e] via-[#1a243b] to-[#1f2c12] border border-outline-variant/40 shadow-2xl overflow-hidden relative">
-            <div className="p-5 pb-0 flex items-center justify-between gap-2 relative z-10">
-              <div>
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-secondary-container font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-container animate-ping" />
-                  3D Physics NFC Credential
-                </span>
-                <h2 className="text-base font-extrabold font-headline text-white">
-                  Interactive Student Lanyard
-                </h2>
-              </div>
-
-              <GlideSelect
-                options={[
-                  { value: "holographic", label: "Holographic", tag: "Foil" },
-                  { value: "glossy", label: "Glossy Coat", tag: "Clear" },
-                  { value: "metallic", label: "Brushed Metal", tag: "Anodized" },
-                  { value: "matte", label: "Matte Finish", tag: "Satin" },
-                ]}
-                value={cardFinish}
-                onChange={(val) =>
-                  setCardFinish(
-                    val as "holographic" | "glossy" | "metallic" | "matte"
-                  )
-                }
-                ariaLabel="Card finish"
-                size="sm"
-                menuWidth={185}
-                align="right"
-                surfaceColor="#1e2942"
-                highlightColor="#4b671b"
-                textColor="#faf8ff"
-                accentColor="#c1ee78"
-              />
-            </div>
-
-            <div className="relative w-full h-[500px]">
-              <Lanyard
-                frontImage={lanyardTextures.front}
-                backImage={lanyardTextures.back}
-                strapImage={lanyardTextures.strap}
-                finish={cardFinish}
-                orientation="portrait"
-                cornerRadius={0.25}
-                size={0.62}
-                strapLength={0.44}
-                strapColor="#131b2e"
-                metal="silver"
-                breeze={0.35}
-                interactive
-                intro
-              />
-            </div>
-
-            <div className="px-5 py-3.5 bg-black/30 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-[11px] text-white/80">
-              <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[15px] text-secondary-container">
-                  pan_tool_alt
-                </span>
-                Drag & release to swing • Click card to flip
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setActivePassModal({
-                    title: "Alex Rivera — Stanford Student ID",
-                    subtitle: "#STU-882194 • B.S. CS & Design",
-                    passCode: "CH-8821-94A-NFC",
-                    location: "All Campus Gates & Union Locker #B-04",
-                  })
-                }
-                className="font-mono font-bold text-secondary-container hover:underline cursor-pointer"
-              >
-                2D QR Pass →
-              </button>
-            </div>
-          </div>
-
           {/* Interactive Smart Locker #B-04 Remote Unlock Card */}
           <SpotlightCard
             spotlightColor="rgba(193, 238, 120, 0.22)"
@@ -496,7 +508,7 @@ export default function StudentProfilePage() {
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">
-                  {lockerUnlocked ? "lock_open" : "contactless"}
+                  {lockerUnlocked ? "lock_open" : "qr_code_scanner"}
                 </span>
                 <span>
                   {lockerUnlocked

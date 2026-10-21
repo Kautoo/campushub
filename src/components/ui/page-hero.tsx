@@ -15,7 +15,7 @@ export interface PageHeroStat {
 
 export interface PageHeroProps {
   /** Top status pill primary text (rendered with React Bits ShinyText) */
-  badge: string;
+  badge?: string;
   /** Optional secondary pill text or link next to the divider */
   badgeSubtext?: string;
   badgeHref?: string;
@@ -84,33 +84,35 @@ export function PageHero({
           stagger={0.08}
           className={cn(isCenter ? "w-full" : "max-w-3xl")}
         >
-          {/* Unified React Bits Animated Status Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-2xs mb-5">
-            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <ShinyText className="text-[11px] font-bold uppercase tracking-widest text-primary font-label">
-              {badge}
-            </ShinyText>
-            {badgeSubtext && (
-              <>
-                <span className="text-outline-variant">|</span>
-                {badgeHref ? (
-                  <Link
-                    href={badgeHref}
-                    className="text-[11px] font-semibold text-on-surface-variant hover:text-primary flex items-center gap-0.5 transition-colors"
-                  >
-                    <span>{badgeSubtext}</span>
-                    <span className="material-symbols-outlined text-[13px]">
-                      arrow_outward
+          {/* Unified React Bits Animated Status Pill (only when badge is provided) */}
+          {badge && (
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-2xs mb-5">
+              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <ShinyText className="text-[11px] font-bold uppercase tracking-widest text-primary font-label">
+                {badge}
+              </ShinyText>
+              {badgeSubtext && (
+                <>
+                  <span className="text-outline-variant">|</span>
+                  {badgeHref ? (
+                    <Link
+                      href={badgeHref}
+                      className="text-[11px] font-semibold text-on-surface-variant hover:text-primary flex items-center gap-0.5 transition-colors"
+                    >
+                      <span>{badgeSubtext}</span>
+                      <span className="material-symbols-outlined text-[13px]">
+                        arrow_outward
+                      </span>
+                    </Link>
+                  ) : (
+                    <span className="text-[11px] font-mono font-semibold text-on-surface-variant">
+                      {badgeSubtext}
                     </span>
-                  </Link>
-                ) : (
-                  <span className="text-[11px] font-mono font-semibold text-on-surface-variant">
-                    {badgeSubtext}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {/* Unified Display Headline with BlurText + Instrument Serif Italic Accent */}
           <h1

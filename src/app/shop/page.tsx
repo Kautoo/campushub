@@ -112,31 +112,65 @@ export default function CampusStorePage() {
 
   return (
     <main className="relative pt-28 pb-24 max-w-7xl mx-auto px-6">
-      {/* 1. UNIFIED STORE HERO & FULFILLMENT BANNER */}
+      {/* 1. UNIFIED STORE HERO */}
       <PageHero
-        badge="Official University Co-Op • Fall / Winter '25"
-        badgeSubtext="2-Hour Smart Lockers"
-        badgeHref="/map"
         titleLead="Official Collegiate Gear &"
         titleHighlight="Essentials"
         titleTrail="curated for campus."
         description="Heavyweight archival fleece, laboratory safety coats, and insulated campus essentials. Zero platform rake with instant 24/7 Union Smart Locker pickup."
-        stats={[
-          {
-            label: "Smart Locker Pickup",
-            value: "2-Hour Union Lockers",
-            sublabel: "14 Compartments Free",
-            icon: "lock_clock",
-          },
-          {
-            label: "Verified Student Perk",
-            value: "10% ID Discount",
-            sublabel: "Auto-Applied at Checkout",
-            icon: "verified",
-            accent: true,
-          },
-        ]}
       />
+
+      {/* COMPACT TRUST FEATURE STRIP */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10 -mt-4">
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 hover:border-primary/40 transition-colors shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+            <span className="material-symbols-outlined text-lg">lock_clock</span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-on-surface truncate">Smart Locker Pickup</span>
+            </div>
+            <p className="text-[11px] text-on-surface-variant truncate font-mono">2-Hour Union Lockers • 14 Compartments Free</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 hover:border-primary/40 transition-colors shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-secondary-container/20 flex items-center justify-center shrink-0 text-secondary">
+            <span className="material-symbols-outlined text-lg">verified</span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-on-surface truncate">Verified Student Perk</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-mono">10% ID Discount</span>
+            </div>
+            <p className="text-[11px] text-on-surface-variant truncate font-mono">Auto-Applied at Checkout</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 hover:border-primary/40 transition-colors shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-tertiary-container/20 flex items-center justify-center shrink-0 text-tertiary">
+            <span className="material-symbols-outlined text-lg">percent</span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-on-surface truncate">Zero Platform Rake</span>
+            </div>
+            <p className="text-[11px] text-on-surface-variant truncate font-mono">100% Student Guild Pricing</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 hover:border-primary/40 transition-colors shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-primary-fixed/20 flex items-center justify-center shrink-0 text-primary">
+            <span className="material-symbols-outlined text-lg">qr_code_scanner</span>
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-on-surface truncate">Campus Dynamic QR</span>
+            </div>
+            <p className="text-[11px] text-on-surface-variant truncate font-mono">Instant Contactless Dispense</p>
+          </div>
+        </div>
+      </div>
 
       {/* 2. FILTER, SEARCH & SORT BAR */}
       <section className="sticky top-20 z-30 mb-10">
@@ -442,7 +476,7 @@ export default function CampusStorePage() {
             <p className="text-xs text-on-surface-variant leading-relaxed mb-5">
               Select your preferred locker hub during checkout. Once your order
               is packed, unlock your compartment instantly using your CampusHub
-              QR Fast-Pass or NFC Student ID.
+              Dynamic QR Student Pass.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <button

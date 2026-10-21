@@ -99,9 +99,6 @@ export function CampaignDetailClient({ id }: { id: string }) {
     <main className="min-h-screen bg-surface pt-28 pb-24">
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
         <PageHero
-          badge={`${campaign.category} • ${campaign.organization.badge}`}
-          badgeSubtext="All Initiatives"
-          badgeHref="/campaigns"
           titleLead={campaign.title.split(":")[0]}
           titleHighlight={
             campaign.title.includes(":")

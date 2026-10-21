@@ -172,7 +172,7 @@ export default function CheckoutPage() {
               <span className="material-symbols-outlined text-[18px]">
                 qr_code_2
               </span>
-              Open NFC / QR Locker Pass
+              Open CampusHub Dynamic QR Locker Pass
             </button>
           </div>
 
@@ -251,13 +251,10 @@ export default function CheckoutPage() {
     <main className="relative pt-28 pb-24 max-w-7xl mx-auto px-6">
       {/* 1. UNIFIED PAGE HERO */}
       <PageHero
-        badge="Campus Co-Op Settlement • PayPal Sandbox v2"
-        badgeSubtext="Back to Store"
-        badgeHref="/shop"
         titleLead="Review your"
         titleHighlight="collegiate bag"
         titleTrail="& confirm locker pickup."
-        description="Your 10% Verified Student Union Co-Op benefit is automatically applied. Complete checkout to receive your instant NFC & QR Smart Locker unlock pass."
+        description="Your 10% Verified Student Union Co-Op benefit is automatically applied. Complete checkout to receive your instant CampusHub Dynamic QR Smart Locker unlock pass."
         stats={[
           {
             label: "Student Benefit",

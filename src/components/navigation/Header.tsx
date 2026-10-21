@@ -8,12 +8,11 @@ import { SearchDialog } from "@/components/search/SearchDialog";
 import { FastPassModal, Magnet } from "@/components/ui/react-bits";
 
 const NAV_LINKS = [
-  { href: "/shop", label: "Store", icon: "storefront" },
-  { href: "/copilot", label: "AI Copilot", icon: "auto_awesome" },
-  { href: "/clubs", label: "Clubs", icon: "groups" },
+  { href: "/events", label: "Events", icon: "calendar_month" },
+  { href: "/shop", label: "Store", icon: "shopping_bag" },
   { href: "/campaigns", label: "Charity", icon: "volunteer_activism" },
-  { href: "/map", label: "Campus Map", icon: "map" },
-  { href: "/organizer", label: "Studio", icon: "hub" },
+  { href: "/map", label: "Map", icon: "map" },
+  { href: "/copilot", label: "AI Copilot", icon: "auto_awesome" },
 ];
 
 export function Header() {
@@ -134,11 +133,11 @@ export function Header() {
               <kbd className="font-mono text-[10px] text-outline">⌘K</kbd>
             </button>
 
-            {/* NFC Fast-Pass Quick Trigger */}
+            {/* Dynamic QR Fast-Pass Quick Trigger */}
             <button
               type="button"
               onClick={() => setFastPassOpen(true)}
-              title="Open Verified NFC Campus Fast-Pass"
+              title="Open Verified CampusHub Dynamic QR Pass"
               className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors relative"
             >
               <span className="material-symbols-outlined text-[19px]">
@@ -207,7 +206,7 @@ export function Header() {
                           Alex Rivera
                         </p>
                         <p className="text-[10px] text-on-surface-variant font-mono truncate">
-                          CS '26 • #CH-882194
+                          CS &apos;26 • #CH-882194
                         </p>
                       </div>
                       <span className="w-2 h-2 rounded-full bg-secondary-container ring-2 ring-primary/20" />
@@ -307,14 +306,14 @@ export function Header() {
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-on-surface hover:bg-surface-container-low transition-all cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[17px] text-primary">
-                        nfc
+                        qr_code_scanner
                       </span>
                       <div className="flex-1">
                         <span className="block text-primary font-bold">
-                          NFC Fast-Pass
+                          Dynamic QR Pass
                         </span>
                         <span className="text-[10px] text-on-surface-variant font-normal block">
-                          Instant reader tap pass
+                          Instant attendant &amp; gate check-in
                         </span>
                       </div>
                     </button>
