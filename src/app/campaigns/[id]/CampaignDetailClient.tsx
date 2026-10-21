@@ -96,8 +96,8 @@ export function CampaignDetailClient({ id }: { id: string }) {
   ];
 
   return (
-    <main className="min-h-screen bg-surface pt-28 pb-24">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
+    <main className="min-h-screen bg-surface pt-28 sm:pt-32 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHero
           titleLead={campaign.title.split(":")[0]}
           titleHighlight={
@@ -106,26 +106,11 @@ export function CampaignDetailClient({ id }: { id: string }) {
               : campaign.organization.name
           }
           description={campaign.summary}
-          stats={[
-            {
-              label: "Verified Society",
-              value: campaign.organization.name,
-              sublabel: "Union Escrow • 0% Rake",
-              icon: "verified",
-            },
-            {
-              label: "Milestone Progress",
-              value: `${pct}% Funded ($${campaign.raisedAmount.toLocaleString()})`,
-              sublabel: `${campaign.daysLeft} Days Remaining`,
-              icon: "trending_up",
-              accent: true,
-            },
-          ]}
         />
       </div>
 
       {/* 2. Main 8:4 Asymmetric Campaign Architecture */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left 8 Columns: Media Mosaic, Specs, Narrative, Public Ledger & Field Updates */}
           <div className="lg:col-span-8 space-y-12">

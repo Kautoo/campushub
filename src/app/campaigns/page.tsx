@@ -53,29 +53,14 @@ export default function CampaignsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-surface pt-28 pb-20">
-      {/* 1. UNIFIED HERO & ESCROW TELEMETRY */}
-      <div className="max-w-7xl mx-auto px-6">
+    <main className="min-h-screen bg-surface pt-28 sm:pt-32 pb-24">
+      {/* 1. UNIFIED HERO & FILTER BAR */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHero
           titleLead="Back Student Ambition."
           titleHighlight="Track Every Milestone"
           titleTrail="on campus."
           description="Fund student-built electric racecars, rural mobile clinics, and undergraduate lab reagent grants. Contributions are held in Student Union escrow and released only as engineering milestones are verified."
-          stats={[
-            {
-              label: "2026 Escrow Volume",
-              value: "$142,840 Audited",
-              sublabel: "Union Finance Verified",
-              icon: "verified_user",
-            },
-            {
-              label: "Platform Rake",
-              value: "0.00% Fee",
-              sublabel: "100% Direct to Societies",
-              icon: "volunteer_activism",
-              accent: true,
-            },
-          ]}
         >
           {/* Unified Filter & Search Bar */}
           <div className="glass-pill rounded-2xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -113,7 +98,7 @@ export default function CampaignsPage() {
       </div>
 
       {/* 2. Featured Landmark Campaign with 3-Stage Milestone Escrow Execution */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
         <div className="rounded-3xl bg-surface-canvas border border-border-default overflow-hidden pin-shadow">
           <div className="grid grid-cols-1 lg:grid-cols-12">
             {/* Left 7 Cols: Visual & Story */}
@@ -276,7 +261,7 @@ export default function CampaignsPage() {
       </section>
 
       {/* 3. Open Guild Initiatives Grid */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <div className="flex items-end justify-between mb-8">
           <div>
             <span className="font-label-sm text-secondary uppercase tracking-widest text-xs block mb-1">
@@ -411,7 +396,7 @@ export default function CampaignsPage() {
       </section>
 
       {/* 4. Ledger Transparency Breakdown Section (Screen 03) */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
         <div className="rounded-3xl bg-surface-canvas border border-border-default p-8 md:p-12 space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -501,7 +486,7 @@ export default function CampaignsPage() {
       </section>
 
       {/* 5. Launch Society Initiative Banner */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-14">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">
         <div className="rounded-3xl bg-inverse-surface text-white p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-label-sm uppercase tracking-widest text-secondary-fixed">

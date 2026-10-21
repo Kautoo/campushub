@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   SpotlightCard,
-  CountUp,
   FastPassModal,
   AnimatedContent,
 } from "@/components/ui/react-bits";
@@ -146,36 +145,17 @@ export default function CampusMapPage() {
     VENUES.find((v) => v.id === selectedVenueId) || VENUES[0];
 
   return (
-    <main className="relative pt-28 pb-20 max-w-7xl mx-auto px-6">
+    <main className="relative pt-28 sm:pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 1. UNIFIED TOP TELEMETRY & HERO BAR */}
       <PageHero
         titleLead="Interactive Campus"
         titleHighlight="Grounds & Venues"
         titleTrail="in real time."
         description="Locate 24/7 Smart Locker banks, whisper-quiet library study commons, makerspaces, and flagship event amphitheaters across campus."
-        stats={[
-          {
-            label: "Campus Occupancy",
-            value: (
-              <>
-                <CountUp to={14820} /> Active
-              </>
-            ),
-            sublabel: "Live Wi-Fi & Gate Telemetry",
-            icon: "groups",
-          },
-          {
-            label: "Smart Lockers",
-            value: "94% Available",
-            sublabel: "Union Hub A (#B-04 Ready)",
-            icon: "lock_clock",
-            accent: true,
-          },
-        ]}
       />
 
       {/* 2. FILTER & SEARCH BAR */}
-      <section className="mb-6">
+      <section className="mb-8">
         <div className="glass-pill rounded-2xl p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
             {CATEGORIES.map((cat) => {

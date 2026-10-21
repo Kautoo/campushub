@@ -1337,104 +1337,82 @@ def rbf_kernel(X1: np.ndarray, X2: np.ndarray, sigma: float = 1.0) -> np.ndarray
   );
 
   return (
-    <main className="relative pt-28 pb-32 max-w-7xl mx-auto px-6">
-      {/* 1. UNIFIED WORKSPACE HERO HEADER */}
+    <main className="relative pt-28 sm:pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 1. UNIFIED WORKSPACE HERO HEADER WITH INTEGRATED MODE SWITCHER */}
       <PageHero
         titleLead="Ask anything, calculate"
         titleHighlight="your CGPA"
         titleTrail="& master your quarter."
-        description="Powered by React Bits PromptBar, ThoughtLine, LatticeLoader, and GlideSelect. Calculate semester & cumulative GPA, solve STEM/coding problems, summarize lectures, or sync study rooms."
+        description="Calculate semester & cumulative GPA, solve STEM and coding problems, summarize course lectures, or discover conflict-free campus study rooms."
         actions={
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-3 rounded-2xl bg-surface-container-lowest border border-outline-variant/40 shadow-2xs flex items-center gap-3">
-              <LatticeLoader
-                status={busy ? "working" : "done"}
-                label="Reasoning"
-                doneLabel="Ready in"
-                pattern="orbit"
-                grid={3}
-                shape="round"
-                color="#4b671b"
-                doneColor="#4b671b"
-                cellSize={6}
-                gap={2}
-                fontSize={12}
-                glow
-              />
-            </div>
+          <div className="glass-pill p-1.5 rounded-2xl border border-outline-variant/35 shadow-2xs inline-flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("chat")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold font-headline flex items-center gap-2 transition-all cursor-pointer ${
+                viewMode === "chat"
+                  ? "bg-primary text-on-primary shadow-2xs"
+                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                chat
+              </span>
+              <span>AI Academic Chat</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("calculator")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold font-headline flex items-center gap-2 transition-all cursor-pointer ${
+                viewMode === "calculator"
+                  ? "bg-primary text-on-primary shadow-2xs"
+                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                calculate
+              </span>
+              <span>CGPA Simulator</span>
+              <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-mono font-extrabold">
+                {liveCgpa.cumulativeGpa.toFixed(2)}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode("split")}
+              className={`hidden lg:flex px-3.5 py-2 rounded-xl text-xs font-bold font-headline items-center gap-2 transition-all cursor-pointer ${
+                viewMode === "split"
+                  ? "bg-primary text-on-primary shadow-2xs"
+                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                splitscreen
+              </span>
+              <span>Split View</span>
+            </button>
           </div>
         }
       />
 
-      {/* 2. INTUITIVE WORKSPACE VIEW SWITCHER */}
-      <div className="flex items-center justify-center mb-8">
-        <div className="glass-pill p-1.5 rounded-2xl border border-outline-variant/35 shadow-sm inline-flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setViewMode("chat")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold font-headline flex items-center gap-2 transition-all cursor-pointer ${
-              viewMode === "chat"
-                ? "bg-primary text-on-primary shadow-xs"
-                : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[17px]">
-              chat
-            </span>
-            <span>AI Academic Chat</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("calculator")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold font-headline flex items-center gap-2 transition-all cursor-pointer ${
-              viewMode === "calculator"
-                ? "bg-primary text-on-primary shadow-xs"
-                : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[17px]">
-              calculate
-            </span>
-            <span>CGPA & Term Simulator</span>
-            <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-mono font-extrabold">
-              {liveCgpa.cumulativeGpa.toFixed(2)}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("split")}
-            className={`hidden lg:flex px-4 py-2 rounded-xl text-xs font-bold font-headline items-center gap-2 transition-all cursor-pointer ${
-              viewMode === "split"
-                ? "bg-primary text-on-primary shadow-xs"
-                : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[17px]">
-              splitscreen
-            </span>
-            <span>Dual Workspace</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 3. DYNAMIC CONTENT CONTAINER BASED ON VIEW MODE */}
+      {/* 2. DYNAMIC CONTENT CONTAINER BASED ON VIEW MODE */}
       <AnimatedContent
-        distance={40}
+        distance={32}
         direction="vertical"
         duration={0.65}
         ease="power3.out"
         trigger="mount"
       >
         {viewMode === "chat" && (
-          <div className="max-w-4xl mx-auto w-full">
+          <div className="max-w-5xl mx-auto w-full">
             {renderChat(false)}
           </div>
         )}
 
         {viewMode === "calculator" && (
-          <div className="max-w-4xl mx-auto w-full">
+          <div className="max-w-5xl mx-auto w-full">
             {renderCalculator(false)}
           </div>
         )}

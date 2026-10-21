@@ -52,28 +52,13 @@ export default function StudentOnboardingPage() {
   };
 
   return (
-    <main className="relative pt-28 pb-24 max-w-7xl mx-auto px-6">
-      {/* 1. UNIFIED HERO & STEP TRACKER */}
+    <main className="relative pt-28 sm:pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 1. UNIFIED HERO */}
       <PageHero
         titleLead="Create your verified"
         titleHighlight="Student Identity"
         titleTrail="& CampusHub QR Pass."
         description="Connect your university SSO, calibrate your Interest Guilds for AI Copilot recommendations, and provision your contactless CampusHub Dynamic QR pass."
-        stats={[
-          {
-            label: "Step 1 • SSO",
-            value: ".EDU Verified ✓",
-            sublabel: email,
-            icon: "verified_user",
-          },
-          {
-            label: "Step 2 • Calibration",
-            value: `${selectedGuilds.length} Guilds Active`,
-            sublabel: "Live QR Pass Synced",
-            icon: "badge",
-            accent: true,
-          },
-        ]}
       />
 
       <form

@@ -136,7 +136,7 @@ export default function CheckoutPage() {
 
   if (completedOrder) {
     return (
-      <main className="relative pt-28 pb-24 max-w-4xl mx-auto px-6">
+      <main className="relative pt-28 sm:pt-32 pb-24 max-w-4xl mx-auto px-6">
         <SpotlightCard className="bg-surface-container-lowest rounded-[2.25rem] border border-outline-variant/40 p-8 sm:p-12 shadow-xl space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/25">
             <div className="space-y-1.5">
@@ -248,28 +248,13 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="relative pt-28 pb-24 max-w-7xl mx-auto px-6">
+    <main className="relative pt-28 sm:pt-32 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 1. UNIFIED PAGE HERO */}
       <PageHero
         titleLead="Review your"
         titleHighlight="collegiate bag"
         titleTrail="& confirm locker pickup."
         description="Your 10% Verified Student Union Co-Op benefit is automatically applied. Complete checkout to receive your instant CampusHub Dynamic QR Smart Locker unlock pass."
-        stats={[
-          {
-            label: "Student Benefit",
-            value: `-$${studentDiscount.toFixed(2)} (10% Off)`,
-            sublabel: "Alex Rivera • #STU-882194",
-            icon: "verified",
-          },
-          {
-            label: "Total Settlement",
-            value: `$${finalTotal.toFixed(2)}`,
-            sublabel: "0.00% Platform Rake",
-            icon: "account_balance_wallet",
-            accent: true,
-          },
-        ]}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

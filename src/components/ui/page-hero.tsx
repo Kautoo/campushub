@@ -29,7 +29,7 @@ export interface PageHeroProps {
   description: string;
   /** Layout alignment: 'split' (default for inner pages) or 'center' (for landing/explore) */
   align?: "center" | "split";
-  /** Optional telemetry stat cards or CTA cluster on the right (in split mode) or below */
+  /** Optional telemetry stat cards (reserved for landing page) */
   stats?: PageHeroStat[];
   /** Optional custom right-side action buttons or widget */
   actions?: React.ReactNode;
@@ -53,17 +53,18 @@ export function PageHero({
   className,
 }: PageHeroProps) {
   const isCenter = align === "center";
+  const hasRightSlot = Boolean((stats && stats.length > 0) || actions);
 
   return (
     <section
       className={cn(
-        "relative z-10 mb-10 pb-8 border-b border-outline-variant/30",
+        "relative z-10 pb-8 mb-8 border-b border-outline-variant/25",
         className
       )}
     >
       {/* Unified Ambient Background Glow Orbs */}
-      <div className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-full max-w-5xl h-72 overflow-hidden -z-10">
-        <div className="w-full h-full bg-gradient-to-tr from-secondary-container/25 via-primary-fixed/15 to-transparent rounded-full blur-[100px]" />
+      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-full max-w-5xl h-64 overflow-hidden -z-10">
+        <div className="w-full h-full bg-gradient-to-tr from-secondary-container/20 via-primary-fixed/12 to-transparent rounded-full blur-[100px]" />
       </div>
 
       <div
@@ -71,18 +72,26 @@ export function PageHero({
           "flex flex-col gap-6",
           isCenter
             ? "items-center text-center max-w-4xl mx-auto"
-            : "lg:flex-row lg:items-end justify-between"
+            : hasRightSlot
+            ? "lg:flex-row lg:items-end justify-between"
+            : "items-start"
         )}
       >
         {/* Left / Center Copy Column */}
         <AnimatedContent
           trigger="mount"
-          distance={45}
+          distance={32}
           direction="vertical"
-          duration={0.8}
+          duration={0.7}
           ease="power3.out"
-          stagger={0.08}
-          className={cn(isCenter ? "w-full" : "max-w-3xl")}
+          stagger={0.06}
+          className={cn(
+            isCenter
+              ? "w-full"
+              : hasRightSlot
+              ? "max-w-2xl xl:max-w-3xl"
+              : "max-w-4xl"
+          )}
         >
           {/* Unified React Bits Animated Status Pill (only when badge is provided) */}
           {badge && (
@@ -119,8 +128,8 @@ export function PageHero({
             className={cn(
               "font-extrabold tracking-tight text-on-surface font-headline leading-[1.05] mb-4",
               isCenter
-                ? "text-5xl sm:text-6xl md:text-7xl"
-                : "text-4xl sm:text-5xl lg:text-[3.35rem]"
+                ? "text-5xl sm:text-6xl md:text-7xl lg:text-[4.85rem] xl:text-[5.15rem]"
+                : "text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.35rem]"
             )}
           >
             <BlurText text={titleLead} delayStepMs={45} />{" "}
@@ -147,14 +156,14 @@ export function PageHero({
         </AnimatedContent>
 
         {/* Right / Bottom Telemetry Stat Pills or Action Buttons */}
-        {(stats || actions) && (
+        {hasRightSlot && (
           <AnimatedContent
             trigger="mount"
-            distance={40}
+            distance={28}
             direction="vertical"
-            duration={0.8}
-            delay={0.14}
-            stagger={0.08}
+            duration={0.7}
+            delay={0.1}
+            stagger={0.06}
             ease="power3.out"
             className="flex flex-wrap items-center gap-3 shrink-0"
           >
@@ -206,12 +215,12 @@ export function PageHero({
       {children && (
         <AnimatedContent
           trigger="mount"
-          distance={35}
+          distance={24}
           direction="vertical"
-          duration={0.8}
-          delay={0.22}
+          duration={0.7}
+          delay={0.16}
           ease="power3.out"
-          className="mt-8"
+          className="mt-7"
         >
           {children}
         </AnimatedContent>
@@ -219,4 +228,3 @@ export function PageHero({
     </section>
   );
 }
-

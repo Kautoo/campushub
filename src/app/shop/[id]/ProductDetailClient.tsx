@@ -97,32 +97,17 @@ export function ProductDetailClient({ id }: { id: string }) {
     product.batchDrop || product.releaseModel || product.organization.badge;
 
   return (
-    <main className="min-h-screen bg-surface pt-28 pb-20">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
+    <main className="min-h-screen bg-surface pt-28 sm:pt-32 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHero
           titleLead={product.name.split(" ").slice(0, -1).join(" ")}
           titleHighlight={product.name.split(" ").slice(-1)[0]}
           description={product.description}
-          stats={[
-            {
-              label: "Verified Co-Op Release",
-              value: product.organization.name,
-              sublabel: product.dispatchNote || "2h Union Locker Pickup",
-              icon: "lock_clock",
-            },
-            {
-              label: "Collegiate Price",
-              value: `$${product.price.toFixed(2)}`,
-              sublabel: "10% Student ID Benefit Eligible",
-              icon: "verified",
-              accent: true,
-            },
-          ]}
         />
       </div>
 
       {/* 1. Primary Pinterest Pin Closeup Card & Co-Op Requisition Dossier */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 pt-8 md:pt-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
         <div className="rounded-3xl bg-surface-canvas border border-border-default p-6 md:p-10 pin-shadow grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
           {/* Left 5 Columns: Studio Pin Gallery + Technical Spec Sheet */}
           <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-28">
@@ -433,7 +418,7 @@ export function ProductDetailClient({ id }: { id: string }) {
       </section>
 
       {/* 2. 100% Revenue Transparency & SVG Donut Chart Breakdown (from Screen 06) */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 mt-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
         <div className="rounded-3xl bg-surface-canvas border border-border-default p-8 md:p-12 pin-shadow">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left 7 Cols: Narrative & Breakdown Bars */}
@@ -580,7 +565,7 @@ export function ProductDetailClient({ id }: { id: string }) {
       </section>
 
       {/* 3. Related Visual Pins */}
-      <section className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 mt-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
         <div className="flex items-end justify-between mb-8">
           <div>
             <span className="font-label-sm text-secondary uppercase tracking-widest text-xs block mb-1">

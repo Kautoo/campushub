@@ -265,7 +265,7 @@ export default function OrganizerStudioPage() {
 
       {/* 2. MAIN STUDIO WORKSPACE */}
       <div className="flex-1 min-w-0 pb-20">
-        <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 pt-6 sm:pt-8 lg:pt-10">
           <PageHero
             titleLead={
               activeTab === "create_event" ? "Publish New" : "Organizer Studio &"
