@@ -20,11 +20,13 @@ export interface PageHeroProps {
   badgeSubtext?: string;
   badgeHref?: string;
   /** Leading text before the italic editorial highlight (animated with BlurText) */
-  titleLead: string;
+  titleLead?: string;
   /** Italic Instrument Serif highlight text in primary olive */
-  titleHighlight: string;
+  titleHighlight?: string;
   /** Optional trailing text after the italic highlight */
   titleTrail?: string;
+  /** Optional custom title component (e.g. TypewriterHero) */
+  customTitle?: React.ReactNode;
   /** Supporting description below the headline */
   description: string;
   /** Layout alignment: 'split' (default for inner pages) or 'center' (for landing/explore) */
@@ -45,6 +47,7 @@ export function PageHero({
   titleLead,
   titleHighlight,
   titleTrail,
+  customTitle,
   description,
   align = "split",
   stats,
@@ -123,26 +126,30 @@ export function PageHero({
             </div>
           )}
 
-          {/* Unified Display Headline with BlurText + Instrument Serif Italic Accent */}
-          <h1
-            className={cn(
-              "font-extrabold tracking-tight text-on-surface font-headline leading-[1.05] mb-4",
-              isCenter
-                ? "text-5xl sm:text-6xl md:text-7xl lg:text-[4.85rem] xl:text-[5.15rem]"
-                : "text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.35rem]"
-            )}
-          >
-            <BlurText text={titleLead} delayStepMs={45} />{" "}
-            <span className="font-editorial italic font-normal text-primary px-0.5">
-              {titleHighlight}
-            </span>
-            {titleTrail && (
-              <>
-                {" "}
-                <BlurText text={titleTrail} delayStepMs={55} />
-              </>
-            )}
-          </h1>
+          {/* Unified Display Headline with BlurText or Custom Kinetic Component */}
+          {customTitle ? (
+            customTitle
+          ) : (
+            <h1
+              className={cn(
+                "font-extrabold tracking-tight text-on-surface font-headline leading-[1.05] mb-4",
+                isCenter
+                  ? "text-5xl sm:text-6xl md:text-7xl lg:text-[4.85rem] xl:text-[5.15rem]"
+                  : "text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.35rem]"
+              )}
+            >
+              <BlurText text={titleLead || ""} delayStepMs={45} />{" "}
+              <span className="font-editorial italic font-normal text-primary px-0.5">
+                {titleHighlight}
+              </span>
+              {titleTrail && (
+                <>
+                  {" "}
+                  <BlurText text={titleTrail} delayStepMs={55} />
+                </>
+              )}
+            </h1>
+          )}
 
           {/* Unified Description */}
           <p

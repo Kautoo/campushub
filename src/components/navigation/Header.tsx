@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useBag } from "@/context/BagContext";
+import { useIntro } from "@/context/IntroContext";
+import { cn } from "@/lib/utils";
 import { SearchDialog } from "@/components/search/SearchDialog";
 import { FastPassModal, Magnet } from "@/components/ui/react-bits";
 
@@ -58,10 +60,18 @@ export function Header() {
     return pathname === href || pathname?.startsWith(`${href}/`);
   };
 
+  const { stage } = useIntro();
+  const isNavbarHidden = stage === "typing";
+
   return (
     <>
       {/* REACT BITS SLEEK MINIMAL FLOATING PILL HEADER */}
-      <header className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+      <header
+        className={cn(
+          "fixed top-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          isNavbarHidden ? "-translate-y-28 opacity-0" : "translate-y-0 opacity-100"
+        )}
+      >
         <nav
           aria-label="CampusHub Primary Navigation"
           className="glass-pill rounded-full px-3 py-2 flex items-center justify-between gap-2 md:gap-4 w-full max-w-6xl pointer-events-auto transition-all duration-300 hover:shadow-[0_12px_40px_-8px_rgba(19,27,46,0.1)]"

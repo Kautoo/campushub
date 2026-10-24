@@ -410,19 +410,6 @@
   }
 
   .no-scrollbar::-webkit-scrollbar,
-  .scrollbar-none::-webkit-scrollbar,
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #c4c8b7;
-    border-radius: 9999px;
-  }
-  .no-scrollbar::-webkit-scrollbar,
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
@@ -431,6 +418,36 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+}
+
+/* Hide scrollbars globally while preserving smooth scrolling */
+html,
+body,
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Animated gradient for the AI logo */
+@keyframes gradient-shift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-gradient {
+  animation: gradient-shift 8s linear infinite;
+  transform-origin: center;
+  transform-box: fill-box;
 }
 
 @layer base {

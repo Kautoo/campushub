@@ -14,6 +14,9 @@ import {
   AnimatedContent,
 } from "@/components/ui/react-bits";
 import { PageHero } from "@/components/ui/page-hero";
+import { useIntro } from "@/context/IntroContext";
+import { TypewriterHero } from "@/components/ui/TypewriterHero";
+import { cn } from "@/lib/utils";
 
 const EXPLORE_CATEGORIES = [
   { id: "All Campus", label: "All Campus", icon: "local_fire_department" },
@@ -27,6 +30,8 @@ const EXPLORE_CATEGORIES = [
 export default function ExplorePage() {
   const router = useRouter();
   const { addItem } = useBag();
+  const { stage } = useIntro();
+  const isStageComplete = stage === "complete";
   const [selectedFilter, setSelectedFilter] = useState("All Campus");
   const [aiQuery, setAiQuery] = useState("");
   const [rsvpSet, setRsvpSet] = useState<Record<string, boolean>>({});
@@ -88,79 +93,96 @@ export default function ExplorePage() {
         <PageHero
           align="center"
           badge="Academic Year 2025/26 • Sync Active"
-          badgeSubtext="14 Events Today"
+          badgeSubtext={isStageComplete ? "14 Events Today" : undefined}
           badgeHref="/events"
-          titleLead="The art of"
-          titleHighlight="every gathering"
-          titleTrail="on campus."
+          customTitle={<TypewriterHero />}
           description="Discover student-led symposiums, late-night hackathons, curated club socials, and official collegiate gear—all synced with your academic schedule."
         >
-          {/* React Bits Interactive AI Search Capsule */}
-          <form
-            onSubmit={handleAiSearchSubmit}
-            className="max-w-2xl mx-auto mb-7"
+          {/* React Bits Interactive AI Search Capsule & Filters (revealed after typewriter & navbar) */}
+          <div
+            className={cn(
+              "w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              isStageComplete
+                ? "opacity-100 translate-y-0 filter-none pointer-events-auto"
+                : "opacity-0 translate-y-8 filter blur-xs pointer-events-none"
+            )}
           >
-            <div className="react-bits-input bg-surface-container-lowest p-2 rounded-2xl border border-outline-variant/50 shadow-[0_12px_36px_-8px_rgba(19,27,46,0.07)] flex items-center gap-3">
-              <div className="pl-3 flex items-center justify-center text-primary">
-                <span
-                  className="material-symbols-outlined text-[22px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  auto_awesome
-                </span>
-              </div>
-              <input
-                type="text"
-                value={aiQuery}
-                onChange={(e) => setAiQuery(e.target.value)}
-                placeholder="Ask AI Copilot: 'Find design workshops free after my 2 PM lab'..."
-                className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-sm text-on-surface placeholder:text-outline font-medium py-2"
-              />
-              <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-container-low text-[11px] font-mono text-outline border border-outline-variant/30">
-                <span>⌘</span>
-                <span>K</span>
-              </div>
-              <Magnet strength={0.15}>
-                <button
-                  type="submit"
-                  className="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-headline font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-xs shrink-0 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Discover</span>
-                  <span className="material-symbols-outlined text-[16px]">
-                    arrow_forward
+            <form
+              onSubmit={handleAiSearchSubmit}
+              className="max-w-2xl mx-auto mb-7"
+            >
+              <div className="react-bits-input bg-surface-container-lowest p-2 rounded-2xl border border-outline-variant/50 shadow-[0_12px_36px_-8px_rgba(19,27,46,0.07)] flex items-center gap-3">
+                <div className="pl-3 flex items-center justify-center text-primary">
+                  <span
+                    className="material-symbols-outlined text-[22px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    auto_awesome
                   </span>
-                </button>
-              </Magnet>
-            </div>
-          </form>
-
-          {/* Quick Filter Pills */}
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            {EXPLORE_CATEGORIES.map((cat) => {
-              const active = selectedFilter === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedFilter(cat.id)}
-                  className={
-                    active
-                      ? "px-4 py-2 rounded-full text-xs font-bold bg-on-surface text-surface shadow-xs flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer"
-                      : "px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/40 transition-all cursor-pointer"
-                  }
-                >
-                  {cat.icon && (
-                    <span className="material-symbols-outlined text-[15px] text-secondary-container">
-                      {cat.icon}
+                </div>
+                <input
+                  type="text"
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                  placeholder="Ask AI Copilot: 'Find design workshops free after my 2 PM lab'..."
+                  className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-sm text-on-surface placeholder:text-outline font-medium py-2"
+                />
+                <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-container-low text-[11px] font-mono text-outline border border-outline-variant/30">
+                  <span>⌘</span>
+                  <span>K</span>
+                </div>
+                <Magnet strength={0.15}>
+                  <button
+                    type="submit"
+                    className="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-headline font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-xs shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Discover</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      arrow_forward
                     </span>
-                  )}
-                  {cat.label}
-                </button>
-              );
-            })}
+                  </button>
+                </Magnet>
+              </div>
+            </form>
+
+            {/* Quick Filter Pills */}
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {EXPLORE_CATEGORIES.map((cat) => {
+                const active = selectedFilter === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedFilter(cat.id)}
+                    className={
+                      active
+                        ? "px-4 py-2 rounded-full text-xs font-bold bg-on-surface text-surface shadow-xs flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer"
+                        : "px-4 py-2 rounded-full text-xs font-semibold bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant border border-outline-variant/40 transition-all cursor-pointer"
+                    }
+                  >
+                    {cat.icon && (
+                      <span className="material-symbols-outlined text-[15px] text-secondary-container">
+                        {cat.icon}
+                      </span>
+                    )}
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </PageHero>
       </div>
+
+      {/* LOWER STAGE: Bento grid, shop, and calendar (blooms after navbar arrives) */}
+      <div
+        className={cn(
+          "transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          isStageComplete
+            ? "opacity-100 translate-y-0 filter-none pointer-events-auto"
+            : "opacity-0 translate-y-12 filter blur-xs pointer-events-none"
+        )}
+      >
 
       {/* 2. LUMA "ART OF HOSTING" FEATURED EVENTS BENTO GRID */}
       {showEvents && (
@@ -757,6 +779,7 @@ export default function ExplorePage() {
           </div>
         </SpotlightCard>
       </AnimatedContent>
+      </div>
 
       <FastPassModal
         isOpen={Boolean(activePassEvent)}
