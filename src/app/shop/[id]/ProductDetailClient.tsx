@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -36,18 +36,73 @@ export function ProductDetailClient({ id }: { id: string }) {
   const router = useRouter();
   const { addItem, setCampaignContribution } = useBag();
 
-  const product =
-    MOCK_PRODUCTS.find((p) => p.id === id || p.slug === id) || MOCK_PRODUCTS[0];
+  const initialProduct = MOCK_PRODUCTS.find((p) => p.id === id || p.slug === id);
+  const [product, setProduct] = useState(initialProduct || null);
+  const [notFound, setNotFound] = useState(!initialProduct);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/products/${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 404) {
+            setNotFound(true);
+            setProduct(null);
+          }
+          throw new Error("Failed to load product");
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled && json?.success && json?.data) {
+          setProduct(json.data);
+          setNotFound(false);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>(
-    product.sizes?.[2] || product.sizes?.[0] || "M"
+    product?.sizes?.[2] || product?.sizes?.[0] || "M"
   );
   const [quantity, setQuantity] = useState(1);
   const [includeGrant, setIncludeGrant] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
+
+  if (notFound || !product) {
+    return (
+      <main className="relative pt-28 sm:pt-32 pb-24 max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="rounded-3xl bg-surface-canvas border border-border-default p-12 text-center space-y-6">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-surface-container-low flex items-center justify-center text-outline">
+            <span className="material-symbols-outlined text-3xl">inventory_2</span>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-extrabold font-headline text-on-surface">
+              Product Unavailable or Not Found
+            </h1>
+            <p className="text-sm text-on-surface-variant max-w-md mx-auto">
+              This campus merchandise item is either not published, currently archived, or does not exist.
+            </p>
+          </div>
+          <div>
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary font-headline font-bold text-xs shadow-xs hover:bg-primary-container transition-all"
+            >
+              <span className="material-symbols-outlined text-base">arrow_back</span>
+              <span>Back to Campus Store</span>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const gallery =
     product.images.length >= 2

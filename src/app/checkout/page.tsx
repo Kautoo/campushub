@@ -63,68 +63,223 @@ export default function CheckoutPage() {
     }
   };
 
+  type PaymentStage =
+    | "ready"
+    | "creating_order"
+    | "waiting_for_approval"
+    | "capturing"
+    | "completed"
+    | "cancelled"
+    | "failed"
+    | "uncertain";
+
+  const [paymentStage, setPaymentStage] = useState<PaymentStage>("ready");
+  const [pendingApproval, setPendingApproval] = useState<{
+    orderId: string;
+    internalOrderId: string;
+    total: number;
+    currency: string;
+  } | null>(null);
+
   const handleCheckout = async (method: "paypal" | "student_card") => {
     if (items.length === 0 && !campaignContribution) return;
     setIsProcessing(true);
     setErrorMessage(null);
 
-    try {
-      let paypalOrderId = `SANDBOX-CH-${Date.now()}`;
-      let paypalCaptureId = `CAP-${Date.now()}`;
-
-      if (method === "paypal") {
+    if (method === "paypal") {
+      setPaymentStage("creating_order");
+      try {
         const createRes = await fetch("/api/paypal/create-order", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-campushub-token": "token_student_alex",
+          },
           body: JSON.stringify({
+            type: "merchandise",
             items: items.map((i) => ({
+              productId: i.product.id,
               name: i.product.name,
               price: Number((i.product.price * 0.9).toFixed(2)),
               quantity: i.quantity,
+              selectedSize: i.selectedSize,
             })),
             shipping,
             contribution: campaignContribution,
+            fulfillmentMethod,
+            fulfillmentLocation:
+              fulfillmentMethod === "pickup"
+                ? selectedLockerStation
+                : dormAddress,
           }),
         });
-        if (createRes.ok) {
-          const createData = await createRes.json();
-          if (createData.id) {
-            paypalOrderId = createData.id;
-          }
-          const captureRes = await fetch("/api/paypal/capture-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderID: paypalOrderId }),
-          });
-          if (captureRes.ok) {
-            const capData = await captureRes.json();
-            if (capData.captureId) {
-              paypalCaptureId = capData.captureId;
-            }
-          }
+
+        if (!createRes.ok) {
+          const errJson = await createRes.json().catch(() => ({}));
+          throw new Error(errJson.error || "Failed to initialize PayPal order with the server.");
         }
+
+        const createData = await createRes.json();
+        const retrievedOrderId = createData.orderId || createData.id;
+        const retrievedInternalOrderId = createData.internalOrderId;
+
+        setPendingApproval({
+          orderId: retrievedOrderId,
+          internalOrderId: retrievedInternalOrderId,
+          total: createData.total || finalTotal,
+          currency: createData.currency || "USD",
+        });
+        setPaymentStage("waiting_for_approval");
+      } catch (err) {
+        setPaymentStage("failed");
+        const msg = err instanceof Error ? err.message : "Failed to initialize checkout.";
+        setErrorMessage(msg);
+      } finally {
+        setIsProcessing(false);
+      }
+    } else {
+      // Direct student card campus ledger placement via persistent API
+      try {
+        const orderRes = await fetch("/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-campushub-token": "token_student_alex",
+          },
+          body: JSON.stringify({
+            items: items.map((i) => ({
+              productId: i.product.id,
+              name: i.product.name,
+              price: i.product.price,
+              quantity: i.quantity,
+              selectedSize: i.selectedSize,
+            })),
+            shipping,
+            contribution: campaignContribution,
+            fulfillmentMethod,
+            fulfillmentLocation:
+              fulfillmentMethod === "pickup"
+                ? selectedLockerStation
+                : dormAddress,
+          }),
+        });
+
+        if (!orderRes.ok) {
+          const errJson = await orderRes.json().catch(() => ({}));
+          throw new Error(errJson.error || "Failed to process campus bursar card order.");
+        }
+
+        const order = addCompletedOrder({
+          studentName: "Alex Rivera",
+          studentEmail: "arivera27@stanford.edu",
+          studentId: "#STU-882194",
+          total: finalTotal,
+          fulfillmentLocation:
+            fulfillmentMethod === "pickup"
+              ? selectedLockerStation
+              : dormAddress,
+          pickupPassCode: "LOCKER-B104-PIN-8492",
+          paypalOrderId: `CAMPUS-BURSAR-${Date.now()}`,
+          paypalCaptureId: `BURSAR-SETTLE-${Date.now()}`,
+        });
+
+        setCompletedOrder(order);
+        setPaymentStage("completed");
+      } catch (err) {
+        setPaymentStage("failed");
+        const msg = err instanceof Error ? err.message : "Card payment failed.";
+        setErrorMessage(msg);
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const handleApprovePayment = async () => {
+    if (!pendingApproval) return;
+    setIsProcessing(true);
+    setErrorMessage(null);
+    setPaymentStage("capturing");
+
+    try {
+      const captureRes = await fetch("/api/paypal/capture-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-campushub-token": "token_student_alex",
+        },
+        body: JSON.stringify({
+          orderId: pendingApproval.orderId,
+          orderID: pendingApproval.orderId,
+          internalOrderId: pendingApproval.internalOrderId,
+        }),
+      });
+
+      const capData = await captureRes.json().catch(() => ({}));
+
+      if (captureRes.status === 504 || capData.code === "PAYPAL_GATEWAY_TIMEOUT" || capData.code === "DATABASE_RECONCILIATION_PENDING") {
+        setPaymentStage("uncertain");
+        setErrorMessage(
+          capData.error ||
+          "PayPal payment capture status is pending reconciliation. Your payment was initiated. Please verify in your account before retrying."
+        );
+        return;
       }
 
-      const order = addCompletedOrder({
+      if (!captureRes.ok || !capData.success) {
+        throw new Error(capData.error || "PayPal payment capture failed. Funds were not settled.");
+      }
+
+      const verifiedOrder = capData.order || {
+        id: pendingApproval.internalOrderId || `ord_${Date.now()}`,
+        orderNumber: `CH-2025-${Math.floor(100000 + Math.random() * 900000)}`,
         studentName: "Alex Rivera",
         studentEmail: "arivera27@stanford.edu",
         studentId: "#STU-882194",
-        total: finalTotal,
+        total: pendingApproval.total,
         fulfillmentLocation:
-          fulfillmentMethod === "pickup"
-            ? selectedLockerStation
-            : dormAddress,
+          fulfillmentMethod === "pickup" ? selectedLockerStation : dormAddress,
         pickupPassCode: "LOCKER-B104-PIN-8492",
-        paypalOrderId,
-        paypalCaptureId,
-      });
+        paypalOrderId: pendingApproval.orderId,
+        paypalCaptureId: capData.captureId || capData.id,
+      };
 
-      setCompletedOrder(order);
-    } catch {
-      setErrorMessage(
-        "Could not reach payment gateway. Please try again."
-      );
+      const completed = addCompletedOrder(verifiedOrder);
+      setCompletedOrder(completed || verifiedOrder);
+      setPendingApproval(null);
+      setPaymentStage("completed");
+    } catch (err) {
+      setPaymentStage("failed");
+      const msg = err instanceof Error ? err.message : "Payment capture failed. Please try again.";
+      setErrorMessage(msg);
     } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    if (!pendingApproval) {
+      setPaymentStage("ready");
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await fetch("/api/paypal/cancel-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-campushub-token": "token_student_alex",
+        },
+        body: JSON.stringify({
+          orderId: pendingApproval.orderId,
+          internalOrderId: pendingApproval.internalOrderId,
+        }),
+      });
+    } catch {
+      // Ignore network errors on cancel
+    } finally {
+      setPendingApproval(null);
+      setPaymentStage("cancelled");
       setIsProcessing(false);
     }
   };
@@ -664,10 +819,52 @@ export default function CheckoutPage() {
               </span>
             </div>
 
-            {errorMessage && (
-              <p className="text-xs text-error mb-4 font-medium">
-                {errorMessage}
-              </p>
+            {/* Lifecycle Status Messages */}
+            {paymentStage === "cancelled" && (
+              <div className="p-3.5 mb-4 rounded-xl bg-surface-container-high/60 border border-outline-variant/40 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-on-surface">
+                  <span className="material-symbols-outlined text-[16px] text-outline">cancel</span>
+                  <span>Checkout cancelled. Inventory hold was released.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setPaymentStage("ready"); setErrorMessage(null); }}
+                  className="text-[11px] font-bold text-primary hover:underline shrink-0 cursor-pointer"
+                >
+                  Resume
+                </button>
+              </div>
+            )}
+
+            {paymentStage === "uncertain" && (
+              <div className="p-3.5 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300">
+                <span className="material-symbols-outlined text-[18px] text-amber-600 shrink-0">pending_actions</span>
+                <div>
+                  <p className="font-bold">Payment Reconciliation Pending</p>
+                  <p className="text-[11px] mt-0.5">
+                    {errorMessage || "PayPal capture is being verified with local records. Do not resubmit."}
+                  </p>
+                  <Link href="/account" className="inline-block mt-1.5 font-bold underline text-primary">
+                    Check Account Status
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {paymentStage === "failed" && errorMessage && (
+              <div className="p-3.5 mb-4 rounded-xl bg-error/10 border border-error/30 flex items-start justify-between gap-2.5 text-xs text-error">
+                <div className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[16px] shrink-0">error</span>
+                  <span>{errorMessage}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setErrorMessage(null); setPaymentStage("ready"); }}
+                  className="text-[11px] font-bold underline shrink-0 cursor-pointer"
+                >
+                  Retry
+                </button>
+              </div>
             )}
 
             {/* Express Checkout Buttons */}
@@ -684,7 +881,13 @@ export default function CheckoutPage() {
                 </span>
                 <span>
                   {isProcessing
-                    ? "Connecting PayPal Sandbox..."
+                    ? paymentStage === "creating_order"
+                      ? "1/2 Creating Sandbox Order..."
+                      : paymentStage === "capturing"
+                      ? "2/2 Capturing Payment..."
+                      : "Processing..."
+                    : paymentStage === "waiting_for_approval"
+                    ? "Complete Sandbox Approval"
                     : "PayPal 1-Click Checkout"}
                 </span>
                 <span className="text-[11px] font-medium text-[#0079C1] ml-1">
@@ -768,6 +971,77 @@ export default function CheckoutPage() {
           </SpotlightCard>
         </div>
       </div>
+
+      {/* PayPal Sandbox Buyer Approval Modal */}
+      {paymentStage === "waiting_for_approval" && pendingApproval && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-container-lowest max-w-md w-full rounded-[2rem] border border-outline-variant/40 p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#003087] text-[#0079C1] flex items-center justify-center font-bold text-xs">
+                  PP
+                </div>
+                <div>
+                  <h3 className="font-headline font-extrabold text-sm text-on-surface">
+                    PayPal Sandbox Approval
+                  </h3>
+                  <span className="text-[10px] font-mono text-outline uppercase tracking-wider">
+                    Buyer Authorization Step
+                  </span>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-extrabold uppercase tracking-widest">
+                Sandbox
+              </span>
+            </div>
+
+            <div className="space-y-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/30 text-xs">
+              <div className="flex justify-between text-on-surface-variant">
+                <span>Buyer Account:</span>
+                <span className="font-mono font-bold text-on-surface">student-buyer@campus.edu</span>
+              </div>
+              <div className="flex justify-between text-on-surface-variant">
+                <span>Student:</span>
+                <span className="font-semibold text-on-surface">Alex Rivera (#STU-882194)</span>
+              </div>
+              <div className="flex justify-between text-on-surface-variant">
+                <span>PayPal Order Ref:</span>
+                <span className="font-mono text-primary truncate max-w-[180px]">{pendingApproval.orderId}</span>
+              </div>
+              <div className="flex justify-between text-on-surface-variant pt-2 border-t border-outline-variant/20">
+                <span className="font-bold text-on-surface">Total Due:</span>
+                <span className="font-money font-extrabold text-base text-primary">
+                  ${pendingApproval.total.toFixed(2)} {pendingApproval.currency}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-on-surface-variant">
+              Confirming will capture authorized funds from your PayPal Sandbox student account and release your Smart Locker pass.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={handleApprovePayment}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#FFC439] hover:bg-[#f4b827] text-[#003087] font-headline font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                <span>{isProcessing ? "Capturing..." : "Approve Sandbox Payment"}</span>
+              </button>
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={handleCancelPayment}
+                className="py-3 px-4 rounded-xl bg-surface-container-high hover:bg-surface-container text-on-surface font-headline font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span>Cancel</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

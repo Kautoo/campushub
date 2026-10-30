@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useBag } from "@/context/BagContext";
 import { MOCK_STUDENT_ORDERS } from "@/data/mockData";
+import { Order } from "@/types";
 import {
   SpotlightCard,
   BlurText,
@@ -174,7 +175,83 @@ function createSvgDataUri(svgString: string) {
 
 export default function StudentProfilePage() {
   const { orders } = useBag();
-  const displayOrders = orders.length > 0 ? orders : MOCK_STUDENT_ORDERS;
+  const [userRegistrations, setUserRegistrations] = useState<{
+    id: string;
+    eventId: string;
+    eventTitle?: string;
+    eventDate?: string;
+    eventTime?: string;
+    eventLocation?: string;
+    planName: string;
+    passCode: string;
+    status: string;
+    createdAt?: string;
+  }[]>([]);
+  const [persistedOrders, setPersistedOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/registrations/me", {
+      headers: { "x-campushub-token": "token_student_alex" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!cancelled && json?.success && Array.isArray(json.data)) {
+          setUserRegistrations(json.data);
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/orders/me", {
+      headers: { "x-campushub-token": "token_student_alex" },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!cancelled && json?.success && Array.isArray(json.data)) {
+          setPersistedOrders(json.data);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayRegisteredEvents = useMemo(() => {
+    if (userRegistrations.length === 0) return REGISTERED_EVENTS;
+    const dynamicEvents = userRegistrations.map((reg) => ({
+      id: reg.id || reg.eventId,
+      title: reg.eventTitle || (reg.eventId
+        ? reg.eventId.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+        : "Campus Event"),
+      date: reg.eventDate || (reg.createdAt ? new Date(reg.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }) : "Upcoming"),
+      time: reg.eventTime || "Campus Session",
+      location: reg.eventLocation || "Main Campus Station",
+      passCode: reg.passCode,
+      role: reg.planName || "Student Pass",
+      status: reg.status === "CONFIRMED" ? "Confirmed RSVP" : "Payment Pending",
+      badgeColor: reg.status === "CONFIRMED" ? "bg-primary/15 text-primary" : "bg-amber-500/15 text-amber-600",
+    }));
+
+    const existingCodes = new Set(dynamicEvents.map((d) => d.passCode));
+    return [
+      ...dynamicEvents,
+      ...REGISTERED_EVENTS.filter((e) => !existingCodes.has(e.passCode)),
+    ];
+  }, [userRegistrations]);
+
+  const displayOrders = useMemo(() => {
+    const combined = [...orders, ...persistedOrders];
+    if (combined.length === 0) return MOCK_STUDENT_ORDERS;
+    const seen = new Set<string>();
+    return combined.filter((ord) => {
+      const key = ord.id || ord.orderNumber;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [orders, persistedOrders]);
 
   const [activeTab, setActiveTab] = useState<AccountTab>("events");
   const [lockerUnlocked, setLockerUnlocked] = useState(false);
@@ -308,7 +385,7 @@ export default function StudentProfilePage() {
       id: "events",
       label: "Registered Events",
       icon: "confirmation_number",
-      badgeCount: REGISTERED_EVENTS.length,
+      badgeCount: displayRegisteredEvents.length,
     },
     {
       id: "academics",
@@ -633,7 +710,7 @@ export default function StudentProfilePage() {
                       Confirmed Schedules &amp; Turnstile Passes
                     </span>
                     <h2 className="text-2xl font-extrabold font-headline text-on-surface mt-0.5">
-                      Registered Campus Events ({REGISTERED_EVENTS.length})
+                      Registered Campus Events ({displayRegisteredEvents.length})
                     </h2>
                   </div>
                   <Link
@@ -646,7 +723,7 @@ export default function StudentProfilePage() {
                 </div>
 
                 <div className="space-y-4">
-                  {REGISTERED_EVENTS.map((ev) => (
+                  {displayRegisteredEvents.map((ev) => (
                     <div
                       key={ev.id}
                       className="p-5 sm:p-6 rounded-2xl bg-surface-container-low/70 border border-outline-variant/30 hover:border-primary/40 transition-all space-y-4"

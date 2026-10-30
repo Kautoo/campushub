@@ -207,11 +207,64 @@ export function AIAssistantInterface({ initialQuery = "" }: AIAssistantInterface
     setUploadedFiles([]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiMsg = generateAIResponse(promptText);
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 850);
+    fetch("/api/ai/event-assistant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: promptText }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.success && json?.data?.answer) {
+          const sources = (json.data.sources || []).map((s: string) => ({
+            title: s,
+            url: "/events",
+            badge: json.data.verified ? "Verified Registry" : "Registry",
+          }));
+          const aiMsg: AIAssistantMessage = {
+            id: `ai_${Date.now()}`,
+            sender: "assistant",
+            content: json.data.answer,
+            timestamp: time,
+            thought: reasonEnabled
+              ? "Queried CampusHub event registry • Checked official timetable and venue clearance."
+              : undefined,
+            citations: sources.length > 0 ? sources : undefined,
+            actionLink: { label: "View Campus Events", href: "/events" },
+          };
+          setMessages((prev) => [...prev, aiMsg]);
+        } else {
+          let errorContent = json?.error || "Unable to process inquiry at this time.";
+          if (json?.code === "PROVIDER_UNAVAILABLE") {
+            errorContent = "⚠️ Astropods AI Gateway is unconfigured or unavailable. Set ASTROPODS_API_KEY in .env.local to enable live AI assistance.";
+          } else if (json?.code === "RATE_LIMIT_EXCEEDED") {
+            errorContent = "⚠️ Astropods AI request rate limit exceeded. Please wait a moment and try again.";
+          } else if (json?.code === "VALIDATION_ERROR") {
+            errorContent = "⚠️ Please provide a valid question of at least 2 characters.";
+          }
+
+          const errorMsg: AIAssistantMessage = {
+            id: `ai_err_${Date.now()}`,
+            sender: "assistant",
+            content: errorContent,
+            timestamp: time,
+            actionLink: { label: "View Published Events", href: "/events" },
+          };
+          setMessages((prev) => [...prev, errorMsg]);
+        }
+      })
+      .catch((err) => {
+        const errorMsg: AIAssistantMessage = {
+          id: `ai_err_${Date.now()}`,
+          sender: "assistant",
+          content: `⚠️ Network error connecting to AI Copilot service: ${err instanceof Error ? err.message : "Service unreachable"}.`,
+          timestamp: time,
+          actionLink: { label: "Browse Events", href: "/events" },
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      })
+      .finally(() => {
+        setIsTyping(false);
+      });
   };
 
   const handleSendMessage = () => {

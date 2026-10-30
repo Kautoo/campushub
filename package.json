@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node tests/run.js backend.test.ts",
+    "test:phase4": "node tests/run.js phase4-aggrid.test.ts",
+    "test:phase5": "node tests/run.js phase5-bryntum.test.ts",
+    "test:all": "node tests/run.js backend.test.ts && node tests/run.js phase4-aggrid.test.ts && node tests/run.js phase5-bryntum.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -17,6 +21,8 @@
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "@types/three": "^0.186.0",
+    "ag-grid-community": "^36.2.0",
+    "ag-grid-react": "^36.2.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.0",
     "gsap": "^3.15.0",

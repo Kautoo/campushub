@@ -66,6 +66,10 @@ export interface Product {
     | "Best Seller"
     | "Low Stock";
   dispatchNote?: string;
+  isActive?: boolean;
+  status?: ProductStatus;
+  organizationId?: string;
+  createdBy?: string;
 }
 
 export interface ContributionTier {
@@ -162,6 +166,7 @@ export interface Order {
   id: string;
   orderNumber: string;
   createdAt: string;
+  expiresAt?: string;
   studentName: string;
   studentEmail: string;
   studentId: string;
@@ -170,6 +175,7 @@ export interface Order {
   subtotal: number;
   shipping: number;
   total: number;
+  currency?: string;
   fulfillmentMethod: FulfillmentMethod;
   fulfillmentLocation?: string;
   pickupPassCode?: string;
@@ -177,6 +183,27 @@ export interface Order {
   status: OrderStatus;
   paypalOrderId?: string;
   paypalCaptureId?: string;
+  orderType?: "merchandise" | "event_registration";
+  registrationId?: string;
+  eventId?: string;
+  paymentStatus?: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
+}
+
+export interface PaymentRecord {
+  id: string;
+  orderId: string;
+  studentId?: string;
+  provider: string;
+  providerOrderId: string;
+  providerCaptureId?: string;
+  amount: number;
+  currency: string;
+  status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
+  payerEmail?: string;
+  payerName?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  capturedAt?: string;
 }
 
 export interface BagItem {

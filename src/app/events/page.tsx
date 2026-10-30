@@ -1,292 +1,21 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   SpotlightCard,
   FastPassModal,
 } from "@/components/ui/react-bits";
 import { PageHero } from "@/components/ui/page-hero";
+import { CampusCalendarWrapper } from "@/components/calendar/CampusCalendarWrapper";
 
-export interface EventPlan {
-  id: string;
-  code: string;
-  name: string;
-  price: number;
-  badge?: string;
-  description: string;
-  perks: string[];
-}
-
-export interface CampusEvent {
-  id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  category:
-    | "Athletics & Fun Runs"
-    | "Green & Community"
-    | "Tech & Hackathons"
-    | "Workshops & Design"
-    | "E-Sports";
-  date: string;
-  month: string;
-  dayNumber: number;
-  dayOfWeek: string;
-  fullDayName: string;
-  time: string;
-  location: string;
-  venueHref: string;
-  organizer: string;
-  isFree: boolean;
-  totalCapacity: number;
-  registeredCount: number;
-  image: string;
-  plans: EventPlan[];
-  hasTeeSize?: boolean;
-}
-
-const CAMPUS_EVENTS: CampusEvent[] = [
-  {
-    id: "neon_fun_run_5k",
-    title: "Neon 5K Campus Fun Run & Night Lights",
-    subtitle: "Illuminated evening campus loop with live DJ pacers & glow kits",
-    description:
-      "Join 1,200+ students running the dusk loop through Main Quad, Memorial Arch, and Lake Lagunita. Select your entry plan below—choose Plan A for the race shirt only, Plan B for the full shirt + finisher medal + acai recovery bundle, or Plan C to volunteer.",
-    category: "Athletics & Fun Runs",
-    date: "Saturday, Nov 8, 2025",
-    month: "NOV",
-    dayNumber: 8,
-    dayOfWeek: "SAT",
-    fullDayName: "Saturday",
-    time: "6:30 PM PST",
-    location: "Main Quad Archway → Lake Lagunita Loop",
-    venueHref: "/map",
-    organizer: "Stanford Running Club & ASSU Wellness Guild",
-    isFree: false,
-    totalCapacity: 1200,
-    registeredCount: 1016,
-    image:
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1200&q=80",
-    hasTeeSize: true,
-    plans: [
-      {
-        id: "plan_a",
-        code: "PLAN A",
-        name: "Runner Tech Tee Only",
-        price: 12,
-        description:
-          "Official moisture-wicking neon tech shirt, custom race bib & timing chip.",
-        perks: [
-          "Collegiate Dry-Fit Neon Runner Tee",
-          "Custom Name Race Bib & RFID Timing",
-          "Course Hydration & Electrolyte Gels",
-        ],
-      },
-      {
-        id: "plan_b",
-        code: "PLAN B",
-        name: "Tech Tee + Finisher Medal + Acai Bowl",
-        price: 22,
-        badge: "Most Popular",
-        description:
-          "Full race kit with heavyweight die-cast finisher medal & post-run acai bowl.",
-        perks: [
-          "Collegiate Dry-Fit Neon Runner Tee",
-          "Heavyweight Die-Cast 2025 Finisher Medal",
-          "LED Pulse Glow Wristband & Headlamp",
-          "Post-Run Organic Acai Bowl Voucher",
-        ],
-      },
-      {
-        id: "plan_c",
-        code: "PLAN C",
-        name: "Volunteer Course Marshall",
-        price: 0,
-        badge: "Free Crew",
-        description:
-          "Support runners at hydration stations, earn service hours & get crew gear.",
-        perks: [
-          "Free Hi-Vis Volunteer Crew Vest",
-          "4 Certified Community Service Hours",
-          "Post-Race Finish Line Dinner Access",
-        ],
-      },
-    ],
-  },
-  {
-    id: "sunday_plogging_cleanup",
-    title: "Sunday Campus Plogging & Eco Trail Cleanup",
-    subtitle: "Community morning jog & litter cleanup • Eco kits & fresh bagels included",
-    description:
-      "A zero-waste Swedish fitness tradition combining a relaxed 4K morning jog with trail restoration around Lake Lagunita. Completely free for all students with biodegradable gloves, reusable tote bags, and hot bagels at the finish.",
-    category: "Green & Community",
-    date: "Sunday, Nov 9, 2025",
-    month: "NOV",
-    dayNumber: 9,
-    dayOfWeek: "SUN",
-    fullDayName: "Sunday",
-    time: "8:30 AM PST",
-    location: "Lake Lagunita Trailhead • Boathouse Dock",
-    venueHref: "/map",
-    organizer: "Students for Sustainable Stanford (SSS)",
-    isFree: true,
-    totalCapacity: 350,
-    registeredCount: 284,
-    image:
-      "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80",
-    hasTeeSize: false,
-    plans: [
-      {
-        id: "plan_free_plog",
-        code: "COMMUNITY PASS",
-        name: "Free Community Plogger Registration",
-        price: 0,
-        badge: "100% Free",
-        description:
-          "All cleanup gear and breakfast refreshments sponsored by the Sustainability Fund.",
-        perks: [
-          "Biodegradable Gloves & Grabber Tool",
-          "CampusHub Heavyweight Organic Canvas Tote",
-          "Fresh Bagels & Cold Brew Coffee",
-          "3 Certified Sustainability Service Hours",
-        ],
-      },
-    ],
-  },
-  {
-    id: "treehacks_autumn_2025",
-    title: "TreeHacks Autumn Hackathon & AI Showcase",
-    subtitle: "36 hours of engineering, $50,000 prize pool & hardware lab loaners",
-    description:
-      "California's flagship collegiate hackathon. Build frontier robotics agents, spatial interfaces, and climate hardware. Free admission for verified students with 6 catered meals, GPU compute credits, and hardware loaners.",
-    category: "Tech & Hackathons",
-    date: "Friday, Nov 14, 2025",
-    month: "NOV",
-    dayNumber: 14,
-    dayOfWeek: "FRI",
-    fullDayName: "Friday",
-    time: "5:00 PM PST",
-    location: "Huang Engineering Amphitheater & Atrium",
-    venueHref: "/map",
-    organizer: "Stanford ACM & IEEE Student Chapter",
-    isFree: true,
-    totalCapacity: 800,
-    registeredCount: 742,
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
-    hasTeeSize: true,
-    plans: [
-      {
-        id: "plan_hacker",
-        code: "HACKER RSVP",
-        name: "Verified Student Hacker Pass (Solo or Team)",
-        price: 0,
-        badge: "Free Admission",
-        description:
-          "Full 36-hour building access, GPU credits, hardware lab loaners, and meals.",
-        perks: [
-          "36-Hour Lab Access & $250 Cloud GPU Credits",
-          "All 6 Catered Meals + Espresso Bar",
-          "Exclusive TreeHacks Archival Hoodie",
-          "Hardware Bench Loaners (Jetson, Quest 3, LiDAR)",
-        ],
-      },
-    ],
-  },
-  {
-    id: "figma_ai_masterclass",
-    title: "Figma Design Systems & AI Prototyping Studio",
-    subtitle: "Hands-on studio critique on multi-brand tokens & generative interfaces",
-    description:
-      "Led by visiting staff product designers from Linear and Apple. Bring your laptop for a deep dive into design token architecture, physics-based micro-interactions, and live portfolio reviews.",
-    category: "Workshops & Design",
-    date: "Wednesday, Nov 19, 2025",
-    month: "NOV",
-    dayNumber: 19,
-    dayOfWeek: "WED",
-    fullDayName: "Wednesday",
-    time: "5:30 PM PST",
-    location: "d.school Studio 2 • Building 550",
-    venueHref: "/map",
-    organizer: "Stanford UX & Design Association",
-    isFree: true,
-    totalCapacity: 120,
-    registeredCount: 114,
-    image:
-      "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=1200&q=80",
-    hasTeeSize: false,
-    plans: [
-      {
-        id: "plan_workshop_free",
-        code: "STUDIO SEAT",
-        name: "Free Studio Seat & Figma Kit",
-        price: 0,
-        badge: "Free RSVP",
-        description:
-          "Includes starter design system file and 1-on-1 portfolio review session.",
-        perks: [
-          "Reserved Studio Desk & Figma Token Library",
-          "1-on-1 Portfolio Critique with Industry Mentors",
-          "Complimentary Matcha & Artisanal Pastries",
-        ],
-      },
-    ],
-  },
-  {
-    id: "esports_championship_2025",
-    title: "Stanford Collegiate E-Sports LAN Invitational",
-    subtitle: "Valorant & Rocket League grand finals with live stage & player jerseys",
-    description:
-      "Annual intercollegiate LAN arena battle inside Tresidder Grand Ballroom. Choose Plan A for general spectator seating with pizza & drinks, or Plan B for a competitor tournament slot with a custom gamertag jersey and medal.",
-    category: "E-Sports",
-    date: "Saturday, Nov 22, 2025",
-    month: "NOV",
-    dayNumber: 22,
-    dayOfWeek: "SAT",
-    fullDayName: "Saturday",
-    time: "1:00 PM PST",
-    location: "Tresidder Student Union Grand Ballroom",
-    venueHref: "/map",
-    organizer: "Stanford Gaming & E-Sports Guild",
-    isFree: false,
-    totalCapacity: 450,
-    registeredCount: 388,
-    image:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80",
-    hasTeeSize: true,
-    plans: [
-      {
-        id: "plan_esports_a",
-        code: "PLAN A",
-        name: "Spectator Arena Pass + Pizza & Drinks",
-        price: 8,
-        description:
-          "All-day mainstage viewing, 2 artisan pizza slices & energy drink voucher.",
-        perks: [
-          "Reserved Mainstage Spectator Seating",
-          "2 Slices Artisan Pizza + Energy Drink",
-          "Hardware Raffle Ticket (Keyboards & Mice)",
-        ],
-      },
-      {
-        id: "plan_esports_b",
-        code: "PLAN B",
-        name: "Competitor Slot + Custom Jersey + Medal",
-        price: 18,
-        badge: "Player Kit",
-        description:
-          "Tournament roster entry with custom sublimated jersey & commemorative medal.",
-        perks: [
-          "240Hz LAN Tournament Station Access",
-          "Custom Sublimated Team Jersey",
-          "Die-Cast Mechanical Keycap Finisher Medal",
-          "$5,000 Prize Pool Eligibility",
-        ],
-      },
-    ],
-  },
-];
+import {
+  type EventPlan,
+  type CampusEvent,
+  CAMPUS_EVENTS,
+} from "@/data/mockEvents";
+export type { EventPlan, CampusEvent };
+export { CAMPUS_EVENTS };
 
 interface CalendarDayCell {
   dayNumber: number;
@@ -348,10 +77,37 @@ const CATEGORY_TABS = [
 const TEE_SIZES = ["XS", "S", "M", "L", "XL", "2XL"] as const;
 
 export default function CampusEventsCalendarPage() {
+  const [events, setEvents] = useState<CampusEvent[]>(CAMPUS_EVENTS);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All Events");
   const [pricingFilter, setPricingFilter] = useState<"all" | "paid" | "free">("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [viewLayout, setViewLayout] = useState<"cards" | "calendar">("cards");
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    fetch("/api/events?status=PUBLISHED")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load events");
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled && json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setEvents(json.data);
+        }
+      })
+      .catch(() => {
+        // Keeps verified initial data on offline/network error
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Per-card preselected plan state so users can click Plan A / Plan B inline
   const [cardSelectedPlans, setCardSelectedPlans] = useState<Record<string, string>>({
@@ -369,6 +125,8 @@ export default function CampusEventsCalendarPage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
   const [teeSize, setTeeSize] = useState<string>("M");
   const [bibName, setBibName] = useState<string>("ALEX RIVERA");
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
   const [pickupHub, setPickupHub] = useState<string>(
     "Student Union Hub A (Lockers #B-01 to #B-48)"
   );
@@ -389,7 +147,7 @@ export default function CampusEventsCalendarPage() {
   });
 
   const filteredEvents = useMemo(() => {
-    return CAMPUS_EVENTS.filter((ev) => {
+    return events.filter((ev) => {
       if (selectedCategory !== "All Events" && ev.category !== selectedCategory) {
         return false;
       }
@@ -413,10 +171,11 @@ export default function CampusEventsCalendarPage() {
       }
       return true;
     });
-  }, [selectedCategory, pricingFilter, selectedDay, searchQuery]);
+  }, [events, selectedCategory, pricingFilter, selectedDay, searchQuery]);
 
   const handleOpenRegistration = (event: CampusEvent, explicitPlanId?: string) => {
     setActiveRegisterEvent(event);
+    setRegistrationError(null);
     const initialPlan =
       explicitPlanId ||
       cardSelectedPlans[event.id] ||
@@ -425,28 +184,142 @@ export default function CampusEventsCalendarPage() {
     setSelectedPlanId(initialPlan);
   };
 
-  const handleConfirmRegistration = (e: React.FormEvent) => {
+  const handleConfirmRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeRegisterEvent) return;
+
+    setRegistrationError(null);
+    setIsRegistering(true);
 
     const chosenPlan =
       activeRegisterEvent.plans.find((p) => p.id === selectedPlanId) ||
       activeRegisterEvent.plans[0];
 
-    const passCode = `EVT-${activeRegisterEvent.month}${
-      activeRegisterEvent.dayNumber
-    }-${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      let passCode = "";
 
-    setPassModalData({
-      isOpen: true,
-      title: activeRegisterEvent.title,
-      subtitle: `${activeRegisterEvent.date} • ${activeRegisterEvent.time}`,
-      passCode,
-      location: activeRegisterEvent.location,
-      tierName: `${chosenPlan.code}: ${chosenPlan.name}`,
-    });
+      if (chosenPlan.price > 0) {
+        // Step 1: Create server-authoritative PayPal Sandbox order for paid ticket tier
+        const createRes = await fetch("/api/paypal/create-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-campushub-token": "token_student_alex",
+          },
+          body: JSON.stringify({
+            type: "event",
+            eventId: activeRegisterEvent.id,
+            planId: chosenPlan.id,
+            teeSize,
+            description: `${activeRegisterEvent.title} - ${chosenPlan.name}`,
+          }),
+        });
 
-    setActiveRegisterEvent(null);
+        const createJson = await createRes.json().catch(() => null);
+        if (!createRes.ok || !createJson?.success) {
+          throw new Error(
+            createJson?.error || "Failed to initialize PayPal order for paid event registration."
+          );
+        }
+
+        // Step 2: Capture and verify payment through backend
+        const captureRes = await fetch("/api/paypal/capture-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-campushub-token": "token_student_alex",
+          },
+          body: JSON.stringify({
+            orderId: createJson.orderId,
+            orderID: createJson.orderId,
+            internalOrderId: createJson.internalOrderId,
+          }),
+        });
+
+        const captureJson = await captureRes.json().catch(() => null);
+
+        if (captureRes.status === 504 || captureJson?.code === "PAYPAL_GATEWAY_TIMEOUT" || captureJson?.code === "DATABASE_RECONCILIATION_PENDING") {
+          throw new Error(
+            "Payment verification is pending automated reconciliation with PayPal Sandbox. Please check your registrations in your Account dashboard shortly."
+          );
+        }
+
+        if (!captureRes.ok || !captureJson?.success) {
+          // Attempt cancellation of pending order to release registration hold
+          await fetch("/api/paypal/cancel-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-campushub-token": "token_student_alex",
+            },
+            body: JSON.stringify({
+              orderId: createJson.orderId,
+              internalOrderId: createJson.internalOrderId,
+            }),
+          }).catch(() => {});
+
+          throw new Error(
+            captureJson?.error || "PayPal payment capture failed. Event registration was not confirmed."
+          );
+        }
+
+        passCode =
+          captureJson.registration?.passCode ||
+          captureJson.order?.pickupPassCode ||
+          `FASTPASS-${activeRegisterEvent.id.toUpperCase().substring(0, 4)}-${Math.floor(100000 + Math.random() * 900000)}`;
+      } else {
+        // Free event ($0.00): direct registration
+        const res = await fetch("/api/registrations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-campushub-token": "token_student_alex",
+          },
+          body: JSON.stringify({
+            eventId: activeRegisterEvent.id,
+            planId: chosenPlan.id,
+            teeSize: teeSize,
+          }),
+        });
+
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json?.success) {
+          const errorMsg =
+            json?.error?.message ||
+            json?.message ||
+            "Registration failed. Please check event availability or your registration status.";
+          throw new Error(errorMsg);
+        }
+
+        passCode =
+          json.data?.passCode ||
+          `FASTPASS-${activeRegisterEvent.id.toUpperCase().substring(0, 4)}-${Math.floor(100000 + Math.random() * 900000)}`;
+      }
+
+      setEvents((prev) =>
+        prev.map((ev) =>
+          ev.id === activeRegisterEvent.id
+            ? { ...ev, registeredCount: ev.registeredCount + 1 }
+            : ev
+        )
+      );
+
+      setPassModalData({
+        isOpen: true,
+        title: activeRegisterEvent.title,
+        subtitle: `${activeRegisterEvent.date} • ${activeRegisterEvent.time}`,
+        passCode,
+        location: activeRegisterEvent.location,
+        tierName: `${chosenPlan.code}: ${chosenPlan.name}`,
+      });
+
+      setActiveRegisterEvent(null);
+    } catch (regError) {
+      const msg = regError instanceof Error ? regError.message : "Could not connect to event registration server. Please try again.";
+      setRegistrationError(msg);
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   const activeChosenPlan = useMemo(() => {
@@ -720,9 +593,56 @@ export default function CampusEventsCalendarPage() {
         </div>
       </section>
 
-      {/* 3. CHRONOLOGICAL TIMELINE SCHEDULE FEED */}
-      <section className="space-y-8">
-        {filteredEvents.length === 0 ? (
+      {/* 3. CHRONOLOGICAL TIMELINE SCHEDULE FEED / CALENDAR VIEW */}
+      <section className="space-y-6">
+        {/* Layout Switcher: Feed Cards vs Bryntum Calendar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-outline-variant/20">
+          <div>
+            <h2 className="text-xl font-headline font-extrabold text-on-surface">
+              {viewLayout === "calendar" ? "Campus Calendar Schedule" : "Upcoming Events & Hackathons"}
+            </h2>
+            <p className="text-xs text-on-surface-variant">
+              {viewLayout === "calendar"
+                ? "Interactive university calendar in Asia/Kuala_Lumpur (MYT UTC+8) with Month, Week, Day, and Agenda views."
+                : "Explore upcoming events, select your ticket plan, and secure instant FastPass dynamic entry."}
+            </p>
+          </div>
+
+          <div className="flex items-center bg-surface-container-low border border-outline-variant/40 rounded-xl p-1 shadow-2xs self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setViewLayout("cards")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-headline font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewLayout === "cards"
+                  ? "bg-primary text-on-primary shadow-xs"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">view_agenda</span>
+              <span>Card Feed</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewLayout("calendar")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-headline font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewLayout === "calendar"
+                  ? "bg-primary text-on-primary shadow-xs"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+              <span>Calendar View</span>
+            </button>
+          </div>
+        </div>
+
+        {viewLayout === "calendar" ? (
+          <CampusCalendarWrapper
+            events={filteredEvents}
+            readOnly={true}
+            onEventClick={(ev) => handleOpenRegistration(ev)}
+          />
+        ) : filteredEvents.length === 0 ? (
           <div className="p-12 text-center rounded-[2rem] bg-surface-container-lowest border border-outline-variant/35">
             <span className="material-symbols-outlined text-4xl text-outline mb-2">
               event_busy
@@ -1017,6 +937,13 @@ export default function CampusEventsCalendarPage() {
               onSubmit={handleConfirmRegistration}
               className="p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1"
             >
+              {registrationError && (
+                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in">
+                  <span className="material-symbols-outlined text-base shrink-0">error</span>
+                  <span>{registrationError}</span>
+                </div>
+              )}
+
               {/* Plan Tier Selection */}
               <div>
                 <label className="text-xs font-bold font-mono text-outline uppercase tracking-wider block mb-2.5">
@@ -1166,12 +1093,21 @@ export default function CampusEventsCalendarPage() {
 
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                  disabled={isRegistering}
+                  className="px-6 py-3 rounded-xl bg-primary hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed text-on-primary font-headline font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-base">
-                    qr_code_scanner
+                    {isRegistering ? "progress_activity" : "qr_code_scanner"}
                   </span>
-                  <span>Confirm &amp; Issue Dynamic QR Pass</span>
+                  <span>
+                    {isRegistering
+                      ? activeChosenPlan && activeChosenPlan.price > 0
+                        ? "Verifying PayPal Settlement..."
+                        : "Confirming RSVP..."
+                      : activeChosenPlan && activeChosenPlan.price > 0
+                      ? `Pay $${activeChosenPlan.price.toFixed(2)} with PayPal & Issue Pass`
+                      : "Confirm & Issue Dynamic QR Pass"}
+                  </span>
                 </button>
               </div>
             </form>

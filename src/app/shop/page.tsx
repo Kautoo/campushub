@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { MOCK_PRODUCTS } from "@/data/mockData";
 import { Product } from "@/types";
@@ -42,6 +42,8 @@ const LOCKER_HUBS = [
 
 export default function CampusStorePage() {
   const { addItem, itemCount, subtotal } = useBag();
+  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("All Collection");
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,8 +59,32 @@ export default function CampusStorePage() {
   const [selectedLockerHub, setSelectedLockerHub] = useState("union_hub_a");
   const [lockerSaved, setLockerSaved] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    fetch("/api/products")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load products");
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled && json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setProducts(json.data);
+        }
+      })
+      .catch(() => {
+        // Keeps verified initial data on offline/network error
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filteredProducts = useMemo(() => {
-    let list = MOCK_PRODUCTS.filter((p) => {
+    let list = products.filter((p) => {
       if (inStockOnly && !p.inStock) return false;
       if (selectedCategory !== "All Collection") {
         if (selectedCategory === "Apparel") {

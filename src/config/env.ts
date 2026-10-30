@@ -7,6 +7,7 @@ export function getClientEnv(): ClientEnv {
   const result = clientEnvSchema.safeParse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
   });
 
   if (!result.success) {
@@ -33,6 +34,11 @@ export function getServerEnv(): ServerEnv {
     PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
     PAYPAL_BASE_URL: process.env.PAYPAL_BASE_URL,
     AI_API_KEY: process.env.AI_API_KEY,
+    ASTROPODS_API_KEY: process.env.ASTROPODS_API_KEY,
+    ASTROPODS_BASE_URL: process.env.ASTROPODS_BASE_URL,
+    ASTROPODS_MODEL: process.env.ASTROPODS_MODEL,
+    ASTRO_GATEWAY_URL: process.env.ASTRO_GATEWAY_URL,
+    ASTRO_GATEWAY_API_KEY: process.env.ASTRO_GATEWAY_API_KEY,
   });
 
   if (!result.success) {

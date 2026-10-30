@@ -13,6 +13,10 @@ export const clientEnvSchema = z.object({
     .string()
     .min(1, "NEXT_PUBLIC_SUPABASE_ANON_KEY cannot be empty")
     .optional(),
+  NEXT_PUBLIC_PAYPAL_CLIENT_ID: z
+    .string()
+    .min(1, "NEXT_PUBLIC_PAYPAL_CLIENT_ID cannot be empty")
+    .optional(),
 });
 
 /**
@@ -43,6 +47,26 @@ export const serverEnvSchema = z.object({
   AI_API_KEY: z
     .string()
     .min(1, "AI_API_KEY cannot be empty")
+    .optional(),
+  ASTROPODS_API_KEY: z
+    .string()
+    .min(1, "ASTROPODS_API_KEY cannot be empty")
+    .optional(),
+  ASTROPODS_BASE_URL: z
+    .string()
+    .url("ASTROPODS_BASE_URL must be a valid URL")
+    .optional(),
+  ASTROPODS_MODEL: z
+    .string()
+    .min(1, "ASTROPODS_MODEL cannot be empty")
+    .optional(),
+  ASTRO_GATEWAY_URL: z
+    .string()
+    .url("ASTRO_GATEWAY_URL must be a valid URL")
+    .optional(),
+  ASTRO_GATEWAY_API_KEY: z
+    .string()
+    .min(1, "ASTRO_GATEWAY_API_KEY cannot be empty")
     .optional(),
 });
 
