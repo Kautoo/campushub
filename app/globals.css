@@ -309,6 +309,104 @@ body {
   font-variation-settings: "FILL" 1;
 }
 
+/* Editorial serif accent (pull words, type moments) */
+.font-editorial {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+}
+
+/* ============================================================
+   Micro-interactions (taste layer: hover answers, press steps,
+   underline draws, enter-once moments). Reduced motion rests.
+   ============================================================ */
+
+/* Nav links: underline draws in on hover */
+.link-draw {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.25s ease-out;
+  padding-bottom: 2px;
+}
+.link-draw:hover,
+.link-draw:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+/* Buttons step on hover, press on click */
+.btn-step {
+  transition: transform 0.15s ease-out, filter 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+  cursor: pointer;
+}
+.btn-step:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+.btn-step:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Linked cards lift 2px with a teal edge answer */
+.card-lift {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
+    border-color 0.2s ease-out;
+  cursor: pointer;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  border-color: var(--st-secondary-fixed-dim);
+  box-shadow: 0 6px 24px -8px rgba(0, 98, 90, 0.25);
+}
+
+/* Dealt moment: text types once when scrolled into view */
+@keyframes type-once {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.type-reveal {
+  overflow: hidden;
+  white-space: pre-wrap;
+  max-width: 0;
+  display: inline-block;
+  vertical-align: bottom;
+}
+.type-run .type-reveal {
+  animation: type-once 2.8s steps(48, end) forwards;
+}
+.type-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--st-primary);
+  vertical-align: text-bottom;
+  opacity: 0;
+}
+.type-run .type-caret {
+  animation: caret-blink 1s step-end infinite;
+}
+
+/* Keyboard focus aura (global) */
+:focus-visible {
+  outline: 2px solid var(--st-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ============================================================
    Signature keyframes
    ============================================================ */
@@ -393,6 +491,32 @@ body {
   outline: 2px solid var(--st-primary);
   outline-offset: 2px;
   box-shadow: var(--st-glow);
+}
+
+/* Reduced motion: everything rests, nothing stays hidden */
+@media (prefers-reduced-motion: reduce) {
+  .btn-step,
+  .card-lift,
+  .link-draw {
+    transition: none;
+  }
+  .btn-step:hover,
+  .card-lift:hover {
+    transform: none;
+  }
+  .type-reveal {
+    max-width: 100%;
+    animation: none;
+  }
+  .type-caret {
+    display: none;
+  }
+  .animate-shimmer,
+  .animate-pulse-aura,
+  .animate-glow,
+  .animate-gradient-flow {
+    animation: none;
+  }
 }
 
 ::selection {
