@@ -1,0 +1,407 @@
+@import "tailwindcss";
+@import "@heroui/styles/css";
+
+/* ============================================================
+   CampusHub 2.0 — Stitch design tokens
+   Light: "Collegiate" · Dark: "Nocturne Collegiate"
+   ============================================================ */
+
+:root {
+  /* primary — deep navy */
+  --st-primary: #00162e;
+  --st-primary-container: #142b45;
+  --st-primary-fixed: #d3e4ff;
+  --st-on-primary-container: #7d93b2;
+
+  /* secondary — teal */
+  --st-secondary: #006a66;
+  --st-secondary-container: #7ef6ee;
+  --st-secondary-fixed: #7ef6ee;
+  --st-secondary-fixed-dim: #60d9d2;
+
+  /* tertiary — green */
+  --st-tertiary: #006a5e;
+  --st-tertiary-container: #00311f;
+  --st-tertiary-fixed-dim: #4edea3;
+  --st-on-tertiary-container: #00a572;
+
+  /* surfaces */
+  --st-background: #f8fafb;
+  --st-surface: #f8fafb;
+  --st-surface-lowest: #ffffff;
+  --st-surface-low: #f2f4f5;
+  --st-surface-container: #eceeef;
+  --st-surface-high: #e6e8e9;
+  --st-surface-highest: #e1e3e4;
+  --st-on-surface: #191c1d;
+  --st-on-surface-variant: #43474d;
+  --st-outline: #74777e;
+  --st-outline-variant: #c4c6ce;
+
+  /* states */
+  --st-error: #ba1a1a;
+  --st-error-container: #ffdad6;
+  --st-warning: #9a6b00;
+  --st-warning-container: #fff0c2;
+  --st-success: #00a572;
+  --st-success-container: #ccffe9;
+
+  /* kinetic gradient */
+  --st-gradient-a: #16a6a0;
+  --st-gradient-b: #00bfa5;
+  --st-gradient-c: #142b45;
+
+  /* PayPal blue */
+  --st-paypal: #0070ba;
+
+  /* borders + shadows */
+  --st-border: #c4c6ce;
+  --st-border-soft: rgba(25, 28, 29, 0.08);
+  --st-glow: 0 0 12px rgba(0, 106, 102, 0.25);
+
+  /* spacing scale (xs 4 sm 8 md 16 lg 24 xl 32 · margin 32 gutter 24) */
+  --st-space-xs: 4px;
+  --st-space-sm: 8px;
+  --st-space-md: 16px;
+  --st-space-lg: 24px;
+  --st-space-xl: 32px;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --st-primary: #57f1db;
+  --st-primary-container: #2dd4bf;
+  --st-on-primary-container: #00201c;
+  --st-primary-fixed: #57f1db;
+
+  --st-secondary: #7bd0ff;
+  --st-secondary-container: #00a6e0;
+  --st-secondary-fixed: #7bd0ff;
+  --st-secondary-fixed-dim: #00a6e0;
+
+  --st-tertiary: #d5d7ff;
+  --st-tertiary-container: #1e2a4a;
+  --st-tertiary-fixed-dim: #d5d7ff;
+  --st-on-tertiary-container: #a5f3d0;
+
+  --st-background: #070d18;
+  --st-surface: #0b1326;
+  --st-surface-lowest: #060e20;
+  --st-surface-low: #131b2e;
+  --st-surface-container: #171f33;
+  --st-surface-high: #222a3d;
+  --st-surface-highest: #2d3449;
+  --st-on-surface: #dae2fd;
+  --st-on-surface-variant: #94a3b8;
+  --st-outline: #475069;
+  --st-outline-variant: rgba(255, 255, 255, 0.08);
+
+  --st-error: #ff6b61;
+  --st-error-container: #3a1512;
+  --st-warning: #fbbf24;
+  --st-warning-container: #3a2a05;
+  --st-success: #34d399;
+  --st-success-container: #062f22;
+
+  --st-gradient-a: #14b8a6;
+  --st-gradient-b: #06b6d4;
+  --st-gradient-c: #1e40af;
+
+  --st-border: rgba(255, 255, 255, 0.08);
+  --st-border-soft: rgba(255, 255, 255, 0.08);
+  --st-glow: 0 0 12px rgba(45, 212, 191, 0.25);
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   Tailwind v4 theme mapping — utilities: bg-primary, text-ink, etc.
+   ============================================================ */
+@theme inline {
+  --color-background: var(--st-background);
+  --color-surface: var(--st-surface);
+  --color-surface-lowest: var(--st-surface-lowest);
+  --color-surface-low: var(--st-surface-low);
+  --color-surface-container: var(--st-surface-container);
+  --color-surface-high: var(--st-surface-high);
+  --color-surface-highest: var(--st-surface-highest);
+  --color-ink: var(--st-on-surface);
+  --color-ink-variant: var(--st-on-surface-variant);
+  --color-muted: var(--st-on-surface-variant);
+  --color-primary: var(--st-primary);
+  --color-primary-container: var(--st-primary-container);
+  --color-primary-fixed: var(--st-primary-fixed);
+  --color-on-primary-container: var(--st-on-primary-container);
+  --color-secondary: var(--st-secondary);
+  --color-secondary-container: var(--st-secondary-container);
+  --color-secondary-fixed: var(--st-secondary-fixed);
+  --color-tertiary: var(--st-tertiary);
+  --color-tertiary-container: var(--st-tertiary-container);
+  --color-tertiary-dim: var(--st-tertiary-fixed-dim);
+  --color-on-tertiary-container: var(--st-on-tertiary-container);
+  --color-outline: var(--st-outline);
+  --color-outline-variant: var(--st-outline-variant);
+  --color-error: var(--st-error);
+  --color-error-container: var(--st-error-container);
+  --color-warning: var(--st-warning);
+  --color-warning-container: var(--st-warning-container);
+  --color-success: var(--st-success);
+  --color-success-container: var(--st-success-container);
+  --color-paypal: var(--st-paypal);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --radius-st-sm: 4px;
+  --radius-st-md: 8px;
+  --radius-st-lg: 12px;
+
+  --shadow-glow: var(--st-glow);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================================
+   HeroUI v3 semantic aliasing — Stitch palette onto HeroUI roles.
+   HeroUI themes live in @layer theme; these unlayered rules win.
+   ============================================================ */
+:root,
+[data-theme="light"] {
+  --accent: var(--st-primary); /* primary CTAs: navy pill buttons */
+  --accent-foreground: #ffffff;
+  --background: var(--st-background);
+  --background-inverse: var(--st-primary);
+  --foreground: var(--st-on-surface);
+  --surface: var(--st-surface-lowest);
+  --surface-foreground: var(--st-on-surface);
+  --surface-secondary: var(--st-surface-low);
+  --surface-tertiary: var(--st-surface-container);
+  --overlay: var(--st-surface-lowest);
+  --overlay-foreground: var(--st-on-surface);
+  --muted: var(--st-on-surface-variant);
+  --default: var(--st-surface-container);
+  --default-foreground: var(--st-on-surface);
+  --field-background: var(--st-surface-lowest);
+  --field-foreground: var(--st-on-surface);
+  --field-placeholder: var(--st-outline);
+  --border: var(--st-outline-variant);
+  --separator: var(--st-outline-variant);
+  --focus: var(--st-secondary); /* teal focus aura */
+  --success: var(--st-success);
+  --warning: var(--st-warning);
+  --danger: var(--st-error);
+}
+
+[data-theme="dark"] {
+  --accent: var(--st-primary); /* teal CTA */
+  --accent-foreground: #00201c;
+  --background: var(--st-background);
+  --background-inverse: var(--st-primary);
+  --foreground: var(--st-on-surface);
+  --surface: var(--st-surface-container);
+  --surface-foreground: var(--st-on-surface);
+  --surface-secondary: var(--st-surface-high);
+  --surface-tertiary: var(--st-surface-highest);
+  --overlay: var(--st-surface-high);
+  --overlay-foreground: var(--st-on-surface);
+  --muted: var(--st-on-surface-variant);
+  --default: var(--st-surface-high);
+  --default-foreground: var(--st-on-surface);
+  --field-background: var(--st-surface-low);
+  --field-foreground: var(--st-on-surface);
+  --field-placeholder: var(--st-outline);
+  --border: var(--st-outline-variant);
+  --separator: var(--st-outline-variant);
+  --focus: var(--st-primary);
+  --success: var(--st-success);
+  --warning: var(--st-warning);
+  --danger: var(--st-error);
+}
+
+/* ============================================================
+   Base + typography scale (Stitch)
+   ============================================================ */
+body {
+  background: var(--st-background);
+  color: var(--st-on-surface);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.text-display {
+  font-size: 36px;
+  line-height: 44px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.text-display-lg {
+  font-size: 56px;
+  line-height: 64px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+[data-theme="light"] .text-display-lg {
+  font-size: 36px;
+  line-height: 44px;
+}
+.text-headline-lg {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 700;
+}
+.text-headline-md {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.text-headline-sm {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.text-body-lg {
+  font-size: 16px;
+  line-height: 24px;
+}
+.text-body-md {
+  font-size: 14px;
+  line-height: 20px;
+}
+.text-body-sm {
+  font-size: 12px;
+  line-height: 16px;
+}
+.text-label-lg {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.text-label-md {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.text-label-sm {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+}
+
+/* Material Symbols icon font (loaded via <link> in layout) */
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.material-symbols-outlined.filled {
+  font-variation-settings: "FILL" 1;
+}
+
+/* ============================================================
+   Signature keyframes
+   ============================================================ */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-aura {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 112, 186, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 112, 186, 0);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: var(--st-glow);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(45, 212, 191, 0.45);
+  }
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes border-beam {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+.animate-pulse-aura {
+  animation: pulse-aura 2.2s ease-out infinite;
+}
+.animate-glow {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
+.animate-gradient-flow {
+  background-size: 220% 220%;
+  animation: gradient-flow 6s ease infinite;
+}
+
+/* Kinetic gradients */
+.bg-gradient-kinetic {
+  background-image: linear-gradient(
+    120deg,
+    var(--st-gradient-a),
+    var(--st-gradient-b),
+    var(--st-gradient-c),
+    var(--st-gradient-a)
+  );
+}
+
+/* Teal focus aura */
+.focus-aura:focus-visible {
+  outline: 2px solid var(--st-primary);
+  outline-offset: 2px;
+  box-shadow: var(--st-glow);
+}
+
+::selection {
+  background: var(--st-secondary-fixed-dim);
+  color: var(--st-primary);
+}
+
+/* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--st-outline-variant) transparent;
+}

@@ -1,0 +1,50 @@
+# CampusHub 2.0 — Render blueprint
+# Deploy: Render Dashboard → New → Blueprint → point at this repo.
+# Secrets are declared with sync:false — set them in the Render dashboard after the first sync.
+services:
+  - type: web
+    name: campushub-2
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: node .next/standalone/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PORT
+        value: "3000"
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://campushub-2.onrender.com
+      # --- Supabase (required) ---
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # --- PayPal (required for checkout) ---
+      - key: PAYPAL_ENV
+        value: sandbox
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_CURRENCY
+        value: MYR
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      # --- AI gateway (optional; without it insights show setup notice) ---
+      - key: AI_BASE_URL
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        value: glm-5.3-flash
+      # --- Sponsors (optional; features hidden without keys) ---
+      - key: CHANNEL3_API_KEY
+        sync: false
+      - key: ASTROPODS_API_KEY
+        sync: false
+      - key: BRYNTUM_LICENSE_KEY
+        sync: false
