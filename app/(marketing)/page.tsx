@@ -17,7 +17,8 @@ import { StoryActs } from "@/components/marketing/story-acts";
 import { StatWall, SectionBeat } from "@/components/marketing/premium-sections";
 import { TryAiButton } from "@/components/marketing/cta-buttons";
 import { Magnetic } from "@/components/marketing/magnetic";
-import { TypewriterInsight } from "@/components/marketing/typewriter-insight";
+import { InsightConversation } from "@/components/marketing/insight-conversation";
+import HoverDotsLazy from "@/components/marketing/hover-dots-lazy";
 import { DashboardMock } from "@/components/marketing/dashboard-mock";
 import { Badge } from "@/components/ui/badge";
 import { IconTile } from "@/components/ui/icon";
@@ -124,8 +125,6 @@ const PRICING = [
   },
 ];
 
-const INSIGHT_TEXT =
-  "Revenue concentrated in Innovation Week: the VIP tier contributed RM 3,383 — 17 of 50 seats. Mech Keycap Set sits at 12 units against a 4-per-week sell rate: restock within three weeks to survive the bootcamp.";
 
 export default function LandingPage() {
   return (
@@ -236,15 +235,9 @@ export default function LandingPage() {
               <TryAiButton />
             </div>
           </div>
-          <div className="relative rounded-2xl border border-outline-variant bg-surface-lowest p-7 shadow-card">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
-              <p className="text-label-md text-muted uppercase tracking-widest">Weekly insight</p>
-            </div>
-            <div className="mt-4 min-h-40">
-              <TypewriterInsight text={INSIGHT_TEXT} />
-            </div>
-            <div className="mt-5 flex gap-2">
+          <div className="relative">
+            <InsightConversation />
+            <div className="mt-4 flex justify-end gap-2">
               <Badge tone="teal">glm-5.3-flash</Badge>
               <Badge tone="neutral">verified aggregates only</Badge>
             </div>
@@ -305,25 +298,81 @@ export default function LandingPage() {
       </section>
 
       {/* FINALE */}
-      <section className="bg-primary-container relative overflow-hidden py-24 text-white dark:bg-surface-container dark:text-ink">
-        <Meteors number={5} />
+      <section className="relative overflow-hidden py-28">
+        {/* Deep gradient base */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, var(--st-surface) 0%, var(--st-primary-container) 55%, var(--st-surface) 100%)",
+          }}
+          aria-hidden
+        />
+        {/* Aurora glows */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[min(720px,120vw)] -translate-x-1/2 opacity-40"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, var(--st-gradient-a) 0%, transparent 70%)",
+            filter: "blur(90px)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-1/4 h-56 w-96 opacity-25"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, var(--st-gradient-b) 0%, transparent 70%)",
+            filter: "blur(80px)",
+          }}
+        />
+        {/* Dot texture */}
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-30 [mask-image:radial-gradient(560px_at_50%_50%,white,transparent)]"
+        >
+          <HoverDotsLazy />
+        </div>
+        {/* Orbiting ring */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        >
+          <div className="animate-glow relative h-[420px] w-[420px] rounded-full border border-primary/20">
+            <div className="absolute inset-6 rounded-full border border-primary/10" />
+            <div
+              className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-primary shadow-glow"
+              style={{ animation: "orbit 14s linear infinite" }}
+            />
+            <div
+              className="absolute top-1/2 -right-1 h-2 w-2 translate-y-1/2 rounded-full bg-secondary shadow-glow"
+              style={{ animation: "orbit 22s linear infinite reverse" }}
+            />
+          </div>
+        </div>
+
         <div className="relative mx-auto max-w-3xl px-4 text-center">
           <RevealHeading
             text="Your campus, one hub."
             accentWord="one"
-            className="text-display text-white dark:text-ink"
+            className="text-display text-ink"
           />
-          <p className="mt-4 text-lg opacity-80">
-            Connect Supabase, add PayPal sandbox keys, sell at your next event.
+          <p className="text-ink/80 mx-auto mt-4 max-w-xl text-lg leading-relaxed">
+            Connect Supabase, add PayPal sandbox keys, and sell at your next
+            event — with every number grounded in your own data.
           </p>
           <Magnetic className="mt-9">
             <Link
               href="/register"
-              className="focus-aura inline-flex h-12 items-center rounded-full bg-white px-9 text-label-lg font-semibold text-primary-container shadow-lg transition-transform hover:-translate-y-0.5 dark:bg-primary dark:text-[#00201c]"
+              className="btn-step focus-aura inline-flex h-12 items-center rounded-full bg-primary px-9 text-label-lg font-semibold text-[#00201c] shadow-xl shadow-primary/30"
             >
               Create your workspace
             </Link>
           </Magnetic>
+          <p className="mt-5 text-sm text-ink/60">
+            Free Society tier · no credit card · demo data included
+          </p>
         </div>
       </section>
 

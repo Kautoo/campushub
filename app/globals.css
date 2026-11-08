@@ -460,6 +460,35 @@ body {
   }
 }
 
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes borderBeamSweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg) translateX(210px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(210px) rotate(-360deg);
+  }
+}
+
 .animate-shimmer {
   background-size: 200% 100%;
   animation: shimmer 2.4s linear infinite;
@@ -516,6 +545,11 @@ body {
   .animate-glow,
   .animate-gradient-flow {
     animation: none;
+  }
+  [style*="borderBeamSweep"],
+  [style*="chipIn"] {
+    animation: none !important;
+    opacity: 1;
   }
 }
 
