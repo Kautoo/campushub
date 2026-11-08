@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseAdminSafe } from "@/lib/supabase/safe";
 import { verifyWebhookSignature } from "@/lib/paypal";
+import { getDbSafe } from "@/lib/db/safe";
+import {
+  webhookEvents,
+  orders,
+  transactions,
+  notifications,
+} from "@/lib/db/repo";
 
 const eventSchema = z.object({
   id: z.string(),
@@ -21,14 +27,15 @@ const captureResourceSchema = z.object({
 });
 
 /**
- * PayPal webhook receiver. Service-role only:
+ * PayPal webhook receiver. Server-to-server (no user session — webhook
+ * events are written directly, replacing the service-role client):
  * 1. verify transmission signature (400 when verification fails)
  * 2. dedupe by provider_event_id (webhook_events.provider_event_id unique)
  * 3. handle APPROVED / CAPTURE.COMPLETED / CAPTURE.REFUNDED idempotently
  */
 export async function POST(request: Request) {
-  const admin = getSupabaseAdminSafe();
-  if (!admin) {
+  const db = getDbSafe();
+  if (!db) {
     return NextResponse.json({ error: "service_unavailable" }, { status: 503 });
   }
 
@@ -53,14 +60,13 @@ export async function POST(request: Request) {
   const event = eventSchema.parse(body);
 
   // Dedupe: unique provider_event_id
-  const { error: insertErr } = await admin.from("webhook_events").insert({
+  const { duplicate } = await webhookEvents.insert({
     provider: "paypal",
     event_type: event.event_type,
     provider_event_id: event.id,
     payload: event,
-    status: "received",
   });
-  if (insertErr) {
+  if (duplicate) {
     // Already processed (or in flight) — idempotent ack
     return NextResponse.json({ status: "duplicate" });
   }
@@ -74,11 +80,10 @@ export async function POST(request: Request) {
       case "CHECKOUT.ORDER.APPROVED": {
         const dbOrderId = resource?.custom_id;
         if (dbOrderId) {
-          await admin
-            .from("orders")
-            .update({ paypal_order_id: resource!.id })
-            .eq("id", dbOrderId)
-            .eq("status", "pending");
+          await orders.updateFields(dbOrderId, null, {
+            paypal_order_id: resource!.id,
+            status: "pending",
+          });
         }
         break;
       }
@@ -86,14 +91,13 @@ export async function POST(request: Request) {
         // Locate the DB order via paypal_order_id (custom_id fallback above).
         const paypalOrderId =
           resource?.supplementary_data?.related_ids?.order_id ?? resource?.id;
-        const { data: orders } = await admin
-          .from("orders")
-          .select("id, org_id, status, total_cents, currency")
-          .eq("paypal_order_id", paypalOrderId);
-        for (const o of orders ?? []) {
+        const matchedOrders = paypalOrderId
+          ? await orders.getByPaypalOrderId(paypalOrderId)
+          : [];
+        for (const o of matchedOrders) {
           if (o.status !== "pending") continue; // capture API already marked it paid
-          await admin.from("orders").update({ status: "paid" }).eq("id", o.id);
-          await admin.from("transactions").insert({
+          await orders.updateStatus(o.id, null, { status: "paid" });
+          await transactions.insert({
             org_id: o.org_id,
             order_id: o.id,
             provider: "paypal",
@@ -103,9 +107,9 @@ export async function POST(request: Request) {
             currency: o.currency,
             status: "completed",
             verified: true,
-            raw: event,
+            raw: event as Record<string, unknown>,
           });
-          await admin.from("notifications").insert({
+          await notifications.insert({
             org_id: o.org_id,
             type: "order",
             title: "New paid order (webhook)",
@@ -116,25 +120,15 @@ export async function POST(request: Request) {
         break;
       }
       case "PAYMENT.CAPTURE.REFUNDED": {
-        const { data: txns } = await admin
-          .from("transactions")
-          .select("id, order_id, org_id, amount_cents, currency, provider_ref")
-          .eq("provider_ref", resource?.id)
-          .eq("type", "payment");
-        for (const t of txns ?? []) {
+        const txns = resource?.id
+          ? await transactions.findPaymentByRef(resource.id)
+          : [];
+        for (const t of txns) {
           if (!t.order_id) continue;
-          const { data: existing } = await admin
-            .from("transactions")
-            .select("id")
-            .eq("order_id", t.order_id)
-            .eq("type", "refund")
-            .limit(1);
-          if (existing && existing.length > 0) continue; // idempotent
-          await admin
-            .from("orders")
-            .update({ status: "refunded" })
-            .eq("id", t.order_id);
-          await admin.from("transactions").insert({
+          const existing = await transactions.findRefundForOrder(t.order_id);
+          if (existing) continue; // idempotent
+          await orders.updateStatus(t.order_id, null, { status: "refunded" });
+          await transactions.insert({
             org_id: t.org_id,
             order_id: t.order_id,
             provider: "paypal",
@@ -144,9 +138,9 @@ export async function POST(request: Request) {
             currency: t.currency,
             status: "completed",
             verified: true,
-            raw: event,
+            raw: event as Record<string, unknown>,
           });
-          await admin.from("notifications").insert({
+          await notifications.insert({
             org_id: t.org_id,
             type: "system",
             title: "Refund issued",
@@ -160,19 +154,12 @@ export async function POST(request: Request) {
         break; // stored for audit, no action
     }
 
-    await admin
-      .from("webhook_events")
-      .update({ status: "processed", processed_at: new Date().toISOString() })
-      .eq("provider_event_id", event.id);
+    await webhookEvents.markProcessed(event.id);
 
     return NextResponse.json({ status: "processed" });
   } catch (err) {
     console.error("webhook processing failed", err);
-    await admin
-      .from("webhook_events")
-      .update({ status: "failed" })
-      .eq("provider_event_id", event.id);
-    // 200 to stop retries for unhandleable payloads; failure is recorded.
-    return NextResponse.json({ status: "recorded_failure" });
+    await webhookEvents.markFailed(event.id);
+    return NextResponse.json({ error: "processing_error" }, { status: 500 });
   }
 }

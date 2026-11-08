@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { productSchema } from "@/lib/validation";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
+import { orgs, products, inventoryMovements } from "@/lib/db/repo";
 
 export type ProductActionState = { ok?: string; error?: string } | null;
 
@@ -22,21 +24,27 @@ function rowFromParsed(parsed: z.infer<typeof productSchema>) {
     name: parsed.name,
     slug: parsed.slug,
     description: parsed.description ? parsed.description : null,
+    images: [] as string[],
     category: parsed.category ? parsed.category : null,
     price_cents: parsed.price_cents,
     stock: parsed.stock,
     low_stock_threshold: parsed.low_stock_threshold,
     sku: parsed.sku ? parsed.sku : null,
     status: parsed.status,
+    channel3_ref: null as string | null,
   };
+}
+
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as { code?: string; message?: string };
+  return e?.code === "23505" || /duplicate key|unique constraint/i.test(e?.message ?? "");
 }
 
 export async function createProduct(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
   const raw = Object.fromEntries(formData) as Record<string, string>;
   if (!raw.slug) raw.slug = slugify(raw.name ?? "");
@@ -45,28 +53,25 @@ export async function createProduct(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const { data: orgs } = await supabase
-    .from("organizations")
-    .select("id")
-    .limit(1);
-  const org = orgs?.[0];
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
 
-  const { data: created, error } = await supabase
-    .from("products")
-    .insert({ org_id: org.id, ...rowFromParsed(parsed.data) })
-    .select("id")
-    .single();
-  if (error) {
-    return {
-      error: error.code === "23505"
-        ? "A product with this slug already exists."
-        : error.message,
-    };
+  let created: { id: string } | null = null;
+  try {
+    created = await products.insert(rowFromParsed(parsed.data), org.id);
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      return { error: "A product with this slug already exists." };
+    }
+    return { error: (err as Error).message };
   }
+  if (!created) return { error: "Could not create the product." };
 
   if (parsed.data.stock > 0) {
-    await supabase.from("inventory_movements").insert({
+    await inventoryMovements.insert({
       product_id: created.id,
       org_id: org.id,
       delta: parsed.data.stock,
@@ -83,8 +88,7 @@ export async function updateProduct(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Missing or invalid product id." };
@@ -96,29 +100,25 @@ export async function updateProduct(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const { data: existing } = await supabase
-    .from("products")
-    .select("id, stock, org_id")
-    .eq("id", id.data)
-    .limit(1);
-  const before = existing?.[0];
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const before = await products.getById(id.data, session.orgIds);
   if (!before) return { error: "Product not found." };
 
-  const { error } = await supabase
-    .from("products")
-    .update(rowFromParsed(parsed.data))
-    .eq("id", id.data);
-  if (error) {
-    return {
-      error: error.code === "23505"
-        ? "A product with this slug already exists."
-        : error.message,
-    };
+  try {
+    const updated = await products.update(id.data, session.orgIds, rowFromParsed(parsed.data));
+    if (!updated) return { error: "Product not found." };
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      return { error: "A product with this slug already exists." };
+    }
+    return { error: (err as Error).message };
   }
 
   const delta = parsed.data.stock - before.stock;
   if (delta !== 0) {
-    await supabase.from("inventory_movements").insert({
+    await inventoryMovements.insert({
       product_id: id.data,
       org_id: before.org_id,
       delta,
@@ -141,17 +141,16 @@ export async function setProductStatus(
   id: string,
   status: "active" | "archived",
 ): Promise<{ ok?: string; error?: string }> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
   const parsed = statusSchema.safeParse({ id, status });
   if (!parsed.success) return { error: "Invalid product or status." };
 
-  const { error } = await supabase
-    .from("products")
-    .update({ status: parsed.data.status })
-    .eq("id", parsed.data.id);
-  if (error) return { error: error.message };
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const updated = await products.updateStatus(parsed.data.id, session.orgIds, parsed.data.status);
+  if (!updated) return { error: "Product not found." };
 
   revalidatePath("/dashboard/products");
   revalidatePath("/dashboard");

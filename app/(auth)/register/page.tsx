@@ -81,12 +81,10 @@ export default function RegisterPage() {
         </Link>
       </p>
       <p className="text-body-sm text-muted mt-4 rounded-lg bg-surface-container px-3 py-2 text-center">
-        Using the demo? After registering, run{" "}
-        <code className="font-mono text-[11px]">
-          select public.join_demo_org();
-        </code>{" "}
-        in the Supabase SQL editor (or the in-app prompt on the dashboard) to
-        attach the seeded Tech Society data.
+        Your own organization is created automatically. To explore the seeded
+        Tech Society demo data, sign in with{" "}
+        <code className="font-mono text-[11px]">owner@campushub.test</code> —
+        credentials are in the README.
       </p>
     </div>
   );

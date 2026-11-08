@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { checkoutSchema } from "@/lib/validation";
-import { getSupabasePublicSafe } from "@/lib/supabase/safe";
+import { getDbSafe } from "@/lib/db/safe";
+import { query } from "@/lib/db";
+import type { OrderRow } from "@/lib/db/repo";
 
 /**
  * Guest checkout: validates items/stock/prices SERVER-SIDE via the
  * place_order RPC (atomic stock decrement), returns the DB order.
- * Client prices are never trusted. Guest = anon public client; the RPC
- * is security definer so RLS does not block it. No auth.getUser here —
- * checkout is anonymous by design.
+ * Client prices are never trusted. No auth here — checkout is anonymous
+ * by design. The RPC is security definer; the org is part of the request
+ * payload and validated inside the function.
  */
 export async function POST(request: Request) {
-  const supabase = getSupabasePublicSafe();
-  if (!supabase) {
+  const db = getDbSafe();
+  if (!db) {
     return NextResponse.json({ error: "store_unavailable" }, { status: 503 });
   }
 
@@ -31,17 +33,26 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data, error } = await supabase.rpc("place_order", {
-    p_org: parsed.data.org_id,
-    p_customer_name: parsed.data.customer_name,
-    p_customer_email: parsed.data.customer_email,
-    p_items: parsed.data.items,
-  });
-
-  if (error) {
+  let order: OrderRow;
+  try {
+    const rows = await query<OrderRow>(
+      "select * from public.place_order($1::uuid, $2, $3, $4::jsonb)",
+      [
+        parsed.data.org_id,
+        parsed.data.customer_name,
+        parsed.data.customer_email,
+        JSON.stringify(parsed.data.items),
+      ],
+    );
+    order = rows[0];
+  } catch (err) {
     // RPC raises user-facing stock/availability errors
-    const message = error.message ?? "order_failed";
+    const message = (err as Error).message ?? "order_failed";
     return NextResponse.json({ error: message }, { status: 400 });
+  }
+
+  if (!order) {
+    return NextResponse.json({ error: "order_failed" }, { status: 400 });
   }
 
   // New order = sold stock changed; expire tagged storefront data now so
@@ -49,5 +60,5 @@ export async function POST(request: Request) {
   // profile; expire:0 = no stale window).
   revalidateTag("storefront", { expire: 0 });
 
-  return NextResponse.json({ order: data }, { status: 201 });
+  return NextResponse.json({ order }, { status: 201 });
 }

@@ -1,6 +1,12 @@
 # CampusHub 2.0 — Render blueprint
 # Deploy: Render Dashboard → New → Blueprint → point at this repo.
 # Secrets are declared with sync:false — set them in the Render dashboard after the first sync.
+databases:
+  - name: campushub-db
+    plan: basic-1gb
+    databaseName: campushub
+    user: campushub
+
 services:
   - type: web
     name: campushub-2
@@ -16,13 +22,16 @@ services:
         value: "3000"
       - key: NEXT_PUBLIC_SITE_URL
         value: https://campushub-2.onrender.com
-      # --- Supabase (required) ---
-      - key: NEXT_PUBLIC_SUPABASE_URL
+      # --- Database (wired from the Render Postgres service above) ---
+      - key: DATABASE_URL
+        fromDatabase:
+          name: campushub-db
+          property: connectionString
+      # --- Auth.js ---
+      - key: AUTH_SECRET
         sync: false
-      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
+      - key: AUTH_TRUST_HOST
+        value: "true"
       # --- PayPal (required for checkout) ---
       - key: PAYPAL_ENV
         value: sandbox

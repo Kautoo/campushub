@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader } from "@/components/ui/primitives";
 import { StatStrip } from "@/components/ui/kpi-card";
@@ -7,36 +6,27 @@ import {
   RegistrationsTable,
   type RegistrationRow,
 } from "@/components/workspaces/registrations-table";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { registrations } from "@/lib/db/repo";
 
 export const metadata = { title: "Registrations — CampusHub 2.0" };
 
-type JoinedRegistration = RegistrationRow & {
-  events: { title: string } | null;
-  ticket_tiers: { name: string } | null;
-};
-
 export default async function RegistrationsPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="registrations" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="registrations" />;
 
-  const [{ data: { user } }, { data }] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("registrations")
-      .select("*, events(title), ticket_tiers(name)")
-      .order("created_at", { ascending: false })
-      .limit(500),
-  ]);
-  if (!user) redirect("/login");
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
 
-  const joined = (data ?? []) as unknown as JoinedRegistration[];
+  const joined = await registrations.listWithJoins(session.orgIds, 500);
 
   const rows: RegistrationRow[] = joined.map((r) => ({
     id: r.id,
     attendee_name: r.attendee_name,
     attendee_email: r.attendee_email,
-    event: r.events?.title ?? "—",
-    tier: r.ticket_tiers?.name ?? "—",
+    event: r.event_title ?? "—",
+    tier: r.tier_name ?? "—",
     qty: r.qty,
     amount_cents: r.amount_cents,
     status: r.status,

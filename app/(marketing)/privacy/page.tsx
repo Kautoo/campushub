@@ -51,7 +51,7 @@ export default function PrivacyPolicyPage() {
             <ul className="text-muted text-body-lg leading-relaxed mt-4 list-disc space-y-2 pl-5">
               <li>
                 <span className="text-ink">Account email and name</span> —
-                collected when you register, handled by Supabase Auth.
+                collected when you register, handled by Auth.js credential sessions.
               </li>
               <li>
                 <span className="text-ink">Organization data</span> — the
@@ -101,9 +101,9 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-headline-md text-ink">Data storage</h2>
             <p className="text-muted text-body-lg leading-relaxed mt-4">
-              All data lives in a Supabase Postgres database protected by
-              row-level security, so each account can only read and write the
-              rows it owns.
+              All data lives in a Postgres database (Render Postgres) with
+              application-layer org scoping, so each account can only read and
+              write the rows it owns.
             </p>
           </section>
 
@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
       <footer className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-10 lg:px-8">
           <p className="text-muted text-sm">
-            © CampusHub 2.0 · Built with Next.js, Supabase, and PayPal
+            © CampusHub 2.0 · Built with Next.js, Render Postgres, and PayPal
           </p>
           <nav className="flex gap-6" aria-label="Footer">
             <Link href="/tos" className="link-draw text-muted text-sm hover:text-ink">

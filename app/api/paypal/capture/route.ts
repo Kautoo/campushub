@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { ordersController, paypalConfigured } from "@/lib/paypal";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import {
+  orders,
+  orderItems,
+  transactions,
+  registrations,
+  notifications,
+} from "@/lib/db/repo";
 
 const bodySchema = z.object({
   order_id: z.string().uuid(),
@@ -45,9 +53,13 @@ export async function POST(request: Request) {
   if (!paypalConfigured()) {
     return NextResponse.json({ error: "paypal_not_configured" }, { status: 503 });
   }
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) {
+  const db = getDbSafe();
+  if (!db) {
     return NextResponse.json({ error: "store_unavailable" }, { status: 503 });
+  }
+  const session = await getSessionContext();
+  if (!session) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
@@ -55,13 +67,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const { data: order } = await supabase
-    .from("orders")
-    .select(
-      "id, org_id, order_number, status, paypal_order_id, total_cents, currency",
-    )
-    .eq("id", parsed.data.order_id)
-    .single();
+  const order = await orders.getById(parsed.data.order_id, session.orgIds);
 
   if (!order || !order.paypal_order_id) {
     return NextResponse.json({ error: "order_not_capturable" }, { status: 400 });
@@ -85,15 +91,12 @@ export async function POST(request: Request) {
     }
 
     // Flip order to paid + record verified transaction
-    await supabase
-      .from("orders")
-      .update({
-        status: "paid",
-        paypal_capture_id: captureRef?.id ?? null,
-      })
-      .eq("id", order.id);
+    await orders.updateStatus(order.id, session.orgIds, {
+      status: "paid",
+      paypal_capture_id: captureRef?.id ?? null,
+    });
 
-    await supabase.from("transactions").insert({
+    await transactions.insert({
       org_id: order.org_id,
       order_id: order.id,
       provider: "paypal",
@@ -107,25 +110,13 @@ export async function POST(request: Request) {
     });
 
     // Confirm ticket registrations tied to this order
-    const { data: items } = await supabase
-      .from("order_items")
-      .select("registration_id")
-      .eq("order_id", order.id)
-      .eq("kind", "ticket")
-      .not("registration_id", "is", null);
-
-    const registrationIds = (items ?? [])
-      .map((i) => i.registration_id)
-      .filter((id): id is string => Boolean(id));
+    const registrationIds = await orderItems.listTicketRegistrationIds(order.id);
 
     if (registrationIds.length > 0) {
-      await supabase
-        .from("registrations")
-        .update({ status: "confirmed", paypal_order_id: order.paypal_order_id })
-        .in("id", registrationIds);
+      await registrations.confirmByIds(registrationIds, order.paypal_order_id);
     }
 
-    await supabase.from("notifications").insert({
+    await notifications.insert({
       org_id: order.org_id,
       type: "order",
       title: "New paid order",

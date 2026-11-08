@@ -5,7 +5,7 @@ import { inviteMember, type MemberActionResult } from "@/app/actions/members";
 
 const NOTICES: Record<string, string> = {
   service_role_missing:
-    "Service-role key required for invites — set SUPABASE_SERVICE_ROLE_KEY to enable email invitations.",
+    "Invite requires an account backend — the member record could not be created. Try again.",
 };
 
 /** Email + role invite form for the Members workspace. */

@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
+import { getDbSafe } from "@/lib/db/safe";
+import type { PoolClient } from "pg";
 
 /**
- * Render health check: verifies env presence and (when configured) Supabase
+ * Render health check: verifies env presence and (when configured) database
  * reachability. Never reports ok when prerequisites are missing.
  */
 export async function GET() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const db = getDbSafe();
   const checks: Record<string, string> = {
-    supabase_configured: supabaseUrl ? "ok" : "missing",
+    database_configured: db ? "ok" : "missing",
     paypal_configured:
       process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET
         ? "ok"
@@ -16,19 +18,28 @@ export async function GET() {
       process.env.AI_BASE_URL && process.env.AI_API_KEY ? "ok" : "missing",
   };
 
-  if (supabaseUrl) {
+  if (db) {
     try {
-      const res = await fetch(`${supabaseUrl}/rest/v1/`, {
-        headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "" },
-        signal: AbortSignal.timeout(4000),
-      });
-      checks.supabase_reachable = res.ok ? "ok" : `http_${res.status}`;
+      const { promise: timeout, reject } = Promise.withResolvers<never>();
+      const timer = setTimeout(() => reject(new Error("timeout")), 4000);
+      let client: PoolClient;
+      try {
+        client = await Promise.race([db.connect(), timeout]);
+      } finally {
+        clearTimeout(timer);
+      }
+      try {
+        await client.query("select 1");
+        checks.database_reachable = "ok";
+      } finally {
+        client.release();
+      }
     } catch {
-      checks.supabase_reachable = "unreachable";
+      checks.database_reachable = "unreachable";
     }
   }
 
-  const healthy = checks.supabase_configured === "ok";
+  const healthy = checks.database_configured === "ok";
   return NextResponse.json(
     { status: healthy ? "ok" : "degraded", checks },
     { status: healthy ? 200 : 503 },

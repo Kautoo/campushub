@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
 import { DataTable } from "@/components/grid/data-table";
 import { Badge } from "@/components/ui/badge";
+import { MemberRowActions } from "@/components/workspaces/member-row-actions";
 
 export type MemberRow = {
   id: string;
@@ -17,12 +18,9 @@ export type MemberRow = {
 export function MembersGrid({
   rows,
   canManage,
-  renderActions,
 }: {
   rows: MemberRow[];
   canManage?: boolean;
-  /** Optional per-row actions column (members workspace role change/remove). */
-  renderActions?: (row: MemberRow) => React.ReactNode;
 }) {
   const columnDefs = useMemo<ColDef<MemberRow>[]>(
     () => [
@@ -59,16 +57,14 @@ export function MembersGrid({
               headerName: "",
               sortable: false,
               filter: false,
-              maxWidth: renderActions ? 200 : 120,
-              cellRenderer: renderActions
-                ? (p: { data?: MemberRow }) =>
-                    p.data ? renderActions(p.data) : null
-                : undefined,
+              maxWidth: 200,
+              cellRenderer: (p: { data?: MemberRow }) =>
+                p.data ? <MemberRowActions row={p.data} /> : null,
             } satisfies ColDef<MemberRow>,
           ]
         : []),
     ],
-    [canManage, renderActions],
+    [canManage],
   );
 
   return <DataTable columnDefs={columnDefs} rowData={rows} height={320} />;

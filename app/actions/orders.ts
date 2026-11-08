@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
+import { orders } from "@/lib/db/repo";
 
 export type OrderActionState = { ok?: string; error?: string };
 
@@ -19,18 +21,15 @@ export async function setOrderStatus(
   orderId: string,
   next: "fulfilled" | "cancelled",
 ): Promise<OrderActionState> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
   const parsed = inputSchema.safeParse({ orderId, next });
   if (!parsed.success) return { error: "Invalid order or target status." };
 
-  const { data: rows } = await supabase
-    .from("orders")
-    .select("id, status")
-    .eq("id", parsed.data.orderId)
-    .limit(1);
-  const order = rows?.[0];
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const order = await orders.getById(parsed.data.orderId, session.orgIds);
   if (!order) return { error: "Order not found." };
 
   const allowed: Record<string, string[]> = {
@@ -41,11 +40,10 @@ export async function setOrderStatus(
     return { error: `Cannot move a ${order.status} order to ${parsed.data.next}.` };
   }
 
-  const { error } = await supabase
-    .from("orders")
-    .update({ status: parsed.data.next })
-    .eq("id", parsed.data.orderId);
-  if (error) return { error: error.message };
+  const updated = await orders.updateStatus(order.id, session.orgIds, {
+    status: parsed.data.next,
+  });
+  if (!updated) return { error: "Could not update the order." };
 
   revalidatePath("/dashboard/orders");
   revalidatePath("/dashboard");

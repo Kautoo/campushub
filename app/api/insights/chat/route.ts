@@ -1,4 +1,5 @@
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
 import {
   aiConfigured,
   aiModel,
@@ -7,6 +8,7 @@ import {
 } from "@/lib/ai";
 import { buildMetricsPack } from "@/lib/metrics";
 import { streamText } from "ai";
+import { aiInsights } from "@/lib/db/repo";
 
 
 const bodySchema = { message: "string (min 1)" };
@@ -19,14 +21,12 @@ export async function POST(request: Request) {
   if (!aiConfigured()) {
     return Response.json({ error: "ai_not_configured" }, { status: 503 });
   }
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) {
+  const db = getDbSafe();
+  if (!db) {
     return Response.json({ error: "unavailable" }, { status: 503 });
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const session = await getSessionContext();
+  if (!session) return Response.json({ error: "unauthorized" }, { status: 401 });
 
   let message = "";
   try {
@@ -41,15 +41,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid_body", expected: bodySchema }, { status: 400 });
   }
 
-  const { data: orgs } = await supabase.from("organizations").select("id").limit(1);
-  const orgId = orgs?.[0]?.id;
+  const orgId = session.orgIds[0];
   if (!orgId) return Response.json({ error: "no_org" }, { status: 400 });
 
   const pack = await buildMetricsPack(orgId, 30);
   if (!pack) return Response.json({ error: "pack_failed" }, { status: 500 });
 
   // Persist the question with the grounding window for audit
-  await supabase.from("ai_insights").insert({
+  await aiInsights.insert({
     org_id: orgId,
     kind: "chat",
     prompt: message,

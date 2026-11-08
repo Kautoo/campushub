@@ -1,7 +1,7 @@
 /**
  * HTTP E2E against a booted PRODUCTION standalone server on 127.0.0.1:3400.
  *
- * No Supabase/PayPal env is set in this environment, so this suite exercises
+ * No DATABASE_URL/PayPal env is set in this environment, so this suite exercises
  * the honest-degradation contract: setup-notice pages render 200 and the APIs
  * return 503 — never a fabricated success, never a 500.
  */
@@ -77,7 +77,10 @@ after(async () => {
 test("GET / — landing renders 200 with the campaign headline", async () => {
   const { res, body } = await fetchPage("/");
   assert.equal(res.status, 200);
-  assert.ok(body.includes("Run your campus empire"), "landing must contain hero copy");
+  // RSC output interleaves comment markers/elements between text nodes;
+  // strip tags and collapse whitespace before matching the headline.
+  const text = body.replace(/<!-- -->/g, "").replace(/<[^>]+>/g, " ");
+  assert.match(text.replace(/\s+/g, " "), /Run your campus empire/, "landing must contain hero copy");
 });
 
 test("GET /styleguide — 200", async () => {
@@ -126,13 +129,13 @@ test("GET /register — 200", async () => {
 
 // ---------- API degradation contract ----------
 
-test("GET /api/health — 503 with { status: 'degraded' } when Supabase is unconfigured", async () => {
+test("GET /api/health — 503 with { status: 'degraded' } when the database is unconfigured", async () => {
   const res = await fetch(`${BASE}/api/health`);
   assert.equal(res.status, 503);
   const json = await res.json();
   assert.equal(json.status, "degraded");
   assert.ok(json.checks, "health body must include its check list");
-  assert.equal(json.checks.supabase_configured, "missing");
+  assert.equal(json.checks.database_configured, "missing");
 });
 
 test("GET /api/store-config — 503 when unconfigured", async () => {

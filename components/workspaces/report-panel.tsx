@@ -12,13 +12,13 @@ type ReportType = (typeof REPORT_TYPES)[number]["value"];
 
 const NOTICES: Record<string, string> = {
   service_role_missing:
-    "Service-role key required for exports — set SUPABASE_SERVICE_ROLE_KEY to generate reports.",
+    "Report backend unavailable — could not store the export. Try again.",
   storage_unavailable:
-    "Storage is unavailable — the 'report-exports' bucket could not be reached. Create the bucket in Supabase and try again.",
+    "Storage is unavailable — the file store insert failed. Check the database connection and try again.",
   no_organization:
     "No organization found for your account — set up your org first.",
   unauthorized: "Your session expired — sign in again.",
-  store_unavailable: "Supabase is not configured.",
+  store_unavailable: "Database is not configured (DATABASE_URL missing).",
 };
 
 /** Report type selector + generate button; renders the signed download link. */

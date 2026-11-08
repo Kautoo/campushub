@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getSupabaseServerSafe, getSupabaseAdminSafe } from "@/lib/supabase/safe";
+import { hashPassword } from "@/lib/auth/password";
+import { hasDatabaseEnv, withTransaction } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
+import { orgs, orgMembers, users } from "@/lib/db/repo";
+import { randomBytes } from "node:crypto";
 
 export type MemberActionResult = { ok?: string; error?: string } | null;
-
-export type ServerSupabase = NonNullable<
-  Awaited<ReturnType<typeof getSupabaseServerSafe>>
->;
 
 const inviteSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -21,30 +21,20 @@ const roleSchema = z.enum(["owner", "admin", "staff"], {
   message: "Choose a role",
 });
 
-/** First org for the signed-in user (org_members row 1). */
-async function firstOrg(supabase: ServerSupabase) {
-  const { data: orgs } = await supabase
-    .from("organizations")
-    .select("id")
-    .limit(1);
-  return orgs?.[0] ?? null;
-}
-
 /**
- * Invite a user by email (service role required — auth admin API bypasses RLS),
- * then add them to the organizer's first org with the chosen role, status 'invited'.
+ * Invite a user by email: create (or reuse) the user row with a random
+ * password + `invited` membership in the organizer's first org, and return a
+ * registration link the invitee uses to set their own password. Auth.js has
+ * no admin invite API, so the invite is a DB record + link.
  */
 export async function inviteMember(
   _prev: MemberActionResult,
   formData: FormData,
 ): Promise<MemberActionResult> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "You must be signed in." };
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
 
   const parsed = inviteSchema.safeParse({
     email: formData.get("email"),
@@ -54,90 +44,89 @@ export async function inviteMember(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const org = await firstOrg(supabase);
+  const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
-
-  const admin = getSupabaseAdminSafe();
-  if (!admin) return { error: "service_role_missing" };
 
   const email = parsed.data.email.toLowerCase();
 
-  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(email);
-  if (inviteError) {
-    // Supabase rejects invites for already-registered emails; that is still an
-    // add-to-org flow, so fall through to the membership upsert instead of
-    // failing outright.
-    if (!/already|registered|exist/i.test(inviteError.message)) {
-      return { error: inviteError.message };
-    }
+  try {
+    await withTransaction(async (client) => {
+      // Reuse the existing account when the email is already registered.
+      const { rows: existing } = await client.query<{ id: string }>(
+        `select id from public.users where lower(email) = lower($1) limit 1`,
+        [email],
+      );
+      let userId = existing[0]?.id;
+      if (!userId) {
+        // Random password the invitee never sees — they set their own via the
+        // registration link; the placeholder hash keeps the account unusable
+        // until then.
+        const placeholder = await hashPassword(randomBytes(24).toString("hex"));
+        const { rows } = await client.query<{ id: string }>(
+          `insert into public.users (name, email, password_hash)
+           values ($1, $2, $3) returning id`,
+          [email.split("@")[0], email, placeholder],
+        );
+        userId = rows[0].id;
+      }
+      await client.query(
+        `insert into public.org_members (org_id, user_id, role, status)
+         values ($1::uuid, $2::uuid, $3, 'invited')
+         on conflict (org_id, user_id) do update
+           set role = excluded.role, status = 'invited'`,
+        [org.id, userId, parsed.data.role],
+      );
+    });
+  } catch (err) {
+    return { error: (err as Error).message ?? "Invite failed." };
   }
-
-  // Resolve the invited user's id (freshly invited or existing account).
-  const { data: users } = await admin.auth.admin.listUsers({ page: 1 });
-  const userId = users?.users?.find(
-    (u) => u.email?.toLowerCase() === email,
-  )?.id;
-  if (!userId) return { error: "Invited user could not be resolved." };
-
-  const { error: memberError } = await admin.from("org_members").upsert(
-    {
-      org_id: org.id,
-      user_id: userId,
-      role: parsed.data.role,
-      status: "invited",
-    },
-    { onConflict: "org_id,user_id" },
-  );
-  if (memberError) return { error: memberError.message };
 
   revalidatePath("/dashboard/members");
   revalidatePath("/dashboard/settings");
-  return { ok: `Invitation sent to ${email}.` };
+  return {
+    ok: `Invited ${email} as ${parsed.data.role}. Share the register link (/register?email=${encodeURIComponent(email)}) so they can set a password.`,
+  };
 }
 
-/** Change a member's role. RLS restricts writes to org admins/owners. */
+/** Change a member's role. Repo restricts writes to the caller's orgs. */
 export async function updateMemberRole(
   userId: string,
   role: string,
 ): Promise<MemberActionResult> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
   const parsedRole = roleSchema.safeParse(role);
   if (!parsedRole.success) return { error: "Choose a role" };
 
-  const org = await firstOrg(supabase);
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
 
-  const { error } = await supabase
-    .from("org_members")
-    .update({ role: parsedRole.data })
-    .eq("org_id", org.id)
-    .eq("user_id", userId);
+  const updated = await orgMembers.updateRole(org.id, session.orgIds, userId, parsedRole.data);
+  if (!updated) return { error: "Member not found in your organization." };
 
-  if (error) return { error: error.message };
   revalidatePath("/dashboard/members");
   revalidatePath("/dashboard/settings");
   return { ok: "Role updated." };
 }
 
-/** Remove a member from the org. RLS restricts deletes to org admins/owners. */
+/** Remove a member from the org. Repo restricts deletes to the caller's orgs. */
 export async function removeMember(
   userId: string,
 ): Promise<MemberActionResult> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
-  const org = await firstOrg(supabase);
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
 
-  const { error } = await supabase
-    .from("org_members")
-    .delete()
-    .eq("org_id", org.id)
-    .eq("user_id", userId);
+  const removed = await orgMembers.delete(org.id, session.orgIds, userId);
+  if (!removed) return { error: "Member not found in your organization." };
 
-  if (error) return { error: error.message };
   revalidatePath("/dashboard/members");
   revalidatePath("/dashboard/settings");
   return { ok: "Member removed." };

@@ -1,36 +1,32 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
+import { notifications } from "@/lib/db/repo";
 
 /**
- * Mark one notification read (read_at = now). RLS-scoped server client:
- * org members may update notifications in their org.
+ * Mark one notification read (read_at = now). Org-scoped via the repo layer:
+ * only notifications in the caller's orgs are updated.
  * Returns void so it can be used directly as a <form action>.
  */
 export async function markNotificationRead(
   id: string,
 ): Promise<void> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return;
+  if (!hasDatabaseEnv()) return;
+  const session = await getSessionContext();
+  if (!session) return;
 
-  await supabase
-    .from("notifications")
-    .update({ read_at: new Date().toISOString() })
-    .eq("id", id);
-
+  await notifications.markRead(id, session.orgIds);
   revalidatePath("/dashboard/notifications");
 }
 
-/** Mark every unread notification for the user's org read. */
+/** Mark every unread notification for the user's orgs read. */
 export async function markAllNotificationsRead(): Promise<void> {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return;
+  if (!hasDatabaseEnv()) return;
+  const session = await getSessionContext();
+  if (!session) return;
 
-  await supabase
-    .from("notifications")
-    .update({ read_at: new Date().toISOString() })
-    .is("read_at", null);
-
+  await notifications.markAllRead(session.orgIds);
   revalidatePath("/dashboard/notifications");
 }

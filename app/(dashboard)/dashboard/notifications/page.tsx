@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { markNotificationRead, markAllNotificationsRead } from "@/app/actions/notifications";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { notifications } from "@/lib/db/repo";
 
 export const metadata = { title: "Notifications — CampusHub 2.0" };
 
@@ -95,21 +97,13 @@ function NotificationItem({ n }: { n: NotificationRow }) {
 }
 
 export default async function NotificationsPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="notifications" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="notifications" />;
 
-  const [{ data: { user } }, { data: notifications }] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("notifications")
-      .select("id, type, title, body, link, read_at, created_at")
-      .order("read_at", { ascending: false, nullsFirst: true })
-      .order("created_at", { ascending: false })
-      .limit(100),
-  ]);
-  if (!user) redirect("/login");
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
 
-  const all = (notifications ?? []) as NotificationRow[];
+  const all = (await notifications.list(session.orgIds, 100)) as NotificationRow[];
   const unread = all.filter((n) => n.read_at === null);
   const read = all.filter((n) => n.read_at !== null);
 

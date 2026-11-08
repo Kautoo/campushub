@@ -139,7 +139,7 @@ export default function TermsOfServicePage() {
       <footer className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-10 lg:px-8">
           <p className="text-muted text-sm">
-            © CampusHub 2.0 · Built with Next.js, Supabase, and PayPal
+            © CampusHub 2.0 · Built with Next.js, Render Postgres, and PayPal
           </p>
           <nav className="flex gap-6" aria-label="Footer">
             <Link

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { aiConfigured, aiModel, aiModelId, GROUNDED_SYSTEM_PROMPT } from "@/lib/ai";
 import { buildMetricsPack } from "@/lib/metrics";
 import { generateText } from "ai";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { aiInsights } from "@/lib/db/repo";
 
 
 const bodySchema = z.object({
@@ -25,14 +27,14 @@ export async function POST(request: Request) {
   if (!aiConfigured()) {
     return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
   }
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) {
+  const db = getDbSafe();
+  if (!db) {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const session = await getSessionContext();
+  if (!session) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
@@ -40,8 +42,7 @@ export async function POST(request: Request) {
   }
   const { kind, window_days } = parsed.data;
 
-  const { data: orgs } = await supabase.from("organizations").select("id").limit(1);
-  const orgId = orgs?.[0]?.id;
+  const orgId = session.orgIds[0];
   if (!orgId) return NextResponse.json({ error: "no_org" }, { status: 400 });
 
   const pack = await buildMetricsPack(orgId, window_days);
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       prompt: `${PROMPTS[kind]}\n\nMetrics pack (integer cents, MYR):\n${JSON.stringify(pack)}`,
     });
 
-    await supabase.from("ai_insights").insert({
+    await aiInsights.insert({
       org_id: orgId,
       kind,
       prompt: PROMPTS[kind],
@@ -69,3 +70,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "ai_error" }, { status: 502 });
   }
 }
+

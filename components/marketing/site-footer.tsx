@@ -94,7 +94,7 @@ export function SiteFooter() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 lg:px-8">
           <p className="text-muted text-xs">
             © CampusHub 2.0 · Built with Next.js,
-            Supabase, PayPal, and the Vercel AI SDK
+            Render Postgres, PayPal, and the Vercel AI SDK
           </p>
           <p className="text-muted font-mono text-[11px]">
             status:{" "}

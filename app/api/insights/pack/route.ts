@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { buildMetricsPack } from "@/lib/metrics";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
 
 /**
- * Metrics pack: real aggregates for one org, computed with RLS-scoped reads.
+ * Metrics pack: real aggregates for one org, computed with repo-scoped reads.
  * This is the ONLY data source the AI may use (grounding contract).
  */
 const bodySchema = z.object({
@@ -12,23 +13,17 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) {
+  const db = getDbSafe();
+  if (!db) {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const session = await getSessionContext();
+  if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   const windowDays = parsed.success ? parsed.data.window_days : 30;
 
-  const { data: orgs } = await supabase
-    .from("organizations")
-    .select("id")
-    .limit(1);
-  const orgId = orgs?.[0]?.id;
+  const orgId = session.orgIds[0];
   if (!orgId) return NextResponse.json({ error: "no_org" }, { status: 400 });
 
   const pack = await buildMetricsPack(orgId, windowDays);

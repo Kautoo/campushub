@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { StatStrip } from "@/components/ui/kpi-card";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
@@ -7,57 +7,43 @@ import { Badge } from "@/components/ui/badge";
 import RevenueChart, { type RevenuePoint } from "@/components/charts/revenue-chart-lazy";
 import { formatMoney } from "@/lib/money";
 import { NumberTicker } from "@/components/magicui";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { orders, ticketTiers, products } from "@/lib/db/repo";
 
 export const metadata = { title: "Dashboard — CampusHub 2.0" };
 
-type OrderRow = {
-  id: string;
-  order_number: string;
-  customer_name: string | null;
-  total_cents: number;
-  status: string;
-  created_at: string;
-};
-
 export default async function DashboardOverview() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="the dashboard" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="the dashboard" />;
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
+  const orgIds = session.orgIds;
 
   const since = new Date(Date.now() - 30 * 86400_000).toISOString();
 
-  const [ordersAgg, recent, revenueByDay, tickets, lowStock] =
+  const [paidOrders, recent, revenueByDay, tickets, lowStock] =
     await Promise.all([
-      supabase
-        .from("orders")
-        .select("total_cents, status")
-        .in("status", ["paid", "fulfilled", "refunded"]),
-      supabase
-        .from("orders")
-        .select("id, order_number, customer_name, total_cents, status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(6),
-      supabase
-        .from("orders")
-        .select("total_cents, created_at")
-        .in("status", ["paid", "fulfilled"])
-        .gte("created_at", since),
-      supabase
-        .from("ticket_tiers")
-        .select("sold")
-        .gt("sold", 0),
-      supabase
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "active")
-        .filter("stock", "lte", "low_stock_threshold"),
+      orders.listSimple(orgIds, {
+        statuses: ["paid", "fulfilled", "refunded"],
+      }),
+      orders.listRecent(orgIds, 6),
+      orders.listSimple(orgIds, {
+        statuses: ["paid", "fulfilled"],
+        since,
+      }),
+      ticketTiers.listByOrgs(orgIds),
+      products.list(orgIds),
     ]);
 
-  const paidOrders = ordersAgg.data ?? [];
   const revenueCents = paidOrders.reduce((s, o) => s + o.total_cents, 0);
   const refundedCents = paidOrders
     .filter((o) => o.status === "refunded")
     .reduce((s, o) => s + o.total_cents, 0);
-  const ticketsSold = (tickets.data ?? []).reduce((s, t) => s + t.sold, 0);
+  const ticketsSold = tickets.reduce((s, t) => s + t.sold, 0);
+  const lowStockCount = lowStock.filter(
+    (p) => p.status === "active" && p.stock <= p.low_stock_threshold,
+  ).length;
 
   // Revenue by day (last 30d)
   const byDay = new Map<string, number>();
@@ -65,7 +51,7 @@ export default async function DashboardOverview() {
     const d = new Date(Date.now() - i * 86400_000).toISOString().slice(5, 10);
     byDay.set(d, 0);
   }
-  for (const o of revenueByDay.data ?? []) {
+  for (const o of revenueByDay) {
     const d = o.created_at.slice(5, 10);
     if (byDay.has(d)) byDay.set(d, (byDay.get(d) ?? 0) + o.total_cents);
   }
@@ -74,7 +60,7 @@ export default async function DashboardOverview() {
     cents,
   }));
 
-  const recentOrders = (recent.data ?? []) as OrderRow[];
+  const recentOrders = recent;
   const statusTone: Record<string, "success" | "warning" | "neutral" | "error"> = {
     paid: "success",
     fulfilled: "success",
@@ -119,7 +105,7 @@ export default async function DashboardOverview() {
           },
           {
             label: "Low stock products",
-            value: lowStock.count ?? 0,
+            value: lowStockCount,
             icon: "inventory_2",
             tone: "neutral",
           },

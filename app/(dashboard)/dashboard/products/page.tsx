@@ -1,27 +1,27 @@
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { SetupNotice } from "@/components/layout/setup-notice";
+import { redirect } from "next/navigation";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { StatStrip } from "@/components/ui/kpi-card";
 import { ProductGrid } from "@/components/workspaces/product-grid";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { products } from "@/lib/db/repo";
 
 export const metadata = { title: "Products — CampusHub 2.0" };
 
 export default async function ProductsPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="products" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="products" />;
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
 
-  const [productsRes, movementsRes] = await Promise.all([
-    supabase.from("products").select("*").order("created_at", { ascending: false }),
-    supabase
-      .from("inventory_movements")
-      .select("id, delta, reason, created_at, products(name)")
-      .order("created_at", { ascending: false })
-      .limit(50),
+  const [products_, movements] = await Promise.all([
+    products.list(session.orgIds),
+    products.listMovements(session.orgIds, 50),
   ]);
 
-  const products = productsRes.data ?? [];
-  const active = products.filter((p) => p.status === "active");
-  const inventoryValueCents = products.reduce(
+  const active = products_.filter((p) => p.status === "active");
+  const inventoryValueCents = products_.reduce(
     (s, p) => s + p.stock * p.price_cents,
     0,
   );
@@ -30,15 +30,13 @@ export default async function ProductsPage() {
   ).length;
   const outOfStockCount = active.filter((p) => p.stock === 0).length;
 
-  const movements = (
-    movementsRes.data ?? []
-  ) as unknown as Array<{
-    id: string;
-    delta: number;
-    reason: string;
-    created_at: string;
-    products: { name: string } | null;
-  }>;
+  const movementRows = movements.map((m) => ({
+    id: m.id,
+    delta: m.delta,
+    reason: m.reason,
+    created_at: m.created_at,
+    products: { name: m.product_name } as { name: string } | null,
+  }));
 
   return (
     <div className="space-y-8">
@@ -77,7 +75,7 @@ export default async function ProductsPage() {
       />
 
       <section className="rounded-xl border border-outline-variant bg-surface-lowest">
-        <ProductGrid rows={products} />
+        <ProductGrid rows={products_} />
       </section>
 
       <section className="rounded-xl border border-outline-variant bg-surface-lowest">
@@ -87,7 +85,7 @@ export default async function ProductsPage() {
             Last 50 stock changes across all products
           </p>
         </div>
-        {movements.length === 0 ? (
+        {movementRows.length === 0 ? (
           <EmptyState
             icon="swap_vert"
             title="No inventory movements yet"
@@ -105,7 +103,7 @@ export default async function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {movements.map((m) => (
+              {movementRows.map((m) => (
                 <tr
                   key={m.id}
                   className="border-t border-outline-variant hover:bg-surface-low"

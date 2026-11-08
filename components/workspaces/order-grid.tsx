@@ -2,18 +2,18 @@
 
 import { useMemo, useState } from "react";
 import type { ColDef } from "ag-grid-community";
-import type { TableRow } from "@/lib/supabase/client";
+import type { OrderItemRow, OrderRow } from "@/lib/db/repo";
 import { DataTable } from "@/components/grid/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { OrderDetail } from "@/components/workspaces/order-detail";
 
 export type OrderItemLine = Pick<
-  TableRow["order_items"],
+  OrderItemRow,
   "name_snapshot" | "qty" | "unit_price_cents"
 >;
 
-export type OrderWithItems = TableRow["orders"] & {
+export type OrderWithItems = OrderRow & {
   order_items: OrderItemLine[];
 };
 

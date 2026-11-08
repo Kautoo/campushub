@@ -1,52 +1,42 @@
 import { redirect } from "next/navigation";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { MembersGrid, type MemberRow } from "@/components/settings/members-grid";
 import { MemberInvite } from "@/components/workspaces/member-invite";
-import { MemberRowActions } from "@/components/workspaces/member-row-actions";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { orgs, orgMembers, users } from "@/lib/db/repo";
 
 export const metadata = { title: "Members — CampusHub 2.0" };
 export default async function MembersPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="members" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="members" />;
 
-  const [{ data: { user } }, [orgsRes, membersRes]] = await Promise.all([
-    supabase.auth.getUser(),
-    Promise.all([
-      supabase.from("organizations").select("id, name").limit(1),
-      supabase
-        .from("org_members")
-        .select("org_id, user_id, role, status, created_at")
-        .order("created_at", { ascending: true }),
-    ]),
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
+
+  const [orgList, members] = await Promise.all([
+    orgs.list(session.orgIds),
+    orgMembers.listByOrgs(session.orgIds),
   ]);
-  if (!user) redirect("/login");
 
   // Depends on the resolved user id, so it runs after the parallel batch.
-  const meRes = await supabase
-    .from("org_members")
-    .select("role")
-    .eq("user_id", user.id)
-    .limit(1);
+  const me = await orgMembers.listByUser(session.user.id);
 
-  const org = orgsRes.data?.[0];
+  const org = orgList[0];
   if (!org) return <SetupNotice what="an organization" />;
 
-  const members = (membersRes.data ?? []).filter((m) => m.org_id === org.id);
-  const myRole = meRes.data?.[0]?.role;
+  const orgMembersRows = members.filter((m) => m.org_id === org.id);
+  const myRole = me[0]?.role;
   const canManage = myRole === "owner" || myRole === "admin";
 
-  const userIds = members.map((m) => m.user_id);
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, full_name, avatar_url")
-    .in("id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
-  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  const userIds = orgMembersRows.map((m) => m.user_id);
+  const profiles = await users.listByIds(userIds);
+  const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
-  const memberRows: MemberRow[] = members.map((m) => ({
+  const memberRows: MemberRow[] = orgMembersRows.map((m) => ({
     id: m.user_id,
-    full_name: profileMap.get(m.user_id)?.full_name ?? "—",
+    full_name: profileMap.get(m.user_id)?.name ?? "—",
     role: m.role,
     status: m.status,
     joined: m.created_at,
@@ -71,8 +61,9 @@ export default async function MembersPage() {
           <h3 className="text-headline-sm text-ink mb-3">Invite a member</h3>
           <MemberInvite />
           <p className="text-body-sm text-muted mt-3">
-            The invitee receives a Supabase sign-up email and joins with the
-            selected role and status “invited” until they accept.
+            The invitee gets a member record with status “invited” — share the
+            registration link so they can set a password and join with the
+            selected role.
           </p>
         </section>
       ) : null}
@@ -86,11 +77,7 @@ export default async function MembersPage() {
           />
         ) : (
           <div className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
-            <MembersGrid
-              rows={memberRows}
-              canManage={canManage}
-              renderActions={(row) => <MemberRowActions row={row} />}
-            />
+            <MembersGrid rows={memberRows} canManage={canManage} />
           </div>
         )}
       </section>

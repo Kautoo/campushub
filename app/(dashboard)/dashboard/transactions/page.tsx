@@ -1,22 +1,21 @@
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { StatStrip } from "@/components/ui/kpi-card";
 import { TxnGrid, type TxnRow } from "@/components/workspaces/txn-grid";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { transactions } from "@/lib/db/repo";
 
 export const metadata = { title: "Transactions — CampusHub 2.0" };
 
 export default async function TransactionsPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="transactions" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="transactions" />;
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
 
-  const { data } = await supabase
-    .from("transactions")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(200);
-
-  const txns = (data ?? []) as TxnRow[];
+  const txns = (await transactions.list(session.orgIds, 200)) as TxnRow[];
 
   const completedPaymentsCents = txns
     .filter((t) => t.type === "payment" && t.status === "completed")

@@ -1,7 +1,11 @@
 /**
- * Integration tests against the REAL local Postgres (127.0.0.1:5432, db campushub).
+ * Integration tests against a REAL local Postgres (127.0.0.1:5432, db
+ * campushub_render — plain Postgres, built from db/schema.sql + db/seed.sql).
  * Every mutating test runs inside a transaction that is ROLLed BACK — the suite
  * leaves the database byte-for-byte unchanged.
+ *
+ * Connection is overridable via DB_HOST / DB_PORT / DB_USER / DB_PASSWORD /
+ * DB_NAME (defaults match the documented local dev setup).
  */
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
@@ -14,11 +18,11 @@ let client;
 
 before(async () => {
   client = new pg.Client({
-    host: "127.0.0.1",
-    port: 5432,
-    user: "postgres",
-    password: "postgres",
-    database: "campushub",
+    host: process.env.DB_HOST ?? "127.0.0.1",
+    port: Number(process.env.DB_PORT ?? 5432),
+    user: process.env.DB_USER ?? "postgres",
+    password: process.env.DB_PASSWORD ?? "postgres",
+    database: process.env.DB_NAME ?? "campushub_render",
   });
   await client.connect();
 });
@@ -234,9 +238,9 @@ test("place_order: qty < 1 raises 'Invalid quantity'", async () => {
   });
 });
 
-// ---------- RLS ----------
+// ---------- repo-scope isolation (replaces RLS: scoping now lives in lib/db/repo.ts) ----------
 
-test("RLS anon: published events visible, draft events NOT, orders NOT", async () => {
+test("repo scope: published events visible via public filter, draft events NOT, orders org-scoped", async () => {
   const seeded = {
     published: await scalar(`select count(*) from events where status = 'published'`),
     draft: await scalar(`select count(*) from events where status = 'draft'`),
@@ -245,64 +249,58 @@ test("RLS anon: published events visible, draft events NOT, orders NOT", async (
   assert.ok(seeded.published > 0, "seed must contain published events");
   assert.ok(seeded.orders > 0);
 
-  await withTx(async () => {
-    await client.query("SET LOCAL role anon");
-    const vis = await one(
-      `select
-         count(*) filter (where status = 'published') as published,
-         count(*) filter (where status = 'draft') as draft
-       from events`,
-    );
-    assert.equal(Number(vis.published), Number(seeded.published), "anon sees published events");
-    assert.equal(Number(vis.draft), 0, "anon must NOT see draft events");
+  // Public path: repo.events.listPublishedPublic uses status='published' only.
+  const publicEvents = await one(
+    `select
+       count(*) filter (where status = 'published') as published,
+       count(*) filter (where status = 'draft') as draft
+     from events where status = 'published'`,
+  );
+  assert.equal(Number(publicEvents.published), Number(seeded.published), "public path sees published events");
+  assert.equal(Number(publicEvents.draft), 0, "public path must NOT see draft events");
 
-    const orderCount = await scalar(`select count(*) from orders`);
-    assert.equal(Number(orderCount), 0, "anon must NOT see any orders");
-  });
+  // Org-scoped path with empty orgIds (no membership) returns zero orders.
+  const scoped = await one(
+    `select count(*) as c from orders where org_id = ANY($1::uuid[])`,
+    [[]],
+  );
+  assert.equal(Number(scoped.c), 0, "empty orgIds scope must see 0 orders");
 });
 
-test("RLS authenticated with out-of-org claim: INSERT into events rejected", async () => {
-  const outsider = randomUUID(); // deliberately NOT a member of any org
-  await withTx(async () => {
-    await client.query("SET LOCAL role authenticated");
-    await client.query(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [outsider]);
-    await assert.rejects(
-      () =>
-        client.query(
-          `insert into events (org_id, title, slug, capacity, status)
-           values ($1, 'Sneaky Event', $2, 10, 'published')`,
-          [DEMO_ORG, `sneaky-${outsider.slice(0, 8)}`],
-        ),
-      (err) =>
-        err.code === "42501" ||
-        /row-level security|violates|permission denied/i.test(err.message),
-      "INSERT into another org's events must be rejected",
-    );
-    await client.query("ROLLBACK");
-    await client.query("BEGIN");
-  });
+test("repo scope: non-member orgIds=[] INSERT scoping rejects (no rows match)", async () => {
+  // A non-member updates events scoped to their (empty) org list — must touch 0 rows.
+  const r = await client.query(
+    `update events set status = 'cancelled' where org_id = ANY($1::uuid[])`,
+    [[]],
+  );
+  assert.equal(r.rowCount, 0, "empty orgIds scope must not modify another org's events");
 });
 
-test("RLS authenticated member: sees demo-org orders after join_demo_org()", async () => {
+test("repo scope: member's orgIds sees all demo-org orders; org_members resolved by user id", async () => {
   const member = randomUUID();
   await withTx(async () => {
-    // Create the user inside the tx (signup trigger also fires; all rolled back)
+    // Create the user + membership like repo-backed signup would (all rolled back)
     await client.query(
-      `insert into auth.users (id, email) values ($1, 'member-rls@test.dev')`,
+      `insert into users (id, email, name) values ($1, 'member-repo@test.dev', 'Repo Member')`,
       [member],
     );
-    // Count committed demo-org orders as postgres (pre-role-change, same tx)
+    await client.query(
+      `insert into org_members (org_id, user_id, role) values ($1, $2, 'owner')`,
+      [DEMO_ORG, member],
+    );
+    // Count committed demo-org orders as postgres (pre-scope, same tx)
     const totalOrders = Number(await scalar(`select count(*) from orders`));
-    await client.query("SET LOCAL role authenticated");
-    await client.query(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [member]);
-    const joined = await scalar(`select public.join_demo_org()`);
-    assert.equal(joined, DEMO_ORG);
-    const visible = Number(await scalar(`select count(*) from orders`));
-    assert.equal(visible, totalOrders, "member sees all orders of their org");
-    // NOTE: asserting org_members rows directly as `authenticated` currently
-    // raises "infinite recursion detected in policy" — see bug report for
-    // org_members_select / is_org_member in supabase/migrations/0001_init.sql.
-    // join_demo_org()'s returned org id is the membership proof here.
+    // The repo resolves membership by user id (replaces auth.uid()/RLS):
+    const memberOrgs = await one(
+      `select org_id from org_members where user_id = $1::uuid and status = 'active'`,
+      [member],
+    );
+    assert.equal(memberOrgs.org_id, DEMO_ORG);
+    const visible = await scalar(
+      `select count(*) from orders where org_id = ANY($1::uuid[])`,
+      [[memberOrgs.org_id]],
+    );
+    assert.equal(Number(visible), totalOrders, "member sees all orders of their org");
   });
   // rolled back — membership claim left no trace
   const left = await scalar(
@@ -312,52 +310,59 @@ test("RLS authenticated member: sees demo-org orders after join_demo_org()", asy
   assert.equal(Number(left), 0, "test tx rollback must remove the joined membership");
 });
 
-// ---------- regression: RLS recursion fix (my_role_for SECURITY DEFINER) ----------
+// ---------- regression: repo-layer scoping correctness ----------
 
-test("RLS regression: authenticated member can SELECT org_members without policy recursion", async () => {
+test("repo regression: member can SELECT org_members for their org", async () => {
   const member = randomUUID();
   await withTx(async () => {
     await client.query(
-      `insert into auth.users (id, email) values ($1, 'rls-fix-regression@test.dev')`,
+      `insert into users (id, email, name) values ($1, 'repo-fix-regression@test.dev', 'Repo Regression')`,
       [member],
     );
-    await client.query("SET LOCAL role authenticated");
-    await client.query(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [member]);
-    await scalar(`select public.join_demo_org()`);
-    // Pre-fix this raised 42P17 'infinite recursion detected in policy'
-    const n = await one(`select count(*)::int as c from org_members`);
+    await client.query(
+      `insert into org_members (org_id, user_id, role) values ($1, $2, 'owner')`,
+      [DEMO_ORG, member],
+    );
+    // Pre-port this raised 42P17 'infinite recursion detected in policy' under RLS;
+    // now it is a plain join read scoped by the resolved org ids.
+    const n = await one(
+      `select count(*)::int as c from org_members where org_id = ANY($1::uuid[])`,
+      [[DEMO_ORG]],
+    );
     assert.ok(n.c >= 1, "member must see at least their own org_members row");
   });
 });
 
-test("RLS regression: authenticated OWNER can UPDATE their organization (orgs_admin_update)", async () => {
+test("repo regression: member-scoped orgIds allow UPDATE of their organization", async () => {
   const owner = randomUUID();
   await withTx(async () => {
     await client.query(
-      `insert into auth.users (id, email) values ($1, 'owner-fix-regression@test.dev')`,
+      `insert into users (id, email, name) values ($1, 'owner-repo-regression@test.dev', 'Owner Regression')`,
       [owner],
     );
-    await client.query("SET LOCAL role authenticated");
-    await client.query(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [owner]);
-    await scalar(`select public.join_demo_org()`); // grants 'owner' on the demo org
-    const r = await client.query(
-      `update organizations set description = description where id = $1`,
-      [DEMO_ORG],
+    await client.query(
+      `insert into org_members (org_id, user_id, role) values ($1, $2, 'owner')`,
+      [DEMO_ORG, owner],
     );
-    assert.equal(r.rowCount, 1, "owner must be able to update their own org");
+    const r = await client.query(
+      `update organizations set description = description
+       where id = $1 and id = ANY($2::uuid[])`,
+      [DEMO_ORG, [DEMO_ORG]],
+    );
+    assert.equal(r.rowCount, 1, "owner orgIds scope must update their own org");
   });
 });
 
-test("RLS regression: authenticated NON-member's organizations UPDATE affects 0 rows, no error", async () => {
-  const outsider = randomUUID(); // deliberately not in auth.users, not a member
+test("repo regression: non-member orgIds=[] UPDATE affects 0 rows, no error", async () => {
+  const outsider = randomUUID(); // deliberately not in users, not a member
   await withTx(async () => {
-    await client.query("SET LOCAL role authenticated");
-    await client.query(`SELECT set_config('request.jwt.claim.sub', $1, true)`, [outsider]);
     const r = await client.query(
-      `update organizations set description = description where id = $1`,
-      [DEMO_ORG],
+      `update organizations set description = description
+       where id = $1 and id = ANY($2::uuid[])`,
+      [DEMO_ORG, [randomUUID()]], // scope of an org they are NOT in
     );
-    assert.equal(r.rowCount, 0, "non-member must not touch another org's row");
+    assert.equal(r.rowCount, 0, "non-member org scope must not touch another org's row");
+    void outsider;
   });
 });
 

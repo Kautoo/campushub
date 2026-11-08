@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { Badge } from "@/components/ui/badge";
 import { ReportPanel } from "@/components/workspaces/report-panel";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { reports } from "@/lib/db/repo";
 
 export const metadata = { title: "Reports — CampusHub 2.0" };
 
@@ -22,35 +24,21 @@ function statusTone(status: string): "success" | "warning" | "error" {
 }
 
 export default async function ReportsPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="reports" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="reports" />;
 
-  const [{ data: { user } }, { data: reports }] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("reports")
-      .select("id, type, file_url, status, created_at")
-      .order("created_at", { ascending: false })
-      .limit(25),
-  ]);
-  if (!user) redirect("/login");
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
 
-  const rows = (reports ?? []) as ReportRow[];
+  const rows = (await reports.list(session.orgIds, 25)) as ReportRow[];
 
-  // Fresh 24h signed URLs for ready rows (stored file_url is the bucket
-  // path) — signed in parallel; URL lifetime is independent per row.
-  const readyRows = rows.filter((row) => row.status === "ready" && row.file_url);
-  const signedUrls = await Promise.all(
-    readyRows.map(async (row) => {
-      const { data: signed } = await supabase.storage
-        .from("report-exports")
-        .createSignedUrl(row.file_url as string, 60 * 60);
-      return [row.id, signed?.signedUrl] as const;
-    }),
-  );
+  // Stored file_url is already a token-signed /api/files/<id> route URL
+  // (24h expiry embedded at generation time) — no re-signing needed.
   const downloadUrls = new Map<string, string>();
-  for (const [id, url] of signedUrls) {
-    if (url) downloadUrls.set(id, url);
+  for (const row of rows) {
+    if (row.status === "ready" && row.file_url) {
+      downloadUrls.set(row.id, row.file_url);
+    }
   }
 
   return (

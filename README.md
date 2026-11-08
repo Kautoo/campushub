@@ -1,8 +1,8 @@
 # CampusHub 2.0
 
 AI-powered campus events & commerce SaaS: ticketing, storefront, PayPal
-payments, and **grounded** AI insights — one Next.js app, one Supabase
-project, deployed on Render.
+payments, and **grounded** AI insights — one Next.js app, one Render Postgres
+database, deployed on Render.
 
 ## Stack
 
@@ -10,7 +10,9 @@ project, deployed on Render.
 |---|---|
 | App | Next.js 16 (App Router, standalone output), React 19 |
 | UI | Tailwind CSS v4, HeroUI v3, Magic UI effects, Material Symbols |
-| Data | Supabase (Postgres + RLS, Auth, Storage) |
+| Data | Render Postgres (vanilla Postgres, `pg` pool, repo-layer org scoping) |
+| Auth | Auth.js v5 (next-auth beta) — credentials + encrypted JWT sessions, scrypt password hashes |
+| Files | DB-backed file store (`files` table) with HMAC-signed download routes |
 | Payments | PayPal Orders v2 (`@paypal/paypal-server-sdk`, `@paypal/react-paypal-js`), webhooks with signature verification |
 | AI | Vercel AI SDK (`ai`) over an OpenAI-compatible gateway (default model `glm-5.3-flash`) |
 | Tables | AG Grid Community (MIT) |
@@ -21,6 +23,8 @@ project, deployed on Render.
 
 ```bash
 npm ci
+createdb campushub_render
+psql -d campushub_render -f db/schema.sql -f db/seed.sql
 cp .env.example .env.local    # fill in values below
 npm run dev                   # http://localhost:3000
 ```
@@ -29,9 +33,9 @@ npm run dev                   # http://localhost:3000
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | **yes** | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **yes** | anon key (RLS applies) |
-| `SUPABASE_SERVICE_ROLE_KEY` | yes for webhooks/AI/export | service role (bypasses RLS) — server-only |
+| `DATABASE_URL` | **yes** | Postgres connection string (Render Postgres in production, any local Postgres for dev) |
+| `AUTH_SECRET` | **yes** | Auth.js secret — signs/encrypts session cookies and report-file tokens |
+| `AUTH_TRUST_HOST` | no (set `true` on Render) | needed when the app runs behind a proxy |
 | `PAYPAL_ENV` | no (default `sandbox`) | `sandbox` \| `live` |
 | `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` | yes for checkout | PayPal app credentials |
 | `PAYPAL_CURRENCY` | no (default `MYR`) | falls back to USD if the sandbox account rejects MYR |
@@ -47,32 +51,31 @@ Missing keys never produce fake features: PayPal-less storefront disables
 checkout with a notice; keyless AI shows setup instructions; Channel3 and
 Bryntum degrade to hidden/trial honestly.
 
-## Database setup (Supabase)
+## Database setup (Render Postgres / any Postgres)
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. SQL Editor → run `supabase/migrations/0001_init.sql` (schema, RLS,
-   `place_order` RPC, storage buckets).
-3. For demo data run `supabase/migrations/0002_demo.sql` (Tech Society org,
-   6 events, 12 tiers, 12 products, 40 orders, transactions, notifications).
-4. Register → your user automatically gets a profile + own organization
-   (trigger `handle_new_user`). To attach the demo data instead, run:
-   ```sql
-   select public.join_demo_org();
+1. **Render**: the blueprint (`render.yaml`) creates the `campushub-db`
+   Postgres service and wires `DATABASE_URL` into the web service
+   automatically. **Local**: any Postgres instance works.
+2. Apply the schema and (optionally) the demo seed with psql against your
+   connection string:
+   ```bash
+   psql "$DATABASE_URL" -f db/schema.sql
+   psql "$DATABASE_URL" -f db/seed.sql
    ```
+   `db/seed.sql` creates the "Tech Society" demo org: 6 events, 12 tiers,
+   12 products, 40 orders, transactions, notifications, and demo users.
+3. **Demo login**: sign in at `/login` with `owner@campushub.test` /
+   `admin@campushub.test` / `staff@campushub.test` — password
+   `campushub-demo` (dev/demo affordance; production users register
+   normally at `/register`, which creates their own org).
 
-**RLS model**: every table carries `org_id`; organizer reads/writes are
-policies joining `org_members`. Anonymous visitors can read published events
-and active products only. Webhooks/AI/report exports use the service-role
-key server-side.
-
-### Local schema verification (optional)
-
-The migration was verified against a local Postgres 16 with a stub `auth`
-schema (`auth.users` table + `auth.uid()` from `request.jwt.claim.sub`), the
-Supabase roles (`anon`, `authenticated`, `service_role`), and a
-`storage.foldername()` shim. Verified: seed counts, `place_order` atomic
-stock decrement + fee math, RLS isolation (anon sees only published/active,
-outsider writes rejected, member sees org data).
+**Org scoping model**: every table carries `org_id`; scoping is enforced by
+the repo layer (`lib/db/repo.ts`), which resolves the caller's org
+memberships from the Auth.js session and appends `org_id = ANY($1::uuid[])`
+to every query. Anonymous visitors can read published events and active
+products only (public storefront paths). PayPal webhooks and report exports
+write directly server-side (no user session), mirroring the old
+service-role behavior.
 
 ## PayPal setup
 
@@ -82,10 +85,10 @@ outsider writes rejected, member sees org data).
    `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`,
    `PAYMENT.CAPTURE.REFUNDED` → copy the webhook id into `PAYPAL_WEBHOOK_ID`.
 3. Checkout flow: `/api/checkout` validates items server-side (stock, price,
-   via the `place_order` RPC) → `/api/paypal/create-order` builds the PayPal
-   order from the **DB total** → `/api/paypal/capture` verifies `COMPLETED`
-   before marking the order paid, records a verified transaction, and
-   confirms ticket registrations.
+   via the `place_order` SQL function) → `/api/paypal/create-order` builds
+   the PayPal order from the **DB total** → `/api/paypal/capture` verifies
+   `COMPLETED` before marking the order paid, records a verified
+   transaction, and confirms ticket registrations.
 4. Webhooks verify the transmission signature against `PAYPAL_WEBHOOK_ID`,
    dedupe by `provider_event_id` (unique index), and are idempotent. A
    tampered payload returns 400 and stores nothing.
@@ -97,18 +100,26 @@ outsider writes rejected, member sees org data).
 
 - `POST /api/insights/pack` — builds the metrics pack from real aggregates
   (revenue by day, top products, tier sell-through, refund totals, low
-  stock). Session-authenticated, RLS-scoped.
+  stock). Session-authenticated, org-scoped.
 - `POST /api/insights` — one-click summary/anomaly/recommendation cards.
 - `POST /api/insights/chat` — streaming "Ask your data"; every turn
   re-grounds the model with a fresh pack.
 - System prompt forbids numbers outside the pack; amounts are integer cents.
 - Persisted in `ai_insights` for audit.
 
+## Reports / file exports
+
+`POST /api/reports/export` generates a CSV for your org, stores it in the
+`files` table (DB-backed file store — no external storage service), and
+returns a token-signed download URL (`/api/files/<id>?token=…`, 24h expiry)
+that the reports page lists. Tampered or expired tokens get a 403.
+
 ## Sponsor integrations — what's live vs structured
 
 | Sponsor | Status |
 |---|---|
 | PayPal | Fully implemented (server-side verification + idempotent webhooks). End-to-end sandbox payment requires your sandbox buyer — documented above. |
+| Render Postgres | Fully implemented — `pg` pool, repo-layer org scoping, `place_order` SQL function, DB-backed file store. |
 | AG Grid Community | Live — all dashboard tables. |
 | Bryntum Scheduler | Implemented on the Events page "Timeline" tab with real event data via the Community (MIT) edition. Upgrading to the licensed build = swap the package and set `BRYNTUM_LICENSE_KEY`; the trial banner hides when a license env is present. |
 | Channel3 | Implemented behind `CHANNEL3_API_KEY`; widget hidden without it. Live-tested only with a key. |
@@ -117,11 +128,19 @@ outsider writes rejected, member sees org data).
 ## Deploy to Render
 
 1. Push this repo to GitHub.
-2. Render → **New → Blueprint** → select the repo (uses `render.yaml`).
-3. Fill the `sync:false` env vars in the dashboard (Supabase, PayPal, AI, optional sponsor keys).
-4. Deploy — build `npm ci && npm run build`, start
+2. Render → **New → Blueprint** → select the repo (uses `render.yaml`). The
+   blueprint creates the `campushub-db` Postgres service (basic-1gb) and
+   wires `DATABASE_URL` into the web service.
+3. Fill the `sync:false` env vars in the dashboard (`AUTH_SECRET`, PayPal,
+   AI, optional sponsor keys).
+4. Apply the schema to the Render database once (Get the connection string
+   from the Render dashboard → database → Connections):
+   ```bash
+   psql "<render-connection-string>" -f db/schema.sql -f db/seed.sql
+   ```
+5. Deploy — build `npm ci && npm run build`, start
    `node .next/standalone/server.js`, health check `/api/health`.
-5. In PayPal, point the webhook at `https://<render-url>/api/paypal/webhook`.
+6. In PayPal, point the webhook at `https://<render-url>/api/paypal/webhook`.
 
 ## Project layout
 
@@ -134,11 +153,14 @@ app/(dashboard)/dashboard/  13 workspaces (overview, ai-insights, events,
                             members, notifications, reports, settings, help)
 app/api/                    checkout, paypal/{create-order,capture,webhook},
                             insights/{,pack,chat}, channel3/search,
-                            reports/export, store-config, health
-lib/                        supabase clients, paypal, ai, metrics pack,
-                            channel3, money, rbac, validation, nav
-supabase/migrations/        0001_init.sql, 0002_demo.sql
+                            reports/export, files/[id], auth/[...nextauth],
+                            store-config, health
+lib/db/                     pg pool + repo layer (org-scoped queries)
+lib/auth/                   session context + scrypt password hashing
+lib/files.ts                DB-backed file store + HMAC-signed URLs
+auth.ts                     Auth.js v5 config (credentials, JWT sessions)
+db/                         schema.sql + seed.sql (vanilla Postgres)
 components/                 ui/, layout/, store/, grid/, charts/, workspaces/, magicui/
 agents/                     Astropods agent spec
-render.yaml                 Render blueprint
+render.yaml                 Render blueprint (web service + Postgres database)
 ```

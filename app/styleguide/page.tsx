@@ -279,7 +279,7 @@ export default function StyleguidePage() {
         </div>
         <Row className="mt-4 overflow-hidden rounded-xl border border-outline-variant py-3">
           <Marquee pauseOnHover className="[--duration:18s]">
-            {["PayPal", "Supabase", "Vercel AI SDK", "AG Grid", "Bryntum", "Channel3", "Astropods"].map(
+            {["PayPal", "Render Postgres", "Vercel AI SDK", "AG Grid", "Bryntum", "Channel3", "Astropods"].map(
               (n) => (
                 <span
                   key={n}

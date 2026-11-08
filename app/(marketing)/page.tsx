@@ -26,7 +26,7 @@ import { SectionHeader } from "@/components/ui/primitives";
 
 const HERO_ICONS = [
   { name: "PayPal", icon: "account_balance_wallet" },
-  { name: "Supabase", icon: "database" },
+  { name: "Render Postgres", icon: "database" },
   { name: "AI SDK", icon: "auto_awesome" },
   { name: "AG Grid", icon: "table_chart" },
   { name: "Bryntum", icon: "calendar_month" },
@@ -130,7 +130,7 @@ export default function LandingPage() {
       {/* Proof band */}
       <section className="border-y border-outline-variant py-5" aria-label="Built with">
         <Marquee pauseOnHover className="[--duration:22s]">
-          {["PayPal", "Supabase", "Vercel AI SDK", "AG Grid", "Bryntum Scheduler", "Channel3", "Astropods", "Magic UI"].map(
+          {["PayPal", "Render Postgres", "Vercel AI SDK", "AG Grid", "Bryntum Scheduler", "Channel3", "Astropods", "Magic UI"].map(
             (n) => (
               <span key={n} className="text-muted mx-8 flex items-center gap-2 whitespace-nowrap text-sm font-medium">
                 <span className="material-symbols-outlined text-[14px] text-primary">bolt</span>
@@ -317,7 +317,7 @@ export default function LandingPage() {
             className="text-display text-ink"
           />
           <p className="text-muted mx-auto mt-4 max-w-xl text-lg leading-relaxed">
-            Connect Supabase, add PayPal sandbox keys, and sell at your next
+            Connect a Postgres database, add PayPal sandbox keys, and sell at your next
             event — with every number grounded in your own data.
           </p>
           <Magnetic className="mt-9">

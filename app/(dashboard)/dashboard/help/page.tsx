@@ -4,39 +4,27 @@ export const metadata = { title: "Help — CampusHub 2.0" };
 
 const FAQS: { id: string; icon: string; question: string; answer: React.ReactNode }[] = [
   {
-    id: "supabase",
+    id: "database",
     icon: "database",
-    question: "How do I connect my Supabase project?",
+    question: "How do I connect my Postgres database?",
     answer: (
       <>
         <p>
-          Create a project at{" "}
-          <a
-            href="https://supabase.com/dashboard"
-            className="text-secondary underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            supabase.com/dashboard
-          </a>
-          , then set{" "}
-          <code className="font-mono text-[12px]">NEXT_PUBLIC_SUPABASE_URL</code>{" "}
-          and{" "}
-          <code className="font-mono text-[12px]">
-            NEXT_PUBLIC_SUPABASE_ANON_KEY
-          </code>{" "}
-          in your <code className="font-mono text-[12px]">.env.local</code>. For
-          invites and CSV exports, also add{" "}
-          <code className="font-mono text-[12px]">SUPABASE_SERVICE_ROLE_KEY</code>{" "}
-          (server-only, never exposed to the browser).
+          CampusHub runs on any Postgres database (Render Postgres on
+          production). Set{" "}
+          <code className="font-mono text-[12px]">DATABASE_URL</code> and{" "}
+          <code className="font-mono text-[12px]">AUTH_SECRET</code> in your{" "}
+          <code className="font-mono text-[12px]">.env.local</code>. On Render,
+          the blueprint wires{" "}
+          <code className="font-mono text-[12px]">DATABASE_URL</code> from the{" "}
+          <code className="font-mono text-[12px]">campushub-db</code> service
+          automatically.
         </p>
         <p>
-          Apply the schema by running the SQL in{" "}
-          <code className="font-mono text-[12px]">supabase/migrations/</code>{" "}
-          against your project’s SQL editor, and create the storage buckets{" "}
-          <code className="font-mono text-[12px]">product-images</code>,{" "}
-          <code className="font-mono text-[12px]">event-covers</code>, and{" "}
-          <code className="font-mono text-[12px]">report-exports</code>.
+          Apply the schema by running{" "}
+          <code className="font-mono text-[12px]">db/schema.sql</code> then{" "}
+          <code className="font-mono text-[12px]">db/seed.sql</code> against
+          your database (see the README for the psql invocation).
         </p>
       </>
     ),

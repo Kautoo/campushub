@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** Rendered when a hard prerequisite (Supabase env / org data) is missing. */
+/** Rendered when a hard prerequisite (DATABASE_URL / org data) is missing. */
 export function SetupNotice({
   what,
   hint,
@@ -18,18 +18,13 @@ export function SetupNotice({
           Setup needed for {what}
         </h1>
         <p className="text-body-md text-muted mt-2">
-          CampusHub needs Supabase credentials to run. Set{" "}
-          <code className="font-mono text-[12px]">
-            NEXT_PUBLIC_SUPABASE_URL
-          </code>{" "}
-          and{" "}
-          <code className="font-mono text-[12px]">
-            NEXT_PUBLIC_SUPABASE_ANON_KEY
-          </code>{" "}
-          in <code className="font-mono text-[12px]">.env.local</code>, then
-          apply the SQL in{" "}
-          <code className="font-mono text-[12px]">supabase/migrations/</code>.
-          See the README for the full setup.
+          CampusHub needs a Postgres database to run. Set{" "}
+          <code className="font-mono text-[12px]">DATABASE_URL</code> and{" "}
+          <code className="font-mono text-[12px]">AUTH_SECRET</code> in{" "}
+          <code className="font-mono text-[12px]">.env.local</code>, then apply
+          the SQL in <code className="font-mono text-[12px]">db/schema.sql</code>{" "}
+          and <code className="font-mono text-[12px]">db/seed.sql</code>. See the
+          README for the full setup.
         </p>
         {hint ? (
           <p className="text-body-sm text-muted mt-3">{hint}</p>

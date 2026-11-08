@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ColDef } from "ag-grid-community";
-import type { TableRow } from "@/lib/supabase/client";
+import type { ProductRow as RepoProductRow } from "@/lib/db/repo";
 import { DataTable } from "@/components/grid/data-table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
@@ -14,7 +14,7 @@ import {
 } from "@/components/workspaces/product-modal";
 import { ProductStatusButton } from "@/components/workspaces/product-actions";
 
-export type ProductRow = TableRow["products"];
+export type ProductRow = RepoProductRow;
 
 const statusTone: Record<
   ProductRow["status"],

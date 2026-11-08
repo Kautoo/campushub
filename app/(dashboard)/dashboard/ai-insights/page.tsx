@@ -1,4 +1,4 @@
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader } from "@/components/ui/primitives";
 import { Badge } from "@/components/ui/badge";
@@ -8,27 +8,23 @@ import { AnimatedBeamDemo } from "@/components/workspaces/insights-diagram";
 import { aiConfigured, aiModelId } from "@/lib/ai";
 import { hasChannel3 } from "@/lib/channel3";
 import { MarketDiscovery } from "@/components/workspaces/market-discovery";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { aiInsights } from "@/lib/db/repo";
 
 export const metadata = { title: "AI Insights — CampusHub 2.0" };
 
 export default async function AiInsightsPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="AI insights" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="AI insights" />;
 
-  const [{ data: { user } }, [recentRes, orgsRes]] = await Promise.all([
-    supabase.auth.getUser(),
-    Promise.all([
-      supabase
-        .from("ai_insights")
-        .select("id, kind, prompt, response, model, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase.from("organizations").select("id").limit(1),
-    ]),
-  ]);
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
+
+  const recent = await aiInsights.listRecent(session.orgIds, 5);
 
   const aiReady = aiConfigured();
-  const orgReady = Boolean(orgsRes.data?.[0]);
+  const orgReady = session.orgIds.length > 0;
 
   return (
     <div className="space-y-8">
@@ -44,7 +40,7 @@ export default async function AiInsightsPage() {
       />
 
       <InsightGenerator
-        disabled={!aiReady || !orgReady || !user}
+        disabled={!aiReady || !orgReady || !session}
         notice={
           !orgReady
             ? "Create your organization first — insights need data."
@@ -54,7 +50,7 @@ export default async function AiInsightsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <InsightsChat
-          disabled={!aiReady || !orgReady || !user}
+          disabled={!aiReady || !orgReady || !session}
           notice={
             !orgReady
               ? "Create your organization first."
@@ -79,13 +75,13 @@ export default async function AiInsightsPage() {
 
       <section>
         <h3 className="text-headline-sm text-ink mb-3">Recent insights</h3>
-        {(recentRes.data ?? []).length === 0 ? (
+        {(recent).length === 0 ? (
           <p className="text-body-sm text-muted">
             Nothing yet — generate a summary or ask a question above.
           </p>
         ) : (
           <ul className="space-y-3">
-            {(recentRes.data ?? []).map((i) => (
+            {recent.map((i) => (
               <li
                 key={i.id}
                 className="rounded-xl border border-outline-variant bg-surface-lowest p-4"

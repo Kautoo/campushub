@@ -5,14 +5,14 @@ import { AnimatedBeam } from "@/components/magicui";
 import { Icon } from "@/components/ui/icon";
 
 /**
- * Animated-beam diagram: storefront → CampusHub → (PayPal, Supabase, AI).
+ * Animated-beam diagram: storefront → CampusHub → (PayPal, Render Postgres, AI).
  * Purely decorative data-flow visualization per the Stitch AI screen.
  */
 export function AnimatedBeamDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const hubRef = useRef<HTMLDivElement>(null);
   const paypalRef = useRef<HTMLDivElement>(null);
-  const supabaseRef = useRef<HTMLDivElement>(null);
+  const dbRef = useRef<HTMLDivElement>(null);
   const aiRef = useRef<HTMLDivElement>(null);
 
   const node =
@@ -32,10 +32,10 @@ export function AnimatedBeamDemo() {
           <span className="text-label-sm text-muted">PayPal</span>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <div ref={supabaseRef} className={node}>
+          <div ref={dbRef} className={node}>
             <Icon name="database" size={22} />
           </div>
-          <span className="text-label-sm text-muted">Supabase</span>
+          <span className="text-label-sm text-muted">Render Postgres</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <div
@@ -54,7 +54,7 @@ export function AnimatedBeamDemo() {
         </div>
 
         <AnimatedBeam containerRef={containerRef} fromRef={paypalRef} toRef={hubRef} />
-        <AnimatedBeam containerRef={containerRef} fromRef={supabaseRef} toRef={hubRef} delay={0.5} />
+        <AnimatedBeam containerRef={containerRef} fromRef={dbRef} toRef={hubRef} delay={0.5} />
         <AnimatedBeam containerRef={containerRef} fromRef={aiRef} toRef={hubRef} delay={1} />
       </div>
       <p className="text-body-sm text-muted mt-2">

@@ -2,12 +2,12 @@
 
 import { useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
-import type { TableRow } from "@/lib/supabase/client";
+import type { TransactionRow } from "@/lib/db/repo";
 import { DataTable } from "@/components/grid/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 
-export type TxnRow = TableRow["transactions"];
+export type TxnRow = TransactionRow;
 
 const statusTone: Record<string, "success" | "warning" | "error" | "neutral"> = {
   completed: "success",

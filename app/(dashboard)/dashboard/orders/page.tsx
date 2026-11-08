@@ -1,29 +1,29 @@
-import { getSupabaseServerSafe } from "@/lib/supabase/safe";
+import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { StatStrip } from "@/components/ui/kpi-card";
 import { OrderGrid, type OrderWithItems } from "@/components/workspaces/order-grid";
+import { getDbSafe } from "@/lib/db/safe";
+import { getSessionContext } from "@/lib/auth/session";
+import { orders } from "@/lib/db/repo";
 
 export const metadata = { title: "Orders — CampusHub 2.0" };
 
 export default async function OrdersPage() {
-  const supabase = await getSupabaseServerSafe();
-  if (!supabase) return <SetupNotice what="orders" />;
+  const db = getDbSafe();
+  if (!db) return <SetupNotice what="orders" />;
+  const session = await getSessionContext();
+  if (!session) redirect("/login");
 
-  const { data } = await supabase
-    .from("orders")
-    .select("*, order_items(name_snapshot, qty, unit_price_cents)")
-    .order("created_at", { ascending: false })
-    .limit(200);
+  const fetched = await orders.listWithItems(session.orgIds, 200);
+  const orderRows = fetched as unknown as OrderWithItems[];
 
-  const orders = (data ?? []) as unknown as OrderWithItems[];
-
-  const paidOrFulfilled = orders.filter(
+  const paidOrFulfilled = orderRows.filter(
     (o) => o.status === "paid" || o.status === "fulfilled",
   );
   const revenueCents = paidOrFulfilled.reduce((s, o) => s + o.total_cents, 0);
-  const pendingCount = orders.filter((o) => o.status === "pending").length;
-  const refundedCents = orders
+  const pendingCount = orderRows.filter((o) => o.status === "pending").length;
+  const refundedCents = orderRows
     .filter((o) => o.status === "refunded")
     .reduce((s, o) => s + o.total_cents, 0);
   const avgOrderCents =
@@ -70,7 +70,7 @@ export default async function OrdersPage() {
       />
 
       <section className="rounded-xl border border-outline-variant bg-surface-lowest">
-        {orders.length === 0 ? (
+        {orderRows.length === 0 ? (
           <EmptyState
             icon="receipt_long"
             title="No orders yet"
@@ -78,7 +78,7 @@ export default async function OrdersPage() {
             className="m-4"
           />
         ) : (
-          <OrderGrid rows={orders} />
+          <OrderGrid rows={orderRows} />
         )}
       </section>
     </div>

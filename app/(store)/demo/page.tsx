@@ -1,5 +1,4 @@
-import { hasSupabaseEnv } from "@/lib/supabase/safe";
-import { supabasePublic } from "@/lib/supabase/client";
+import { hasDatabaseEnv, getPool } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { Badge } from "@/components/ui/badge";
 import { CartPill } from "@/components/store/cart-pill";
@@ -38,48 +37,82 @@ type StorefrontData = {
 };
 
 /**
- * Public storefront data via the cookie-less anon client (same RLS as a
- * guest visitor). Cached and tagged "storefront"; the checkout API calls
- * revalidateTag("storefront") after a successful place_order so paid
- * stock and sold counts go fresh.
+ * Public storefront data — vanilla SQL against the pool (public read paths:
+ * first org, active products, published events with their tiers). Cached and
+ * tagged "storefront"; the checkout API calls revalidateTag("storefront")
+ * after a successful place_order so paid stock and sold counts go fresh.
  */
 async function getStorefrontData(): Promise<StorefrontData | null> {
   "use cache";
   cacheLife("minutes");
   cacheTag("storefront");
 
-  const supabase = supabasePublic();
-
-  const [orgsRes, productsRes, eventsRes] = await Promise.all([
-    supabase.from("organizations").select("id, name, currency").limit(1),
-    supabase
-      .from("products")
-      .select("id, name, slug, description, category, price_cents, stock")
-      .eq("status", "active")
-      .order("price_cents"),
-    supabase
-      .from("events")
-      .select(
-        "id, title, description, venue, category, start_at, ticket_tiers(id, name, price_cents, quantity, sold)",
-      )
-      .eq("status", "published")
-      .order("start_at"),
+  const pool = getPool();
+  const [orgRes, productsRes, eventsRes] = await Promise.all([
+    pool.query<{ id: string; name: string; currency: string }>(
+      `select id, name, currency from public.organizations
+       order by created_at asc limit 1`,
+    ),
+    pool.query<ProductRow>(
+      `select id, name, slug, description, category, price_cents, stock
+       from public.products
+       where status = 'active'
+       order by price_cents asc`,
+    ),
+    pool.query<EventRow & { tier_id: string | null; tier_name: string | null; tier_price_cents: number | null; tier_quantity: number | null; tier_sold: number | null }>(
+      `select e.id, e.title, e.description, e.venue, e.category, e.start_at,
+              tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
+              tt.quantity as tier_quantity, tt.sold as tier_sold
+       from public.events e
+       left join public.ticket_tiers tt on tt.event_id = e.id
+       where e.status = 'published'
+       order by e.start_at asc`,
+    ),
   ]);
 
-  const org = orgsRes.data?.[0];
+  const org = orgRes.rows[0];
   if (!org) return null;
+
+  // Fold the event×tier join rows back into nested tiers.
+  const events: EventRow[] = [];
+  const byEvent = new Map<string, EventRow>();
+  for (const row of eventsRes.rows) {
+    let e = byEvent.get(row.id);
+    if (!e) {
+      e = {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        venue: row.venue,
+        category: row.category,
+        start_at: row.start_at,
+        tiers: [],
+      };
+      byEvent.set(row.id, e);
+      events.push(e);
+    }
+    if (row.tier_id) {
+      e.tiers.push({
+        id: row.tier_id,
+        name: row.tier_name ?? "",
+        price_cents: row.tier_price_cents ?? 0,
+        quantity: row.tier_quantity ?? 0,
+        sold: row.tier_sold ?? 0,
+      });
+    }
+  }
 
   return {
     org: { id: org.id, name: org.name, currency: org.currency },
-    products: (productsRes.data ?? []) as ProductRow[],
-    events: (eventsRes.data ?? []) as unknown as EventRow[],
+    products: productsRes.rows,
+    events,
   };
 }
 
 export default async function DemoStorefront() {
   // Env-missing branch stays uncached so a fresh deploy with env vars
   // picked up later is not shadowed by a cached setup notice.
-  if (!hasSupabaseEnv()) return <SetupNotice what="the storefront" />;
+  if (!hasDatabaseEnv()) return <SetupNotice what="the storefront" />;
 
   const data = await getStorefrontData();
   if (!data) return <SetupNotice what="store data" />;

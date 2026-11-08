@@ -1,52 +1,52 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 /**
- * Refreshes the Supabase session and gates /dashboard/**.
- * Unauthenticated dashboard visits redirect to /login?next=<path>.
+ * Gates /dashboard/** using the Auth.js JWT session cookie (optimistic check
+ * only — no DB in the proxy). Unauthenticated dashboard visits redirect to
+ * /login?next=<path>; logged-in users are redirected away from /login and
+ * /register.
  */
+const SESSION_COOKIE = "authjs.session-token";
+const SECURE_SESSION_COOKIE = `__Secure-${SESSION_COOKIE}`;
+
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next({ request });
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return response; // app renders setup notices
-
-  const supabase = createServerClient(url, anonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value),
-        );
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, options),
-        );
-      },
-    },
-  });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/dashboard") && !user) {
+
+  // Without DATABASE_URL there is no auth backend: let dashboard requests
+  // through so pages render their honest setup notices (degradation contract).
+  const unconfigured = !process.env.DATABASE_URL;
+
+  const token = unconfigured
+    ? null
+    : (await getToken({
+        req: request,
+        secret: process.env.AUTH_SECRET,
+        cookieName: SECURE_SESSION_COOKIE,
+      })) ??
+      (await getToken({
+        req: request,
+        secret: process.env.AUTH_SECRET,
+        cookieName: SESSION_COOKIE,
+      }));
+
+  const signedIn = Boolean(token?.sub);
+
+  if (!unconfigured && pathname.startsWith("/dashboard") && !signedIn) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/login";
+    redirect.search = "";
     redirect.searchParams.set("next", pathname);
     return NextResponse.redirect(redirect);
   }
-  if ((pathname === "/login" || pathname === "/register") && user) {
+  if (!unconfigured && (pathname === "/login" || pathname === "/register") && signedIn) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/dashboard";
     redirect.search = "";
     return NextResponse.redirect(redirect);
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
