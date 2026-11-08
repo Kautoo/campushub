@@ -1,21 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@heroui/react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   Meteors,
   Marquee,
   BlurFade,
   ShimmerButton,
 } from "@/components/magicui";
-import GlobeLazy from "@/components/magicui/globe-lazy";
-import HeroBackgroundLazy from "@/components/marketing/hero-background-lazy";
+import { SiteNav } from "@/components/marketing/site-nav";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { CenterHero } from "@/components/marketing/center-hero";
 import { RevealHeading } from "@/components/marketing/reveal-heading";
 import { StoryActs } from "@/components/marketing/story-acts";
-import {
-  StatWall,
-  SectionBeat,
-} from "@/components/marketing/premium-sections";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { GetStartedGradientButton, TryAiButton } from "@/components/marketing/cta-buttons";
+import { StatWall, SectionBeat } from "@/components/marketing/premium-sections";
+import { TryAiButton } from "@/components/marketing/cta-buttons";
 import { Magnetic } from "@/components/marketing/magnetic";
 import { TypewriterInsight } from "@/components/marketing/typewriter-insight";
 import { DashboardMock } from "@/components/marketing/dashboard-mock";
@@ -23,11 +23,21 @@ import { Badge } from "@/components/ui/badge";
 import { IconTile } from "@/components/ui/icon";
 import { SectionHeader } from "@/components/ui/primitives";
 
-export const metadata = {
-  title: "CampusHub 2.0 — AI-powered campus events & commerce",
-  description:
-    "Ticketing, storefront, PayPal payments, and grounded AI insights for campus organizations. One hub, real numbers.",
-};
+const HERO_STATS = [
+  { value: "RM 45,230", label: "revenue tracked" },
+  { value: "2,847", label: "members" },
+  { value: "1,420", label: "tickets sold" },
+  { value: "40+", label: "orders in demo" },
+];
+
+const HERO_ICONS = [
+  { name: "PayPal", icon: "account_balance_wallet" },
+  { name: "Supabase", icon: "database" },
+  { name: "AI SDK", icon: "auto_awesome" },
+  { name: "AG Grid", icon: "table_chart" },
+  { name: "Bryntum", icon: "calendar_month" },
+  { name: "Next.js", icon: "code_blocks" },
+];
 
 const STORY_ACTS = [
   {
@@ -35,7 +45,11 @@ const STORY_ACTS = [
     eyebrow: "Launch",
     title: "Go live in minutes, not weeks",
     body: "Create the event, set tiered pricing, and publish to your storefront before the meeting ends.",
-    bullets: ["Tiered tickets with capacity control", "Perk lists and per-order limits", "One toggle from draft to published"],
+    bullets: [
+      "Tiered tickets with capacity control",
+      "Perk lists and per-order limits",
+      "One toggle from draft to published",
+    ],
     icon: "rocket_launch",
   },
   {
@@ -43,7 +57,11 @@ const STORY_ACTS = [
     eyebrow: "Sell",
     title: "Every sale, verified by PayPal",
     body: "Guest checkout converts browsers at the booth and on their phones — stock stays honest because the server decides.",
-    bullets: ["Atomic stock — no oversell, ever", "Capture verified server-side", "Idempotent webhooks, refund tracking"],
+    bullets: [
+      "Atomic stock — no oversell, ever",
+      "Capture verified server-side",
+      "Idempotent webhooks, refund tracking",
+    ],
     icon: "storefront",
   },
   {
@@ -51,7 +69,11 @@ const STORY_ACTS = [
     eyebrow: "Understand",
     title: "AI that only knows your numbers",
     body: "Weekly summaries, anomaly scans, and recommendations computed from a live metrics pack — nothing invented.",
-    bullets: ["Streaming “ask your data” chat", "Sell-through and refund anomalies", "Every answer cites real aggregates"],
+    bullets: [
+      "Streaming “ask your data” chat",
+      "Sell-through and refund anomalies",
+      "Every answer cites real aggregates",
+    ],
     icon: "auto_awesome",
   },
 ];
@@ -108,108 +130,12 @@ const INSIGHT_TEXT =
 export default function LandingPage() {
   return (
     <div className="bg-background">
-      {/* Nav */}
-      <header className="sticky top-0 z-40 border-b border-outline-variant bg-surface-lowest/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub 2.0 home">
-            <span className="bg-primary-container flex h-9 w-9 items-center justify-center rounded-lg text-white transition-transform duration-200 hover:scale-105 dark:bg-primary dark:text-[#00201c]">
-              <span className="material-symbols-outlined text-[20px]">hub</span>
-            </span>
-            <span className="text-headline-sm text-ink">CampusHub</span>
-            <span className="hidden rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-muted sm:block">
-              2.0
-            </span>
-          </Link>
-          <nav className="ml-8 hidden gap-6 md:flex" aria-label="Primary">
-            <a href="#story" className="link-draw text-label-lg text-muted hover:text-ink">Product</a>
-            <a href="#features" className="link-draw text-label-lg text-muted hover:text-ink">Features</a>
-            <a href="#pricing" className="link-draw text-label-lg text-muted hover:text-ink">Pricing</a>
-            <Link href="/demo" className="link-draw text-label-lg text-muted hover:text-ink">Storefront</Link>
-          </nav>
-          <div className="ml-auto flex items-center gap-3">
-            <ThemeToggle />
-            <Link href="/login" className="link-draw hidden text-label-lg text-muted hover:text-ink sm:block">
-              Sign in
-            </Link>
-            <Link
-              href="/register"
-              className="btn-step bg-primary text-white dark:text-[#00201c] focus-aura inline-flex h-10 items-center rounded-full px-5 text-label-md font-semibold"
-            >
-              Get started
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteNav />
 
-      {/* ACT I — the dark cinematic hero, one screen alone */}
-      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-[#070d18] text-white">
-        <div className="animate-gradient-flow bg-gradient-kinetic absolute inset-0 opacity-30" aria-hidden />
-        <div className="absolute inset-0" aria-hidden>
-          <HeroBackgroundLazy />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#070d18]/70 via-[#070d18]/20 to-transparent" aria-hidden />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#070d18] to-transparent" aria-hidden />
+      {/* ACT I — centered airy hero over interactive dots + glow bar */}
+      <CenterHero stats={HERO_STATS} techIcons={HERO_ICONS} />
 
-        <div className="relative mx-auto w-full max-w-6xl px-4 py-24 lg:px-8">
-          <div className="max-w-3xl">
-            <BlurFade>
-              <p className="font-mono text-label-sm uppercase tracking-[0.2em] text-[var(--st-primary)]">
-                Campus events · Commerce · Payments
-              </p>
-            </BlurFade>
-            <BlurFade delay={0.08}>
-              <h1 className="mt-5 text-[clamp(2.75rem,7vw,4.75rem)] font-bold leading-[1.02] tracking-[-0.03em] text-white">
-                Run your campus{" "}
-                <span className="font-editorial font-medium italic text-[var(--st-primary)]">
-                  empire
-                </span>{" "}
-                from one hub.
-              </h1>
-            </BlurFade>
-            <BlurFade delay={0.16}>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
-                Ticketing, storefront, and PayPal payments for campus
-                societies — with AI answers computed from your real numbers.
-              </p>
-            </BlurFade>
-            <BlurFade delay={0.24}>
-              <div className="mt-9 flex flex-wrap items-center gap-4">
-                <Magnetic>
-                  <GetStartedGradientButton />
-                </Magnetic>
-                <Link href="/demo">
-                  <ShimmerButton className="btn-step h-11 px-6">
-                    Visit the demo store →
-                  </ShimmerButton>
-                </Link>
-              </div>
-            </BlurFade>
-            <BlurFade delay={0.32}>
-              <p className="mt-7 flex items-center gap-2 text-sm text-white/60">
-                <span className="material-symbols-outlined text-[16px] text-[var(--st-tertiary-fixed-dim)]">
-                  verified
-                </span>
-                <span>
-                  <strong className="tabular-nums text-white">RM 45,230</strong>{" "}
-                  tracked in the demo workspace — free to explore, no signup.
-                </span>
-              </p>
-            </BlurFade>
-          </div>
-
-          <div className="pointer-events-none absolute right-[-120px] top-1/2 hidden -translate-y-1/2 opacity-90 xl:block">
-            <GlobeLazy />
-          </div>
-        </div>
-
-        <div className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 md:block" aria-hidden>
-          <span className="material-symbols-outlined animate-bounce text-[20px] text-white/40">
-            keyboard_arrow_down
-          </span>
-        </div>
-      </section>
-
-      {/* ACT II — social proof band */}
+      {/* Proof band */}
       <section className="border-y border-outline-variant py-5" aria-label="Built with">
         <Marquee pauseOnHover className="[--duration:22s]">
           {["PayPal", "Supabase", "Vercel AI SDK", "AG Grid", "Bryntum Scheduler", "Channel3", "Astropods", "Magic UI"].map(
@@ -223,7 +149,7 @@ export default function LandingPage() {
         </Marquee>
       </section>
 
-      {/* ACT III — the product, live */}
+      {/* ACT II — the product, live */}
       <section id="story" className="mx-auto max-w-6xl px-4 py-24 lg:px-8">
         <BlurFade>
           <SectionHeader
@@ -241,7 +167,7 @@ export default function LandingPage() {
 
       <SectionBeat />
 
-      {/* ACT IV — the scroll story: launch → sell → understand */}
+      {/* ACT III — scroll story */}
       <section className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
         <BlurFade>
           <p className="font-mono text-label-sm text-muted uppercase tracking-[0.2em]">
@@ -260,7 +186,7 @@ export default function LandingPage() {
 
       <SectionBeat />
 
-      {/* ACT V — bento features + the stat wall */}
+      {/* ACT IV — bento + stat wall */}
       <section id="features" className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
         <BlurFade>
           <RevealHeading text="Everything a society needs" className="text-display text-ink" />
@@ -289,7 +215,7 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ACT VI — the AI moment */}
+      {/* ACT V — AI moment */}
       <section className="relative overflow-hidden border-y border-outline-variant bg-surface-low py-24">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 lg:grid-cols-2 lg:px-8">
           <div>
@@ -326,7 +252,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ACT VII — pricing */}
+      {/* ACT VI — pricing */}
       <section id="pricing" className="mx-auto max-w-6xl px-4 py-24 lg:px-8">
         <BlurFade>
           <RevealHeading text="Simple pricing" className="text-display text-ink text-center" />
@@ -401,22 +327,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mx-auto max-w-6xl px-4 py-10 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <p className="text-muted text-sm">
-            © CampusHub 2.0 · Built with Next.js, Supabase, PayPal, and the
-            Vercel AI SDK
-          </p>
-          <nav className="flex gap-6" aria-label="Footer">
-            <Link href="/demo" className="link-draw text-muted text-sm hover:text-ink">Storefront</Link>
-            <Link href="/styleguide" className="link-draw text-muted text-sm hover:text-ink">Styleguide</Link>
-            <Link href="/privacy" className="link-draw text-muted text-sm hover:text-ink">Privacy</Link>
-            <Link href="/tos" className="link-draw text-muted text-sm hover:text-ink">Terms</Link>
-            <Link href="/login" className="link-draw text-muted text-sm hover:text-ink">Sign in</Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
