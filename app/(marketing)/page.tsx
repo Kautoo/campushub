@@ -292,39 +292,22 @@ export default function LandingPage() {
 
       {/* FINALE */}
       <section className="relative overflow-hidden py-28">
-        {/* Base: primary-container wash */}
-        <div className="bg-primary-container absolute inset-0" aria-hidden />
-        {/* One wide aurora glow, top-center */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 left-1/2 h-80 w-[min(760px,130vw)] -translate-x-1/2 opacity-45"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, var(--st-gradient-a) 0%, transparent 68%)",
-            filter: "blur(110px)",
-          }}
-        />
-        {/* Subtle secondary glow, bottom-right */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-20 right-0 h-64 w-[34rem] opacity-20"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, var(--st-gradient-b) 0%, transparent 70%)",
-            filter: "blur(90px)",
-          }}
-        />
-        {/* Dot texture, center-masked */}
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-25 [mask-image:radial-gradient(600px_at_50%_45%,white,transparent)]"
-        >
+        {/* Neutral base: same background token as the page — clean in both
+            themes. The aurora glows were removed: over the light-mode
+            primary-container wash the teal-on-navy mixes turned muddy. */}
+        {/* Interactive dot field (same component as the hero) with a soft
+            top-center glow sitting behind it */}
+        <div aria-hidden className="absolute inset-0">
           <HoverDotsLazy />
         </div>
-        {/* Gentle top fade so the section blends from pricing above */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent"
+          className="pointer-events-none absolute -top-40 left-1/2 h-72 w-[min(680px,120vw)] -translate-x-1/2 opacity-20 dark:opacity-30"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, var(--st-gradient-a) 0%, transparent 70%)",
+            filter: "blur(100px)",
+          }}
         />
 
         <div className="relative mx-auto max-w-3xl px-4 text-center">
@@ -333,19 +316,19 @@ export default function LandingPage() {
             accentWord="one"
             className="text-display text-ink"
           />
-          <p className="text-ink/80 mx-auto mt-4 max-w-xl text-lg leading-relaxed">
+          <p className="text-muted mx-auto mt-4 max-w-xl text-lg leading-relaxed">
             Connect Supabase, add PayPal sandbox keys, and sell at your next
             event — with every number grounded in your own data.
           </p>
           <Magnetic className="mt-9">
             <Link
               href="/register"
-              className="btn-step focus-aura inline-flex h-12 items-center rounded-full bg-primary px-9 text-label-lg font-semibold text-[#00201c] shadow-xl shadow-primary/30"
+              className="btn-step focus-aura bg-primary inline-flex h-12 items-center rounded-full px-9 text-label-lg font-semibold text-white shadow-xl shadow-primary/25 dark:text-[#00201c]"
             >
               Create your workspace
             </Link>
           </Magnetic>
-          <p className="mt-5 text-sm text-ink/60">
+          <p className="text-muted mt-5 text-sm">
             Free Society tier · no credit card · demo data included
           </p>
         </div>

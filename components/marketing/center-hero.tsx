@@ -19,7 +19,7 @@ export function CenterHero({ techIcons }: {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative mx-auto flex w-full flex-col items-center gap-8 overflow-hidden px-4 pt-24 pb-16 sm:px-8 lg:px-24"
+      className="relative mx-auto flex min-h-[72vh] w-full flex-col items-center justify-center gap-10 overflow-hidden px-4 pt-32 pb-24 sm:px-8 lg:px-24"
     >
       {/* Gradient glow bar — blurred ribbon across the top */}
       <div
