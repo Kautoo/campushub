@@ -97,7 +97,7 @@ const FAQS: { id: string; icon: string; question: string; answer: React.ReactNod
           <code className="font-mono text-[12px]">ASTROPODS_API_KEY</code>; the
           agent spec lives in{" "}
           <code className="font-mono text-[12px]">
-            agents/campushub-analyst.yaml
+            agents/astropods.yml
           </code>
           .
         </p>

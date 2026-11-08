@@ -150,7 +150,7 @@ that the reports page lists. Tampered or expired tokens get a 403.
 | AG Grid Community | Live — all dashboard tables. |
 | Bryntum Scheduler | Implemented on the Events page "Timeline" tab with real event data via the Community (MIT) edition. Upgrading to the licensed build = swap the package and set `BRYNTUM_LICENSE_KEY`; the trial banner hides when a license env is present. |
 | Channel3 | Implemented behind `CHANNEL3_API_KEY`; widget hidden without it. Live-tested only with a key. |
-| Astropods | Declarative agent spec at `agents/campushub-analyst.yaml` (model, knowledge = metrics-pack endpoint, strict grounding guardrails). Deploying requires an Astropods account + `ASTROPODS_API_KEY`; the Vercel AI SDK path above is the working implementation. |
+| Astropods | Declarative agent spec at `agents/astropods.yml` (model, knowledge = metrics-pack endpoint, strict grounding guardrails). Deploying requires an Astropods account + `ASTROPODS_API_KEY`; the Vercel AI SDK path above is the working implementation. |
 
 ## Deploy to Render
 
