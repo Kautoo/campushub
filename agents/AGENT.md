@@ -79,11 +79,14 @@ Example questions:
 
 ```
 agents/astropods.yml   Astropods blueprint (spec: blueprint/v1)
-agent/index.ts         Grounding + LLM call logic (system prompt mirrors lib/ai.ts)
-agent/server.ts        Minimal HTTP/messaging server (Node 22 / tsx)
-Dockerfile             Agent image (node:22-alpine + tsx)
-AGENT.md               This file (Astropods agent card)
+agents/Dockerfile      Agent image (node:22-alpine + tsx)
+agents/AGENT.md        This file (Astropods agent card)
+agents/agent/index.ts  Grounding + LLM call logic (system prompt mirrors lib/ai.ts)
+agents/agent/server.ts Minimal HTTP/messaging server (Node 22 / tsx)
 ```
+
+All agent files live under `agents/` because Astropods resolves the spec's
+build context relative to the `astropods.yml` location.
 
 ## Deploy
 
