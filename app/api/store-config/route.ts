@@ -12,14 +12,20 @@ async function getDemoOrgId(): Promise<string | null> {
   cacheLife("minutes");
   cacheTag("storefront");
 
-  const pool = getPool();
-  const res = await pool.query<{ id: string }>(
-    `select id from public.organizations
-     order by created_at asc
-     limit 1`,
-  );
-
-  return res.rows[0]?.id ?? null;
+  try {
+    const pool = getPool();
+    const res = await pool.query<{ id: string }>(
+      `select id from public.organizations
+       order by created_at asc
+       limit 1`,
+    );
+    return res.rows[0]?.id ?? null;
+  } catch (err) {
+    // Schema not applied yet (fresh database), auth problem, or transient
+    // connection failure — degrade instead of failing the build/prerender.
+    console.error("store-config: org lookup unavailable", err);
+    return null;
+  }
 }
 
 export async function GET() {
