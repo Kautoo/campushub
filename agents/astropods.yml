@@ -1,44 +1,25 @@
-# CampusHub Analyst — Astropods declarative agent spec
-#
-# Deploys to Astropods as an autonomous analyst agent grounded in CampusHub data.
-# Requires ASTROPODS_API_KEY (see README). The agent's knowledge refreshes from the
-# metrics-pack endpoint; it never sees raw PII and must not invent numbers.
-#
-apiVersion: astropods.ai/v1
-kind: Agent
-metadata:
-  name: campushub-analyst
-  description: >
-    Commerce analyst for CampusHub 2.0. Answers organizer questions about revenue,
-    sell-through, cart abandonment, and inventory using only grounded metrics.
-spec:
-  model:
-    provider: openai-compatible
-    endpoint: ${AI_BASE_URL}
-    apiKeyEnv: AI_API_KEY
-    name: ${AI_MODEL}
-  knowledge:
-    - type: http-endpoint
-      name: campushub-metrics-pack
-      url: https://campushub-2.onrender.com/api/insights/pack
-      method: POST
-      headers:
-        Authorization: "Bearer ${ASTROPODS_PACK_TOKEN}"
-      refresh: 15m
-      grounding: strict   # responses must cite pack fields; no external numbers
-  tools:
-    - type: http
-      name: refresh_metrics
-      description: Rebuild the metrics pack for the requesting organization.
-      endpoint: https://campushub-2.onrender.com/api/insights/pack
-      method: POST
-      headers:
-        Authorization: "Bearer ${ASTROPODS_PACK_TOKEN}"
-  systemPrompt: |
-    You are the CampusHub Analyst. You answer organizer questions strictly from the
-    metrics pack (revenue by day, top products, tier sell-through, cart abandonment,
-    refund rate). Never fabricate numbers; if a metric is absent from the pack, say so.
-    Currency is MYR (RM). Amounts are integer cents — divide by 100 for display.
-  guardrails:
-    - no-pii            # metrics are aggregates; orders are never exposed
-    - no-fabrication
+spec: blueprint/v1
+name: campushub-analyst
+
+agent:
+  build:
+    context: .
+    dockerfile: Dockerfile
+  interfaces:
+    messaging: true
+
+inputs:
+  PACK_TOKEN:
+    name: PACK_TOKEN
+    datatype: string
+    secret: true
+    description: Bearer token the agent presents to the CampusHub metrics-pack endpoint
+  PACK_ENDPOINT:
+    name: PACK_ENDPOINT
+    datatype: string
+    default: https://campushub-2.onrender.com/api/insights/pack
+    description: CampusHub metrics-pack endpoint URL
+
+models:
+  primary:
+    provider: gateway

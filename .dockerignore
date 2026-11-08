@@ -1,0 +1,13 @@
+# Agent image build context — only agent/ + Dockerfile are copied explicitly,
+# but exclude the heavy Next.js app from the context entirely.
+node_modules
+.next
+.git
+tests
+app
+components
+lib
+db
+public
+*.md
+!AGENT.md
