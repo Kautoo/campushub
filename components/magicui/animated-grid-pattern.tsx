@@ -62,13 +62,18 @@ export function AnimatedGridPattern({
 
   useEffect(() => {
     if (dimensions.width === 0 || dimensions.height === 0) return;
-    setSquares(
-      Array.from({ length: numSquares }, (_, i) => ({
-        id: i,
-        x: Math.floor((Math.random() * dimensions.width) / width) * width,
-        y: Math.floor((Math.random() * dimensions.height) / height) * height,
-      }))
+    // Derive squares asynchronously via rAF so the effect body stays a pure
+    // sync (no setState-in-effect cascade).
+    const raf = requestAnimationFrame(() =>
+      setSquares(
+        Array.from({ length: numSquares }, (_, i) => ({
+          id: i,
+          x: Math.floor((Math.random() * dimensions.width) / width) * width,
+          y: Math.floor((Math.random() * dimensions.height) / height) * height,
+        })),
+      ),
     );
+    return () => cancelAnimationFrame(raf);
   }, [dimensions, numSquares, width, height]);
 
   return (

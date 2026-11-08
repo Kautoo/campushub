@@ -82,7 +82,7 @@ export const AnimatedBeam: FC<AnimatedBeamProps> = ({
     };
 
     const resizeObserver = new ResizeObserver((entries) => {
-      for (const _ of entries) updatePath();
+      updatePath();
     });
     if (containerRef.current) resizeObserver.observe(containerRef.current);
     updatePath();

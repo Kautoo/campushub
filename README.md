@@ -29,6 +29,33 @@ cp .env.example .env.local    # fill in values below
 npm run dev                   # http://localhost:3000
 ```
 
+## Development & testing
+
+```bash
+npm run dev      # dev server (Turbopack)
+npm run build    # production build (standalone output)
+npm run lint     # eslint (0 errors expected)
+npx tsc --noEmit # typecheck (0 errors expected)
+npm test         # all suites: unit, db-integration, api-e2e
+```
+
+All suites green as of the last audit: **unit 17/17, db-integration 13/13,
+api-e2e 15/15**.
+
+Test suites (all run against real Postgres, no mocks):
+
+- `tests/unit.test.mjs` — validation schemas, money/permission helpers.
+  Requires no database.
+- `tests/db-integration.test.mjs` — `place_order` RPC fee/stock math,
+  repo-layer org scoping, seed sanity. Connects to a local Postgres
+  (default `postgres://postgres:postgres@127.0.0.1:5432/campushub_render`,
+  override with `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASSWORD`/`DB_NAME`);
+  every mutating test rolls back its transaction.
+- `tests/api-e2e.test.mjs` — HTTP contract against a production-build
+  standalone server on `127.0.0.1:3400` (booted by the suite; see the file
+  header): route statuses, honest degradation when PayPal/AI keys are
+  unset, auth redirects.
+
 ### Environment variables
 
 | Variable | Required | Purpose |
@@ -164,3 +191,17 @@ components/                 ui/, layout/, store/, grid/, charts/, workspaces/, m
 agents/                     Astropods agent spec
 render.yaml                 Render blueprint (web service + Postgres database)
 ```
+
+## Code quality notes
+
+- **Typecheck & lint gates**: `npx tsc --noEmit` and `npm run lint` both
+  pass with 0 errors. Client components avoid `setState` directly inside
+  effect bodies (deferred via `requestAnimationFrame` or moved into
+  callbacks) to satisfy the React Compiler purity rules.
+- **Org scoping is application-enforced**: vanilla Postgres has no RLS
+  context, so every repo query takes the caller's `orgIds` explicitly.
+  Never add a query that trusts a client-supplied `org_id`.
+- **Money is integer cents** (`*_cents` columns) with a per-org currency
+  column; helpers live in `lib/money.ts`.
+- **Honest degradation**: absent env keys disable features with visible
+  notices — never fabricated data (see the sponsor table above).

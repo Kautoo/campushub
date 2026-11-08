@@ -3,7 +3,7 @@ import { Button } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import { IconTile, Icon } from "@/components/ui/icon";
 import { Badge, DeltaBadge, type ChipTone } from "@/components/ui/badge";
-import { KpiCard, StatStrip } from "@/components/ui/kpi-card";
+import { StatStrip } from "@/components/ui/kpi-card";
 import {
   SectionHeader,
   EmptyState,

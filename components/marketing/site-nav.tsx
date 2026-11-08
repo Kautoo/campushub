@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -12,7 +11,6 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -21,9 +19,8 @@ export function SiteNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // NOTE: the mobile menu closes via the link onClick handlers below
+  // (setOpen(false)), not an effect — route changes unmount the menu overlay.
 
   const links = [
     { href: "/#story", label: "Product" },

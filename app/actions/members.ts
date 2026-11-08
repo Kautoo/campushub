@@ -5,7 +5,7 @@ import { z } from "zod";
 import { hashPassword } from "@/lib/auth/password";
 import { hasDatabaseEnv, withTransaction } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs, orgMembers, users } from "@/lib/db/repo";
+import { orgs, orgMembers } from "@/lib/db/repo";
 import { randomBytes } from "node:crypto";
 
 export type MemberActionResult = { ok?: string; error?: string } | null;

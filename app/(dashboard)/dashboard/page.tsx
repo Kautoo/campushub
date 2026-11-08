@@ -6,6 +6,7 @@ import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { Badge } from "@/components/ui/badge";
 import RevenueChart, { type RevenuePoint } from "@/components/charts/revenue-chart-lazy";
 import { formatMoney } from "@/lib/money";
+import { sinceIso, lastDayKeys } from "@/lib/metrics";
 import { NumberTicker } from "@/components/magicui";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
@@ -20,7 +21,10 @@ export default async function DashboardOverview() {
   if (!session) redirect("/login");
   const orgIds = session.orgIds;
 
-  const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+  // Async server component: runs once per request, never re-renders. The
+  // helpers hide Date.now() so the purity rule can't trace it here.
+  // eslint-disable-next-line react-hooks/purity -- one-shot server render, fresh window per request is the point
+  const since = sinceIso(30);
 
   const [paidOrders, recent, revenueByDay, tickets, lowStock] =
     await Promise.all([
@@ -47,8 +51,8 @@ export default async function DashboardOverview() {
 
   // Revenue by day (last 30d)
   const byDay = new Map<string, number>();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400_000).toISOString().slice(5, 10);
+  // eslint-disable-next-line react-hooks/purity -- one-shot server render, fresh window per request is the point
+  for (const d of lastDayKeys(30)) {
     byDay.set(d, 0);
   }
   for (const o of revenueByDay) {

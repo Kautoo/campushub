@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { CartPill } from "@/components/store/cart-pill";
 import { StoreGrid } from "@/components/store/store-grid";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
-import type { CartLine } from "@/components/store/cart";
 import { formatMoney } from "@/lib/money";
 import { cacheLife, cacheTag } from "next/cache";
 

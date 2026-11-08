@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,12 +8,14 @@ import { cn } from "@/lib/utils";
  * that the root layout's inline script reads before paint.
  */
 export function ThemeToggle({ className }: { className?: string }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    setTheme(current === "dark" ? "dark" : "light");
-  }, []);
+  // Read the DOM (external system) lazily on first client render so the
+  // effect body stays a pure sync — no setState-in-effect cascade.
+  const [theme, setTheme] = useState<"light" | "dark">(() =>
+    typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-theme") === "dark"
+      ? "dark"
+      : "light",
+  );
 
   function toggle() {
     const next = theme === "dark" ? "light" : "dark";

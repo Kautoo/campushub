@@ -21,10 +21,13 @@ export function InsightConversation() {
 
   useEffect(() => {
     if (reduce) {
-      setStage(3);
-      setTyped(QUESTION);
-      setAnswer(ANSWER);
-      return;
+      // Reduced motion: show the final state via rAF (no setState in effect body).
+      const raf = requestAnimationFrame(() => {
+        setStage(3);
+        setTyped(QUESTION);
+        setAnswer(ANSWER);
+      });
+      return () => cancelAnimationFrame(raf);
     }
     const el = document.getElementById("insight-convo");
     if (!el) return;

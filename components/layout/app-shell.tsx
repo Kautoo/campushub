@@ -43,9 +43,14 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  /** Close the search overlay and clear its query (was an effect branch). */
+  function closeSearch() {
+    setSearchOpen(false);
+    setQuery("");
+  }
+
   useEffect(() => {
     if (searchOpen) searchInput.current?.focus();
-    else setQuery("");
   }, [searchOpen]);
 
   const allItems = nav.flatMap((s) => s.items);
@@ -222,7 +227,7 @@ export function AppShell({
       {searchOpen ? (
         <div
           className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 pt-24"
-          onClick={() => setSearchOpen(false)}
+          onClick={closeSearch}
           role="presentation"
         >
           <div
@@ -256,7 +261,7 @@ export function AppShell({
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      onClick={() => setSearchOpen(false)}
+                      onClick={closeSearch}
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-body-md text-ink hover:bg-surface-container",
                         isActive(item.href) && "text-primary font-semibold",

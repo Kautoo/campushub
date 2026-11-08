@@ -1,6 +1,25 @@
 import { hasDatabaseEnv } from "@/lib/db";
 import { orgs, orders, orderItems, events, ticketTiers, products } from "@/lib/db/repo";
 
+/**
+ * Shared "recent window" helpers. Called from async server code (not during
+ * React render) so the impure Date.now() stays out of component bodies.
+ */
+
+/** ISO timestamp `days` before now. */
+export function sinceIso(days: number): string {
+  return new Date(Date.now() - days * 86400_000).toISOString();
+}
+
+/** Day keys ("MM-DD") for the last `days` days, oldest first. */
+export function lastDayKeys(days: number): string[] {
+  const keys: string[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    keys.push(new Date(Date.now() - i * 86400_000).toISOString().slice(5, 10));
+  }
+  return keys;
+}
+
 
 /** Aggregates for the grounded-AI metrics pack (see /api/insights/pack). */
 export type MetricsPack = {

@@ -44,15 +44,17 @@ function Counter({ to, reduce }: { to: number; reduce: boolean }) {
 
   useEffect(() => {
     if (reduce) {
-      setN(to);
-      return;
+      // Reduced motion: jump straight to the target via rAF (no setState in
+      // effect body).
+      const raf = requestAnimationFrame(() => setN(to));
+      return () => cancelAnimationFrame(raf);
     }
     // Count up when the element first becomes visible (IO, fires once)
     const els = document.querySelectorAll("[data-counter-target]");
     const el = Array.from(els).find((e) => e.textContent === to.toLocaleString("en-MY"));
     if (!el) {
-      setN(to);
-      return;
+      const fallback = requestAnimationFrame(() => setN(to));
+      return () => cancelAnimationFrame(fallback);
     }
     const io = new IntersectionObserver(
       (entries) => {
@@ -67,7 +69,7 @@ function Counter({ to, reduce }: { to: number; reduce: boolean }) {
             setN(Math.round(to * eased));
             if (p < 1) raf = requestAnimationFrame(tick);
           };
-          raf = requestAnimationFrame(tick);
+          requestAnimationFrame(tick);
         }
       },
       { threshold: 0.3 },

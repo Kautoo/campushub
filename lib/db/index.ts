@@ -5,7 +5,6 @@
 import pg from "pg";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __campushubPool: pg.Pool | undefined;
 }
 

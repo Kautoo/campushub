@@ -43,8 +43,9 @@ function StoryActRow({
     const el = ref.current;
     if (!el) return;
     if (reduce) {
-      setInView(true);
-      return;
+      // Reduced motion: reveal immediately via rAF (no setState in effect body).
+      const raf = requestAnimationFrame(() => setInView(true));
+      return () => cancelAnimationFrame(raf);
     }
     const io = new IntersectionObserver(
       (entries) => {

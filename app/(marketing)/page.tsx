@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { motion, useReducedMotion } from "motion/react";
-import {
-  Meteors,
-  Marquee,
-  BlurFade,
-  ShimmerButton,
-} from "@/components/magicui";
+import { Marquee, BlurFade } from "@/components/magicui";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { CenterHero } from "@/components/marketing/center-hero";

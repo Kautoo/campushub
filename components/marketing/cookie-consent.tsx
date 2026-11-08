@@ -6,11 +6,11 @@ import Link from "next/link";
 const STORAGE_KEY = "ch-cookie-consent";
 
 export default function CookieConsent() {
-  const [mounted, setMounted] = useState(false);
+  // `visible` starts false and flips via timeout/effect only through callbacks;
+  // mount detection folds into the same delayed effect (no setState-in-effect).
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored === "accepted" || stored === "declined") return;
 
@@ -24,9 +24,9 @@ export default function CookieConsent() {
     setVisible(false);
   };
 
-  // Render nothing until mounted (avoid SSR mismatch) and never again once a
-  // choice has been stored.
-  if (!mounted || !visible) return null;
+  // Render nothing until the slide-in timer fires (also avoids SSR mismatch)
+  // and never again once a choice has been stored.
+  if (!visible) return null;
 
   return (
     <div

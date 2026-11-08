@@ -31,7 +31,9 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    setCart(readCart());
+    // Sync external stores (localStorage + fetch) into state from callbacks;
+    // the cart read is deferred a tick so the effect body stays a pure sync.
+    const raf = requestAnimationFrame(() => setCart(readCart()));
     fetch("/api/store-config")
       .then((r) => r.json())
       .then((cfg: { org_id?: string; paypal_client_id?: string | null }) => {
@@ -91,7 +93,7 @@ export default function CheckoutPage() {
         throw e;
       }
     },
-    onApprove: async (data) => {
+    onApprove: async () => {
       try {
         const res = await fetch("/api/paypal/capture", {
           method: "POST",

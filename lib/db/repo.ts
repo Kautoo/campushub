@@ -331,20 +331,6 @@ export const orgMembers = {
     return (res as unknown as { length: number }).length > 0;
   },
 
-  /** Upsert a membership (invite flow). */
-  async upsert(
-    fields: { org_id: string; user_id: string; role: string; status: string },
-  ): Promise<OrgMemberRow> {
-    const rows = await query<OrgMemberRow>(
-      `insert into public.org_members (org_id, user_id, role, status)
-       values ($1::uuid, $2::uuid, $3, $4)
-       on conflict (org_id, user_id) do update
-         set role = excluded.role, status = excluded.status
-       returning org_id, user_id, role, status, created_at`,
-      [fields.org_id, fields.user_id, fields.role, fields.status],
-    );
-    return rows[0];
-  },
 };
 
 // ---------- users (Auth.js) ----------
@@ -484,24 +470,6 @@ export const events = {
     return rows[0] ?? null;
   },
 
-  // public storefront paths (no org scoping — public read filters)
-  async listPublishedPublic(): Promise<Array<EventRow & { ticket_tiers: Array<Pick<TicketTierRow, "id" | "name" | "price_cents" | "quantity" | "sold">> }>> {
-    const [eventRows, tierRows] = await Promise.all([
-      query<EventRow>(
-        `select * from public.events where status = 'published' order by start_at asc`,
-      ),
-      query<{ id: string; name: string; price_cents: number; quantity: number; sold: number; event_id: string }>(
-        `select tt.id, tt.name, tt.price_cents, tt.quantity, tt.sold, tt.event_id
-         from public.ticket_tiers tt
-         join public.events e on e.id = tt.event_id
-         where e.status = 'published'`,
-      ),
-    ]);
-    return eventRows.map((e) => ({
-      ...e,
-      ticket_tiers: tierRows.filter((t) => t.event_id === e.id),
-    }));
-  },
 };
 
 // ---------- ticket_tiers ----------
@@ -512,15 +480,6 @@ export const ticketTiers = {
       `select * from public.ticket_tiers where org_id = ANY($1::uuid[])`,
       [orgIds],
     );
-  },
-
-  async listPublicForPublished(): Promise<Array<Pick<TicketTierRow, "id" | "name" | "price_cents" | "quantity" | "sold" | "event_id">>> {
-    return query(
-      `select tt.id, tt.name, tt.price_cents, tt.quantity, tt.sold, tt.event_id
-       from public.ticket_tiers tt
-       join public.events e on e.id = tt.event_id
-       where e.status = 'published'`,
-    ) as Promise<Array<Pick<TicketTierRow, "id" | "name" | "price_cents" | "quantity" | "sold" | "event_id">>>;
   },
 };
 
@@ -747,14 +706,6 @@ export const orders = {
     return rows[0] ?? null;
   },
 
-  async getByIdAnyOrg(id: string): Promise<OrderRow | null> {
-    const rows = await query<OrderRow>(
-      `select * from public.orders where id = $1::uuid limit 1`,
-      [id],
-    );
-    return rows[0] ?? null;
-  },
-
   async getByPaypalOrderId(paypalOrderId: string): Promise<OrderRow[]> {
     return query<OrderRow>(
       `select * from public.orders where paypal_order_id = $1`,
@@ -813,14 +764,6 @@ export const orderItems = {
        from public.order_items
        where org_id = ANY($1::uuid[]) and kind = 'product'`,
       [orgIds],
-    );
-  },
-
-  async listByOrder(orderId: string, orgIds: string[]): Promise<OrderItemRow[]> {
-    return query<OrderItemRow>(
-      `select * from public.order_items
-       where order_id = $1::uuid and org_id = ANY($2::uuid[])`,
-      [orderId, orgIds],
     );
   },
 
@@ -1069,15 +1012,6 @@ export const files = {
     const rows = await query<FileRow>(
       `select * from public.files where id = $1::uuid limit 1`,
       [id],
-    );
-    return rows[0] ?? null;
-  },
-
-  async getMeta(id: string, orgIds: string[]): Promise<Omit<FileRow, "bytes"> | null> {
-    const rows = await query<Omit<FileRow, "bytes">>(
-      `select id, org_id, bucket, name, mime, size, created_by, created_at
-       from public.files where id = $1::uuid and org_id = ANY($2::uuid[]) limit 1`,
-      [id, orgIds],
     );
     return rows[0] ?? null;
   },
