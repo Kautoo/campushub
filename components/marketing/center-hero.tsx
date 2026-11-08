@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { Fragment } from "react";
+
 import Link from "next/link";
 import { ShimmerButton } from "@/components/magicui";
 import { Magnetic } from "./magnetic";
@@ -11,8 +11,7 @@ import { Magnetic } from "./magnetic";
  * icon row. Reuses the project's fonts/tokens; motion rests under
  * reduced-motion.
  */
-export function CenterHero({ stats, techIcons }: {
-  stats: { label: string; value: string }[];
+export function CenterHero({ techIcons }: {
   techIcons: { name: string; icon: string }[];
 }) {
   const reduce = useReducedMotion();
@@ -37,26 +36,6 @@ export function CenterHero({ stats, techIcons }: {
       <div aria-hidden className="absolute inset-0 z-0">
         <HoverDotsLazy />
       </div>
-
-      {/* Stat pill */}
-      <motion.div
-        initial={reduce ? undefined : { opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="relative z-10 flex max-w-full flex-wrap items-center justify-center rounded-full border border-outline-variant bg-surface-lowest/80 px-1.5 py-1 shadow-card backdrop-blur"
-      >
-        {stats.map((item, index) => (
-          <Fragment key={item.label}>
-            <span className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs whitespace-nowrap sm:text-sm">
-              <span className="text-ink font-semibold tabular-nums">{item.value}</span>
-              <span className="text-muted">{item.label}</span>
-            </span>
-            {index < stats.length - 1 && (
-              <span aria-hidden className="h-3.5 w-px shrink-0 bg-outline-variant" />
-            )}
-          </Fragment>
-        ))}
-      </motion.div>
 
       {/* Headline + subcopy */}
       <motion.div

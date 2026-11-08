@@ -19,17 +19,10 @@ import { TryAiButton } from "@/components/marketing/cta-buttons";
 import { Magnetic } from "@/components/marketing/magnetic";
 import { InsightConversation } from "@/components/marketing/insight-conversation";
 import HoverDotsLazy from "@/components/marketing/hover-dots-lazy";
-import { DashboardMock } from "@/components/marketing/dashboard-mock";
+import { DashboardPreview } from "@/components/marketing/dashboard-preview";
 import { Badge } from "@/components/ui/badge";
 import { IconTile } from "@/components/ui/icon";
 import { SectionHeader } from "@/components/ui/primitives";
-
-const HERO_STATS = [
-  { value: "RM 45,230", label: "revenue tracked" },
-  { value: "2,847", label: "members" },
-  { value: "1,420", label: "tickets sold" },
-  { value: "40+", label: "orders in demo" },
-];
 
 const HERO_ICONS = [
   { name: "PayPal", icon: "account_balance_wallet" },
@@ -132,7 +125,7 @@ export default function LandingPage() {
       <SiteNav />
 
       {/* ACT I — centered airy hero over interactive dots + glow bar */}
-      <CenterHero stats={HERO_STATS} techIcons={HERO_ICONS} />
+      <CenterHero techIcons={HERO_ICONS} />
 
       {/* Proof band */}
       <section className="border-y border-outline-variant py-5" aria-label="Built with">
@@ -159,7 +152,7 @@ export default function LandingPage() {
         </BlurFade>
         <BlurFade delay={0.1}>
           <div className="mt-10">
-            <DashboardMock />
+            <DashboardPreview />
           </div>
         </BlurFade>
       </section>
@@ -299,58 +292,40 @@ export default function LandingPage() {
 
       {/* FINALE */}
       <section className="relative overflow-hidden py-28">
-        {/* Deep gradient base */}
+        {/* Base: primary-container wash */}
+        <div className="bg-primary-container absolute inset-0" aria-hidden />
+        {/* One wide aurora glow, top-center */}
         <div
-          className="absolute inset-0"
+          aria-hidden
+          className="pointer-events-none absolute -top-32 left-1/2 h-80 w-[min(760px,130vw)] -translate-x-1/2 opacity-45"
           style={{
             background:
-              "linear-gradient(180deg, var(--st-surface) 0%, var(--st-primary-container) 55%, var(--st-surface) 100%)",
-          }}
-          aria-hidden
-        />
-        {/* Aurora glows */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[min(720px,120vw)] -translate-x-1/2 opacity-40"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, var(--st-gradient-a) 0%, transparent 70%)",
-            filter: "blur(90px)",
+              "radial-gradient(ellipse at center, var(--st-gradient-a) 0%, transparent 68%)",
+            filter: "blur(110px)",
           }}
         />
+        {/* Subtle secondary glow, bottom-right */}
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-1/4 h-56 w-96 opacity-25"
+          className="pointer-events-none absolute -bottom-20 right-0 h-64 w-[34rem] opacity-20"
           style={{
             background:
               "radial-gradient(ellipse at center, var(--st-gradient-b) 0%, transparent 70%)",
-            filter: "blur(80px)",
+            filter: "blur(90px)",
           }}
         />
-        {/* Dot texture */}
+        {/* Dot texture, center-masked */}
         <div
           aria-hidden
-          className="absolute inset-0 opacity-30 [mask-image:radial-gradient(560px_at_50%_50%,white,transparent)]"
+          className="absolute inset-0 opacity-25 [mask-image:radial-gradient(600px_at_50%_45%,white,transparent)]"
         >
           <HoverDotsLazy />
         </div>
-        {/* Orbiting ring */}
+        {/* Gentle top fade so the section blends from pricing above */}
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        >
-          <div className="animate-glow relative h-[420px] w-[420px] rounded-full border border-primary/20">
-            <div className="absolute inset-6 rounded-full border border-primary/10" />
-            <div
-              className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-primary shadow-glow"
-              style={{ animation: "orbit 14s linear infinite" }}
-            />
-            <div
-              className="absolute top-1/2 -right-1 h-2 w-2 translate-y-1/2 rounded-full bg-secondary shadow-glow"
-              style={{ animation: "orbit 22s linear infinite reverse" }}
-            />
-          </div>
-        </div>
+          className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent"
+        />
 
         <div className="relative mx-auto max-w-3xl px-4 text-center">
           <RevealHeading

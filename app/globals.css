@@ -480,14 +480,6 @@ body {
   }
 }
 
-@keyframes orbit {
-  from {
-    transform: rotate(0deg) translateX(210px) rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg) translateX(210px) rotate(-360deg);
-  }
-}
 
 .animate-shimmer {
   background-size: 200% 100%;
