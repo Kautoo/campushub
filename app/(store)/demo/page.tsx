@@ -47,27 +47,35 @@ async function getStorefrontData(): Promise<StorefrontData | null> {
   cacheTag("storefront");
 
   const pool = getPool();
-  const [orgRes, productsRes, eventsRes] = await Promise.all([
-    pool.query<{ id: string; name: string; currency: string }>(
-      `select id, name, currency from public.organizations
-       order by created_at asc limit 1`,
-    ),
-    pool.query<ProductRow>(
-      `select id, name, slug, description, category, price_cents, stock
-       from public.products
-       where status = 'active'
-       order by price_cents asc`,
-    ),
-    pool.query<EventRow & { tier_id: string | null; tier_name: string | null; tier_price_cents: number | null; tier_quantity: number | null; tier_sold: number | null }>(
-      `select e.id, e.title, e.description, e.venue, e.category, e.start_at,
-              tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
-              tt.quantity as tier_quantity, tt.sold as tier_sold
-       from public.events e
-       left join public.ticket_tiers tt on tt.event_id = e.id
-       where e.status = 'published'
-       order by e.start_at asc`,
-    ),
-  ]);
+  let orgRes, productsRes, eventsRes;
+  try {
+    [orgRes, productsRes, eventsRes] = await Promise.all([
+      pool.query<{ id: string; name: string; currency: string }>(
+        `select id, name, currency from public.organizations
+         order by created_at asc limit 1`,
+      ),
+      pool.query<ProductRow>(
+        `select id, name, slug, description, category, price_cents, stock
+         from public.products
+         where status = 'active'
+         order by price_cents asc`,
+      ),
+      pool.query<EventRow & { tier_id: string | null; tier_name: string | null; tier_price_cents: number | null; tier_quantity: number | null; tier_sold: number | null }>(
+        `select e.id, e.title, e.description, e.venue, e.category, e.start_at,
+                tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
+                tt.quantity as tier_quantity, tt.sold as tier_sold
+         from public.events e
+         left join public.ticket_tiers tt on tt.event_id = e.id
+         where e.status = 'published'
+         order by e.start_at asc`,
+      ),
+    ]);
+  } catch (err) {
+    // Schema not applied yet (fresh database) or transient connection issue:
+    // degrade to the setup notice instead of failing the build/prerender.
+    console.error("storefront data unavailable", err);
+    return null;
+  }
 
   const org = orgRes.rows[0];
   if (!org) return null;

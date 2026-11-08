@@ -160,11 +160,14 @@ that the reports page lists. Tampered or expired tokens get a 403.
    wires `DATABASE_URL` into the web service.
 3. Fill the `sync:false` env vars in the dashboard (`AUTH_SECRET`, PayPal,
    AI, optional sponsor keys).
-4. Apply the schema to the Render database once (Get the connection string
-   from the Render dashboard → database → Connections):
+4. **Apply the schema to the Render database BEFORE the first deploy** (the
+   build prerenders the storefront, which needs the tables to exist). Get
+   the connection string from the Render dashboard → database → Connections:
    ```bash
    psql "<render-connection-string>" -f db/schema.sql -f db/seed.sql
    ```
+   (A fresh deploy against an empty database still succeeds — the storefront
+   degrades to its setup notice — but apply the schema to see real data.)
 5. Deploy — build `npm ci && npm run build`, start
    `node .next/standalone/server.js`, health check `/api/health`.
 6. In PayPal, point the webhook at `https://<render-url>/api/paypal/webhook`.
