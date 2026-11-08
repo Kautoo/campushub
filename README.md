@@ -169,11 +169,13 @@ that the reports page lists. Tampered or expired tokens get a 403.
    (A fresh deploy against an empty database still succeeds — the storefront
    degrades to its setup notice — but apply the schema to see real data.)
 5. Deploy — build `npm ci && npm run build && cp -r .next/static
-   .next/standalone/.next/static && cp -r public .next/standalone/public`,
+   .next/standalone/.next/static && (cp -r public .next/standalone/public
+   2>/dev/null || mkdir -p .next/standalone/public)`,
    start `node .next/standalone/server.js`, health check `/api/health`.
-   (The `cp` steps are required: Next.js standalone output does not include
+   (The copy steps are required: Next.js standalone output does not include
    `.next/static` or `public/` — without them CSS/JS 404 and pages render
-   unstyled. `render.yaml` already wires this into `buildCommand`.)
+   unstyled. `render.yaml` already wires this into `buildCommand`. `public/`
+   currently holds no tracked files, so the fallback creates an empty dir.)
 6. In PayPal, point the webhook at `https://<render-url>/api/paypal/webhook`.
 
 ## Project layout
