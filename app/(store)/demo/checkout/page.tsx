@@ -41,6 +41,8 @@ export default function CheckoutPage() {
         if (cfg.paypal_client_id) setPaypalClientId(cfg.paypal_client_id);
       })
       .catch(() => setError("Store unavailable."));
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only store sync
   }, []);
 
   const total = cart.reduce((s, l) => s + l.qty * l.price_cents, 0);
