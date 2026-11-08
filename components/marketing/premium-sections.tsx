@@ -60,14 +60,13 @@ function Counter({ to, reduce }: { to: number; reduce: boolean }) {
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
           io.disconnect();
-          let raf = 0;
           const t0 = performance.now();
           const dur = 1200;
           const tick = (now: number) => {
             const p = Math.min(1, (now - t0) / dur);
             const eased = 1 - Math.pow(1 - p, 3);
             setN(Math.round(to * eased));
-            if (p < 1) raf = requestAnimationFrame(tick);
+            if (p < 1) requestAnimationFrame(tick);
           };
           requestAnimationFrame(tick);
         }

@@ -1,6 +1,7 @@
 "use client";
 
 import { GradientFlowButton, ShimmerAIButton } from "@/components/ui/kinetic-buttons";
+import { useRouter } from "next/navigation";
 
 /** Client CTA wrappers: HeroUI onPress handlers need a client boundary. */
 export function GetStartedGradientButton({
@@ -10,16 +11,18 @@ export function GetStartedGradientButton({
   label?: string;
   href?: string;
 }) {
+  const router = useRouter();
   return (
-    <GradientFlowButton onPress={() => (window.location.href = href)}>
+    <GradientFlowButton onPress={() => router.push(href)}>
       {label}
     </GradientFlowButton>
   );
 }
 
 export function TryAiButton() {
+  const router = useRouter();
   return (
-    <ShimmerAIButton onPress={() => (window.location.href = "/register")}>
+    <ShimmerAIButton onPress={() => router.push("/register")}>
       Try AI insights
     </ShimmerAIButton>
   );

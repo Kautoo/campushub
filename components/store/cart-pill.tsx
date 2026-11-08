@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { cartCount, type CartLine } from "@/components/store/cart";
+import type { CartLine } from "@/components/store/cart";
 import { formatMoney } from "@/lib/money";
 
 /** Floating cart pill; count syncs via ch-cart-changed events. */

@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { RevenuePoint } from "./revenue-chart";
 
 export type { RevenuePoint } from "./revenue-chart";
 

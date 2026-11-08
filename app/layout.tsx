@@ -44,6 +44,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <head>
+        {/* Icon font (Material Symbols), not a text font — loaded app-wide via
+            next/font is unsupported for icon stylesheets, hence the raw link. */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font, @next/next/google-font-display -- icon font, intentionally app-wide */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"

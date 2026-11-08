@@ -21,9 +21,6 @@ export default async function DashboardOverview() {
   if (!session) redirect("/login");
   const orgIds = session.orgIds;
 
-  // Async server component: runs once per request, never re-renders. The
-  // helpers hide Date.now() so the purity rule can't trace it here.
-  // eslint-disable-next-line react-hooks/purity -- one-shot server render, fresh window per request is the point
   const since = sinceIso(30);
 
   const [paidOrders, recent, revenueByDay, tickets, lowStock] =
@@ -51,7 +48,6 @@ export default async function DashboardOverview() {
 
   // Revenue by day (last 30d)
   const byDay = new Map<string, number>();
-  // eslint-disable-next-line react-hooks/purity -- one-shot server render, fresh window per request is the point
   for (const d of lastDayKeys(30)) {
     byDay.set(d, 0);
   }
