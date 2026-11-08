@@ -95,8 +95,18 @@ ast push          # creates the blueprint in the registry
 ast deploy        # deploy an instance; you'll be prompted for PACK_TOKEN
 ```
 
-Set `PACK_TOKEN` to a valid bearer token accepted by the CampusHub
-`/api/insights/pack` endpoint, and `PACK_ENDPOINT` to the deployment's URL
+**Where the `PACK_TOKEN` value comes from:** the CampusHub web service
+accepts machine tokens from the `PACK_API_TOKENS` env var (comma-separated).
+Generate one, add it to the CampusHub deployment (Render dashboard →
+env vars, or `.env.local` locally), and paste the same value as `PACK_TOKEN`
+when Astropods prompts:
+
+```bash
+openssl rand -hex 32   # e.g. 8c20f0876dbbbf61...d600d2
+```
+
+A token is org-bound to the CampusHub demo org ("Tech Society"). Also set
+`PACK_ENDPOINT` to the deployment's URL
 (default: `https://campushub-2.onrender.com/api/insights/pack`).
 
 ## Alternative: in-app AI (no Astropods)

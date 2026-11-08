@@ -50,6 +50,9 @@ services:
         sync: false
       - key: AI_MODEL
         value: glm-5.3-flash
+      # Bearer tokens for machine agents hitting /api/insights/pack (Astropods)
+      - key: PACK_API_TOKENS
+        sync: false
       # --- Sponsors (optional; features hidden without keys) ---
       - key: CHANNEL3_API_KEY
         sync: false
