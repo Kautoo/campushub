@@ -20,6 +20,49 @@ import { Badge } from "@/components/ui/badge";
 type Stage = "cart" | "details" | "paying" | "done" | "error";
 type DbOrder = { id: string; order_number: string; total_cents: number };
 
+/** Stitch checkout stepper — Items → Details → Payment → Done, mapped onto the stage machine. */
+const STEPS = [
+  { key: "cart", label: "Items", icon: "shopping_bag" },
+  { key: "details", label: "Details", icon: "badge" },
+  { key: "paying", label: "Payment", icon: "account_balance_wallet" },
+  { key: "done", label: "Done", icon: "check_circle" },
+] as const;
+
+function Stepper({ stage }: { stage: Stage }) {
+  const current =
+    stage === "error" ? 1 : STEPS.findIndex((s) => s.key === stage);
+  const idx = current < 0 ? 0 : current;
+  return (
+    <div
+      className="flex items-center gap-space-sm"
+      aria-label="Checkout progress"
+    >
+      {STEPS.map((s, i) => (
+        <div key={s.key} className="flex items-center gap-space-sm">
+          <div
+            aria-current={i === idx ? "step" : undefined}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label-sm text-label-sm ${
+              i < idx
+                ? "bg-tertiary-fixed/30 text-on-tertiary-container"
+                : i === idx
+                  ? "bg-secondary-container text-on-secondary-container font-semibold"
+                  : "bg-surface-container-low text-on-surface-variant"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              {i < idx ? "check" : s.icon}
+            </span>
+            {s.label}
+          </div>
+          {i < STEPS.length - 1 ? (
+            <span aria-hidden className="w-6 h-0.5 bg-secondary rounded-full" />
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [orgId, setOrgId] = useState<string | null>(null);
@@ -124,10 +167,12 @@ export default function CheckoutPage() {
         <span className="material-symbols-outlined text-[48px] text-success">
           check_circle
         </span>
-        <h1 className="text-headline-lg text-ink mt-2">Payment complete</h1>
-        <p className="text-body-md text-muted mt-2">
-          Order {dbOrder?.order_number} is confirmed. A receipt is on its way
-          to {email}.
+        <h1 className="text-headline-lg text-on-surface mt-2">
+          Payment complete
+        </h1>
+        <p className="text-body-md text-on-surface-variant mt-2">
+          Order {dbOrder?.order_number} is confirmed. A receipt is on its way to{" "}
+          {email}.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link
@@ -142,21 +187,30 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-display text-ink">Checkout</h1>
-      <p className="text-body-md text-muted mt-1">
-        Guest checkout — pay with PayPal.
-      </p>
+    <main className="mx-auto w-full max-w-3xl px-4 py-space-xl">
+      <div className="flex flex-col gap-space-md">
+        <div>
+          <h1 className="font-headline-lg text-headline-lg text-primary">
+            Checkout
+          </h1>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
+            Guest checkout — pay with PayPal.
+          </p>
+        </div>
+        <Stepper stage={stage} />
+      </div>
 
       {cart.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-dashed border-outline-variant p-10 text-center">
-          <span className="material-symbols-outlined text-[32px] text-muted">
+        <div className="mt-space-xl rounded-xl bg-surface-container-low p-10 text-center">
+          <span className="material-symbols-outlined text-[32px] text-on-surface-variant">
             shopping_bag
           </span>
-          <p className="text-headline-sm text-ink mt-2">Your cart is empty</p>
+          <p className="font-headline-sm text-headline-sm text-on-surface mt-2">
+            Your cart is empty
+          </p>
           <Link
             href="/demo"
-            className="text-primary mt-3 inline-block text-label-lg font-semibold"
+            className="text-primary mt-3 inline-block font-label-lg text-label-lg font-semibold"
           >
             Browse the store →
           </Link>
@@ -171,13 +225,13 @@ export default function CheckoutPage() {
                 className="flex items-center justify-between rounded-lg border border-outline-variant bg-surface-lowest px-4 py-3"
               >
                 <div>
-                  <p className="text-body-md text-ink">{l.name}</p>
-                  <p className="text-body-sm text-muted">
+                  <p className="text-body-md text-on-surface">{l.name}</p>
+                  <p className="text-body-sm text-on-surface-variant">
                     {l.qty} × {formatMoney(l.price_cents)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-headline-sm text-ink">
+                  <span className="text-headline-sm text-on-surface">
                     {formatMoney(l.qty * l.price_cents)}
                   </span>
                   <button
@@ -187,7 +241,7 @@ export default function CheckoutPage() {
                       removeFromCart(i);
                       setCart(readCart());
                     }}
-                    className="text-muted hover:text-error"
+                    className="text-on-surface-variant hover:text-error"
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       delete
@@ -200,18 +254,20 @@ export default function CheckoutPage() {
 
           {/* Summary + pay */}
           <section className="md:col-span-2">
-            <div className="rounded-xl border border-outline-variant bg-surface-lowest p-5">
-              <h2 className="text-headline-sm text-ink">Summary</h2>
+            <div className="rounded-xl bg-surface-container-lowest shadow-sm p-space-lg">
+              <h2 className="font-headline-sm text-headline-sm text-on-surface">
+                Summary
+              </h2>
               <dl className="mt-3 space-y-2 text-body-md">
-                <div className="flex justify-between text-muted">
+                <div className="flex justify-between text-on-surface-variant">
                   <dt>Subtotal</dt>
                   <dd>{formatMoney(total)}</dd>
                 </div>
-                <div className="flex justify-between text-muted">
+                <div className="flex justify-between text-on-surface-variant">
                   <dt>Fee (2.9% + RM 0.50)</dt>
                   <dd>{formatMoney(fee)}</dd>
                 </div>
-                <div className="flex justify-between border-t border-outline-variant pt-2 text-headline-sm font-semibold text-ink">
+                <div className="flex justify-between border-t border-outline-variant pt-2 text-headline-sm font-semibold text-on-surface">
                   <dt>Total</dt>
                   <dd>{formatMoney(total + fee)}</dd>
                 </div>
@@ -238,22 +294,26 @@ export default function CheckoutPage() {
                   {stage !== "paying" ? (
                     <div className="space-y-3">
                       <label className="block">
-                        <span className="text-label-md text-ink">Name</span>
+                        <span className="text-label-md text-on-surface">
+                          Name
+                        </span>
                         <input
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           required
-                          className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-ink outline-none"
+                          className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none"
                         />
                       </label>
                       <label className="block">
-                        <span className="text-label-md text-ink">Email</span>
+                        <span className="text-label-md text-on-surface">
+                          Email
+                        </span>
                         <input
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           type="email"
                           required
-                          className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-ink outline-none"
+                          className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none"
                         />
                       </label>
                     </div>
@@ -271,7 +331,7 @@ export default function CheckoutPage() {
                         disabled={stage !== "paying"}
                       />
                       {!name || !email ? (
-                        <p className="text-body-sm text-muted mt-2 text-center">
+                        <p className="text-body-sm text-on-surface-variant mt-2 text-center">
                           Enter your name and email to enable PayPal.
                         </p>
                       ) : (
@@ -284,6 +344,20 @@ export default function CheckoutPage() {
                         </Button>
                       )}
                     </PayPalScriptProvider>
+                  </div>
+                  {/* Supported gateways — display-only branding; PayPal button above is the real flow */}
+                  <div
+                    className="mt-4 flex items-center justify-center gap-2"
+                    aria-label="Supported payment methods"
+                  >
+                    {["PayPal", "FPX", "Visa", "Mastercard"].map((g) => (
+                      <span
+                        key={g}
+                        className="rounded-md bg-surface-container-low px-2 py-1 font-label-sm text-[10px] font-bold tracking-wide text-on-surface-variant"
+                      >
+                        {g}
+                      </span>
+                    ))}
                   </div>
                 </div>
               ) : (

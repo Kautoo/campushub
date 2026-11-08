@@ -43,11 +43,11 @@ export default async function MembersPage() {
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
-        icon="group"
-        title="Members"
-        subtitle={`People in ${org.name}`}
+        icon="groups"
+        title="Members Management"
+        subtitle="Manage your executive committee, role permissions, and contributor credentials"
         actions={
           <span className="inline-flex items-center gap-1 rounded-full bg-primary-container px-3 py-1 text-label-md font-semibold text-white dark:bg-primary/15 dark:text-primary">
             <span className="material-symbols-outlined text-[14px]">group</span>
@@ -57,10 +57,10 @@ export default async function MembersPage() {
       />
 
       {canManage ? (
-        <section className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
-          <h3 className="text-headline-sm text-ink mb-3">Invite a member</h3>
+        <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+          <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3">Invite a member</h3>
           <MemberInvite />
-          <p className="text-body-sm text-muted mt-3">
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-3">
             The invitee gets a member record with status “invited” — share the
             registration link so they can set a password and join with the
             selected role.
@@ -76,7 +76,7 @@ export default async function MembersPage() {
             body="Invite your first teammate to start collaborating."
           />
         ) : (
-          <div className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
+          <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
             <MembersGrid rows={memberRows} canManage={canManage} />
           </div>
         )}

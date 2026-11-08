@@ -31,7 +31,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
       className={cn(
         "focus-aura inline-flex h-9 w-9 items-center justify-center rounded-full",
-        "border border-outline-variant bg-surface-lowest text-ink-variant",
+        "border border-outline-variant bg-surface-lowest text-on-surface-variant",
         "transition-colors hover:bg-surface-container",
         className,
       )}

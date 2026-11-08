@@ -47,7 +47,7 @@ export function OrderStatusButtons({
           type="button"
           disabled={pending}
           onClick={() => run("cancelled")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-4 py-2 text-label-lg font-semibold text-ink-variant hover:bg-surface-container hover:text-ink disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant px-4 py-2 text-label-lg font-semibold text-on-surface-variant hover:bg-surface-container hover:text-on-surface disabled:opacity-50"
         >
           <Icon name="cancel" size={16} />
           {pending ? "Working…" : "Cancel order"}

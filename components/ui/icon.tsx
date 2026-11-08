@@ -38,7 +38,7 @@ export function IconTile({
   const tones: Record<string, string> = {
     primary: "bg-primary-container text-white dark:bg-primary/15 dark:text-primary",
     teal: "bg-secondary-container text-primary-container dark:bg-secondary/15 dark:text-secondary",
-    neutral: "bg-surface-container text-ink-variant dark:bg-surface-high",
+    neutral: "bg-surface-container text-on-surface-variant dark:bg-surface-high",
     error: "bg-error-container text-error",
     success: "bg-success-container text-success",
     warning: "bg-warning-container text-warning",

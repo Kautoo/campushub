@@ -17,13 +17,13 @@ export function TierBuyButton({ tier }: { tier: CartLine }) {
 
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-body-sm text-ink">{tier.name.split(" — ")[1]}</span>
+      <span className="text-body-sm text-on-surface">{tier.name.split(" — ")[1]}</span>
       <div className="flex items-center gap-2">
         <select
           value={qty}
           onChange={(e) => setQty(Number(e.target.value))}
           aria-label={`Quantity for ${tier.name}`}
-          className="h-8 rounded-lg border border-outline-variant bg-surface-low px-2 text-label-md text-ink"
+          className="h-8 rounded-lg border border-outline-variant bg-surface-low px-2 text-label-md text-on-surface"
         >
           {[1, 2, 3, 4].map((n) => (
             <option key={n} value={n}>

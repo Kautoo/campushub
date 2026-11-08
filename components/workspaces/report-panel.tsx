@@ -55,9 +55,9 @@ export function ReportPanel() {
   };
 
   return (
-    <section className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
-      <h3 className="text-headline-sm text-ink mb-1">Generate a report</h3>
-      <p className="text-body-sm text-muted mb-4">
+    <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+      <h3 className="text-headline-sm text-on-surface mb-1">Generate a report</h3>
+      <p className="text-body-sm text-on-surface-variant mb-4">
         Export your organization’s data as CSV. Files are stored for 24 hours.
       </p>
 
@@ -72,7 +72,7 @@ export function ReportPanel() {
             className={`inline-flex h-10 items-center gap-1.5 rounded-full border px-4 text-label-lg font-semibold transition ${
               type === rt.value
                 ? "border-primary bg-primary text-white dark:text-on-primary-container"
-                : "border-outline-variant bg-surface-lowest text-ink-variant hover:border-secondary"
+                : "border-outline-variant bg-surface-lowest text-on-surface-variant hover:border-secondary"
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">

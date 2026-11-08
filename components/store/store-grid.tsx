@@ -42,10 +42,10 @@ export function StoreGrid({
       {products.map((p) => (
         <article
           key={p.id}
-          className="flex flex-col rounded-xl border border-outline-variant bg-surface-lowest p-4 shadow-card transition-transform duration-200 hover:-translate-y-0.5"
+          className="flex flex-col rounded-xl bg-surface-container-lowest p-space-lg shadow-sm transition-shadow hover:shadow-md"
         >
           <div className="bg-surface-container relative mb-3 flex h-36 items-center justify-center overflow-hidden rounded-lg">
-            <span className="material-symbols-outlined text-[40px] text-muted">
+            <span className="material-symbols-outlined text-[40px] text-on-surface-variant">
               image
             </span>
             {p.category ? (
@@ -54,15 +54,15 @@ export function StoreGrid({
               </span>
             ) : null}
           </div>
-          <h3 className="text-headline-sm text-ink">{p.name}</h3>
+          <h3 className="text-headline-sm text-on-surface">{p.name}</h3>
           {p.description ? (
-            <p className="text-body-sm text-muted mt-1 line-clamp-2">
+            <p className="text-body-sm text-on-surface-variant mt-1 line-clamp-2">
               {p.description}
             </p>
           ) : null}
           <div className="mt-auto pt-3">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-headline-sm font-semibold text-ink">
+              <span className="text-headline-sm font-semibold text-on-surface">
                 {formatMoney(p.price_cents, currency)}
               </span>
               <StockBadge stock={p.stock} />

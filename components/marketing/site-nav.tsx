@@ -44,8 +44,8 @@ export function SiteNav() {
             <span className="bg-primary-container flex h-8 w-8 items-center justify-center rounded-lg text-white transition-transform duration-200 hover:scale-105 dark:bg-primary dark:text-[#00201c]">
               <span className="material-symbols-outlined text-[18px]">hub</span>
             </span>
-            <span className="text-headline-sm text-ink">CampusHub</span>
-            <span className="hidden rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-muted sm:block">
+            <span className="text-headline-sm text-on-surface">CampusHub</span>
+            <span className="hidden rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant sm:block">
               2.0
             </span>
           </Link>
@@ -55,7 +55,7 @@ export function SiteNav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-full px-3.5 py-1.5 text-label-lg text-muted transition-colors hover:bg-surface-container hover:text-ink"
+                className="rounded-full px-3.5 py-1.5 text-label-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
               >
                 {l.label}
               </Link>
@@ -75,7 +75,7 @@ export function SiteNav() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-label={open ? "Close menu" : "Open menu"}
-              className="focus-aura flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-surface-container md:hidden"
+              className="focus-aura flex h-9 w-9 items-center justify-center rounded-full text-on-surface hover:bg-surface-container md:hidden"
             >
               <span className="material-symbols-outlined text-[22px]">
                 {open ? "close" : "menu"}
@@ -94,7 +94,7 @@ export function SiteNav() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="text-headline-md text-ink rounded-xl px-4 py-3 hover:bg-surface-container"
+                className="text-headline-md text-on-surface rounded-xl px-4 py-3 hover:bg-surface-container"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 {l.label}
@@ -103,7 +103,7 @@ export function SiteNav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="text-headline-md text-muted rounded-xl px-4 py-3 hover:bg-surface-container"
+              className="text-headline-md text-on-surface-variant rounded-xl px-4 py-3 hover:bg-surface-container"
             >
               Sign in
             </Link>

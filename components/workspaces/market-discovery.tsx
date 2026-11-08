@@ -33,8 +33,8 @@ export function MarketDiscovery() {
   }
 
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-lowest p-5">
-      <p className="text-label-md text-muted">Market discovery — Channel3</p>
+    <div className="rounded-xl bg-surface-container-lowest shadow-sm p-space-lg">
+      <p className="text-label-md text-on-surface-variant">Market discovery — Channel3</p>
       <div className="mt-2 flex gap-2">
         <input
           value={query}
@@ -43,7 +43,7 @@ export function MarketDiscovery() {
             if (e.key === "Enter") void search();
           }}
           placeholder="e.g. campus hoodie MYR"
-          className="focus-aura h-10 w-full rounded-full border border-outline-variant bg-surface-low px-4 text-body-md text-ink outline-none placeholder:text-muted"
+          className="focus-aura h-10 w-full rounded-full border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none placeholder:text-on-surface-variant"
         />
         <button
           type="button"
@@ -57,7 +57,7 @@ export function MarketDiscovery() {
       {error ? <p className="text-body-sm text-error mt-2">{error}</p> : null}
       {results ? (
         results.length === 0 ? (
-          <p className="text-body-sm text-muted mt-3">No market results.</p>
+          <p className="text-body-sm text-on-surface-variant mt-3">No market results.</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {results.map((r, i) => (
@@ -66,10 +66,10 @@ export function MarketDiscovery() {
                   href={r.url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="flex items-center justify-between rounded-lg border border-outline-variant px-3 py-2 text-body-sm text-ink hover:bg-surface-low"
+                  className="flex items-center justify-between rounded-lg border border-outline-variant px-3 py-2 text-body-sm text-on-surface hover:bg-surface-low"
                 >
                   <span className="line-clamp-1">{r.title}</span>
-                  <span className="text-label-md text-muted shrink-0 ml-2">
+                  <span className="text-label-md text-on-surface-variant shrink-0 ml-2">
                     {r.price_cents !== null ? `RM ${(r.price_cents / 100).toFixed(2)}` : r.source}
                   </span>
                 </a>
@@ -78,7 +78,7 @@ export function MarketDiscovery() {
           </ul>
         )
       ) : null}
-      <p className="text-body-sm text-muted mt-3">
+      <p className="text-body-sm text-on-surface-variant mt-3">
         Links to external marketplaces — CampusHub never invents listings.
       </p>
     </div>

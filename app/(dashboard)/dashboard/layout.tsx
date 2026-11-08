@@ -46,7 +46,6 @@ export default async function DashboardLayout({
   return (
     <AppShell
       orgName={orgList[0].name}
-      orgs={orgList.map((o) => ({ id: o.id, name: o.name }))}
       userInitials={initials}
       unreadCount={unreadCount}
       nav={dashboardNav}

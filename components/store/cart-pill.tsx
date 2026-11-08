@@ -27,7 +27,7 @@ export function CartPill({ className }: { className?: string }) {
     <Link
       href="/demo/checkout"
       className={
-        "focus-aura inline-flex h-10 items-center gap-2 rounded-full border border-outline-variant bg-surface-lowest px-4 text-label-lg text-ink shadow-card hover:bg-surface-low " +
+        "focus-aura inline-flex h-10 items-center gap-2 rounded-full border border-outline-variant bg-surface-lowest px-4 text-label-lg text-on-surface shadow-card hover:bg-surface-low " +
         (className ?? "")
       }
       aria-label={`Cart, ${count} items`}

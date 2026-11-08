@@ -31,7 +31,7 @@ export function MemberRowActions({ row }: { row: MemberRow }) {
         value={row.role}
         disabled={pending}
         onChange={(e) => changeRole(e.target.value)}
-        className="h-8 rounded-md border border-outline-variant bg-surface-lowest px-2 text-label-md text-ink focus:border-secondary focus:outline-none"
+        className="h-8 rounded-md border border-outline-variant bg-surface-lowest px-2 text-label-md text-on-surface focus:border-secondary focus:outline-none"
         aria-label={`Role for ${row.full_name}`}
       >
         <option value="owner">owner</option>

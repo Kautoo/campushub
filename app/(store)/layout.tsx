@@ -13,18 +13,18 @@ export default function StoreLayout({
           <span className="bg-primary-container flex h-9 w-9 items-center justify-center rounded-lg text-white dark:bg-primary dark:text-[#00201c]">
             <span className="material-symbols-outlined text-[20px]">hub</span>
           </span>
-          <span className="text-headline-sm text-ink">CampusHub Store</span>
+          <span className="text-headline-sm text-on-surface">CampusHub Store</span>
         </Link>
         <nav className="ml-6 hidden gap-4 md:flex">
           <Link
             href="/demo"
-            className="text-label-lg text-muted hover:text-ink"
+            className="text-label-lg text-on-surface-variant hover:text-on-surface"
           >
             Merch
           </Link>
           <Link
             href="/demo#events"
-            className="text-label-lg text-muted hover:text-ink"
+            className="text-label-lg text-on-surface-variant hover:text-on-surface"
           >
             Events
           </Link>
@@ -32,7 +32,7 @@ export default function StoreLayout({
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/dashboard"
-            className="text-label-lg text-muted hover:text-ink hidden sm:block"
+            className="text-label-lg text-on-surface-variant hover:text-on-surface hidden sm:block"
           >
             Organizer login
           </Link>
@@ -41,7 +41,7 @@ export default function StoreLayout({
       </header>
       {children}
       <footer className="border-t border-outline-variant px-4 py-8 lg:px-8">
-        <p className="text-body-sm text-muted">
+        <p className="text-body-sm text-on-surface-variant">
           CampusHub 2.0 · Powered by PayPal · Guest checkout, no account needed
         </p>
       </footer>

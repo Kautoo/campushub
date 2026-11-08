@@ -61,8 +61,8 @@ export function InsightsChat({ disabled, notice }: { disabled?: boolean; notice?
 
   if (disabled) {
     return (
-      <div className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
-        <p className="text-body-sm text-muted">
+      <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+        <p className="text-body-sm text-on-surface-variant">
           {notice ?? "AI gateway is not configured."}
         </p>
       </div>
@@ -70,14 +70,14 @@ export function InsightsChat({ disabled, notice }: { disabled?: boolean; notice?
   }
 
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-lowest p-5">
+    <div className="rounded-xl bg-surface-container-lowest shadow-sm p-space-lg">
       <div
         ref={listRef}
         className="max-h-96 space-y-3 overflow-y-auto pr-1"
         aria-live="polite"
       >
         {messages.length === 0 ? (
-          <p className="text-body-sm text-muted">
+          <p className="text-body-sm text-on-surface-variant">
             Ask about your data — “How did revenue trend last week?”, “Which
             products should I restock?”, “Any anomalies?” Answers are grounded
             in a live metrics pack, never invented.
@@ -89,7 +89,7 @@ export function InsightsChat({ disabled, notice }: { disabled?: boolean; notice?
               className={
                 m.role === "user"
                   ? "bg-primary ml-auto max-w-[85%] rounded-2xl rounded-br-sm px-4 py-2 text-white dark:text-[#00201c]"
-                  : "bg-surface-container max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-2 text-ink"
+                  : "bg-surface-container max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-2 text-on-surface"
               }
             >
               <p className="text-body-md whitespace-pre-wrap">{m.text || "…"}</p>
@@ -109,7 +109,7 @@ export function InsightsChat({ disabled, notice }: { disabled?: boolean; notice?
           }}
           placeholder="Ask your data…"
           disabled={busy}
-          className="focus-aura h-11 w-full rounded-full border border-outline-variant bg-surface-low px-4 text-body-md text-ink outline-none placeholder:text-muted"
+          className="focus-aura h-11 w-full rounded-full border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none placeholder:text-on-surface-variant"
         />
         <ShimmerAIButton onPress={() => void send()} isDisabled={busy || !input.trim()}>
           {busy ? "Thinking…" : "Ask"}

@@ -40,11 +40,11 @@ export default async function RegistrationsPage() {
   const pending = rows.filter((r) => r.status === "pending").length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="how_to_reg"
-        title="Registrations"
-        subtitle="Attendees, tickets, and check-in"
+        title="Registration Management"
+        subtitle="Monitor real-time attendee flow, ticket tier fulfillment, manual check-in gates, and student fee settlement across active campus society initiatives."
       />
       <StatStrip
         items={[
@@ -54,7 +54,7 @@ export default async function RegistrationsPage() {
           { label: "Pending", value: pending, icon: "hourglass_top", format: "number", tone: "neutral" },
         ]}
       />
-      <div className="rounded-xl border border-outline-variant bg-surface-lowest p-4">
+      <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
         <RegistrationsTable rows={rows} />
       </div>
     </div>

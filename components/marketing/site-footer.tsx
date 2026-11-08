@@ -55,12 +55,12 @@ export function SiteFooter() {
             <span className="bg-primary-container flex h-9 w-9 items-center justify-center rounded-lg text-white dark:bg-primary dark:text-[#00201c]">
               <span className="material-symbols-outlined text-[20px]">hub</span>
             </span>
-            <span className="text-headline-sm text-ink">CampusHub</span>
-            <span className="rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-muted">
+            <span className="text-headline-sm text-on-surface">CampusHub</span>
+            <span className="rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant">
               2.0
             </span>
           </Link>
-          <p className="text-muted mt-4 max-w-xs text-sm leading-relaxed">
+          <p className="text-on-surface-variant mt-4 max-w-xs text-sm leading-relaxed">
             The campus events &amp; commerce platform — ticketing, storefront,
             PayPal payments, and grounded AI insights.
           </p>
@@ -77,11 +77,11 @@ export function SiteFooter() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.08 * (i + 1) }}
           >
-            <p className="text-label-md text-muted uppercase tracking-widest">{col.title}</p>
+            <p className="text-label-md text-on-surface-variant uppercase tracking-widest">{col.title}</p>
             <ul className="mt-4 space-y-2.5">
               {col.links.map((l) => (
                 <li key={l.href + l.label}>
-                  <Link href={l.href} className="link-draw text-muted text-sm hover:text-ink">
+                  <Link href={l.href} className="link-draw text-on-surface-variant text-sm hover:text-on-surface">
                     {l.label}
                   </Link>
                 </li>
@@ -92,11 +92,11 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 lg:px-8">
-          <p className="text-muted text-xs">
+          <p className="text-on-surface-variant text-xs">
             © CampusHub 2.0 · Built with Next.js,
             Render Postgres, PayPal, and the Vercel AI SDK
           </p>
-          <p className="text-muted font-mono text-[11px]">
+          <p className="text-on-surface-variant font-mono text-[11px]">
             status:{" "}
             <Link href="/api/health" className="link-draw text-success">
               operational

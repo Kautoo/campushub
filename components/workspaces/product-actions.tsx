@@ -30,7 +30,7 @@ export function ProductStatusButton({
             if (res.error) setError(res.error);
           })
         }
-        className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 text-label-md text-ink-variant hover:bg-surface-container hover:text-ink disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface disabled:opacity-50"
         title={archived ? "Reactivate product" : "Archive product"}
       >
         <Icon name={archived ? "unarchive" : "archive"} size={14} />

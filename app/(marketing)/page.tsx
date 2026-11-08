@@ -126,7 +126,7 @@ export default function LandingPage() {
         <Marquee pauseOnHover className="[--duration:22s]">
           {["PayPal", "Render Postgres", "Vercel AI SDK", "AG Grid", "Bryntum Scheduler", "Channel3", "Astropods", "Magic UI"].map(
             (n) => (
-              <span key={n} className="text-muted mx-8 flex items-center gap-2 whitespace-nowrap text-sm font-medium">
+              <span key={n} className="text-on-surface-variant mx-8 flex items-center gap-2 whitespace-nowrap text-sm font-medium">
                 <span className="material-symbols-outlined text-[14px] text-primary">bolt</span>
                 {n}
               </span>
@@ -156,13 +156,13 @@ export default function LandingPage() {
       {/* ACT III — scroll story */}
       <section className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
         <BlurFade>
-          <p className="font-mono text-label-sm text-muted uppercase tracking-[0.2em]">
+          <p className="font-mono text-label-sm text-on-surface-variant uppercase tracking-[0.2em]">
             The story of one event
           </p>
           <RevealHeading
             text="From launch week to restock day."
             accentWord="restock"
-            className="text-display text-ink mt-3 max-w-2xl"
+            className="text-display text-on-surface mt-3 max-w-2xl"
           />
         </BlurFade>
         <div className="mt-16">
@@ -175,8 +175,8 @@ export default function LandingPage() {
       {/* ACT IV — bento + stat wall */}
       <section id="features" className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
         <BlurFade>
-          <RevealHeading text="Everything a society needs" className="text-display text-ink" />
-          <p className="text-muted mt-3 max-w-lg text-lg">
+          <RevealHeading text="Everything a society needs" className="text-display text-on-surface" />
+          <p className="text-on-surface-variant mt-3 max-w-lg text-lg">
             One codebase, one login, one source of truth for events and
             commerce.
           </p>
@@ -184,10 +184,10 @@ export default function LandingPage() {
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f, i) => (
             <BlurFade key={f.title} delay={i * 0.04}>
-              <article className="card-lift h-full rounded-xl border border-outline-variant bg-surface-lowest p-6 shadow-card">
+              <article className="card-lift h-full rounded-xl bg-surface-container-lowest shadow-sm p-6 shadow-card">
                 <IconTile icon={f.icon} tone="teal" />
-                <h3 className="text-ink mt-4 text-lg font-semibold">{f.title}</h3>
-                <p className="text-muted mt-2 text-sm leading-relaxed">{f.body}</p>
+                <h3 className="text-on-surface mt-4 text-lg font-semibold">{f.title}</h3>
+                <p className="text-on-surface-variant mt-2 text-sm leading-relaxed">{f.body}</p>
               </article>
             </BlurFade>
           ))}
@@ -196,7 +196,7 @@ export default function LandingPage() {
         <div className="mt-16">
           <StatWall stats={STATS} />
         </div>
-        <p className="text-muted mt-3 text-center text-xs">
+        <p className="text-on-surface-variant mt-3 text-center text-xs">
           Figures from the seeded Tech Society demo workspace.
         </p>
       </section>
@@ -211,9 +211,9 @@ export default function LandingPage() {
             <RevealHeading
               text="Ask your data anything."
               accentWord="anything."
-              className="text-display text-ink mt-4"
+              className="text-display text-on-surface mt-4"
             />
-            <p className="text-muted mt-4 text-lg leading-relaxed">
+            <p className="text-on-surface-variant mt-4 text-lg leading-relaxed">
               The AI reads a metrics pack computed live from your database —
               revenue by day, sell-through per tier, refund rate, stock — and
               is forbidden from using any number outside it.
@@ -235,8 +235,8 @@ export default function LandingPage() {
       {/* ACT VI — pricing */}
       <section id="pricing" className="mx-auto max-w-6xl px-4 py-24 lg:px-8">
         <BlurFade>
-          <RevealHeading text="Simple pricing" className="text-display text-ink text-center" />
-          <p className="text-muted mt-3 text-center text-lg">
+          <RevealHeading text="Simple pricing" className="text-display text-on-surface text-center" />
+          <p className="text-on-surface-variant mt-3 text-center text-lg">
             Start free. Upgrade when your society starts selling.
           </p>
         </BlurFade>
@@ -256,15 +256,15 @@ export default function LandingPage() {
                     <Badge tone="primary">Most popular</Badge>
                   </span>
                 ) : null}
-                <h3 className="text-headline-md text-ink">{p.name}</h3>
-                <p className="text-muted mt-1 text-sm">{p.tagline}</p>
+                <h3 className="text-headline-md text-on-surface">{p.name}</h3>
+                <p className="text-on-surface-variant mt-1 text-sm">{p.tagline}</p>
                 <p className="mt-5">
-                  <span className="text-display text-ink">{p.price}</span>
-                  <span className="text-muted text-sm">{p.per}</span>
+                  <span className="text-display text-on-surface">{p.price}</span>
+                  <span className="text-on-surface-variant text-sm">{p.per}</span>
                 </p>
                 <ul className="mt-6 flex-1 space-y-2.5">
                   {p.features.map((f) => (
-                    <li key={f} className="text-muted flex items-start gap-2.5 text-sm">
+                    <li key={f} className="text-on-surface-variant flex items-start gap-2.5 text-sm">
                       <span className="material-symbols-outlined mt-0.5 text-[16px] text-success">check</span>
                       {f}
                     </li>
@@ -308,9 +308,9 @@ export default function LandingPage() {
           <RevealHeading
             text="Your campus, one hub."
             accentWord="one"
-            className="text-display text-ink"
+            className="text-display text-on-surface"
           />
-          <p className="text-muted mx-auto mt-4 max-w-xl text-lg leading-relaxed">
+          <p className="text-on-surface-variant mx-auto mt-4 max-w-xl text-lg leading-relaxed">
             Connect a Postgres database, add PayPal sandbox keys, and sell at your next
             event — with every number grounded in your own data.
           </p>
@@ -322,7 +322,7 @@ export default function LandingPage() {
               Create your workspace
             </Link>
           </Magnetic>
-          <p className="text-muted mt-5 text-sm">
+          <p className="text-on-surface-variant mt-5 text-sm">
             Free Society tier · no credit card · demo data included
           </p>
         </div>

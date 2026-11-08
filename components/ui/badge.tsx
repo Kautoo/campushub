@@ -11,7 +11,7 @@ export type ChipTone =
 const tones: Record<ChipTone, string> = {
   primary: "bg-primary-container text-white dark:bg-primary/15 dark:text-primary",
   teal: "bg-secondary-container text-primary-container dark:bg-secondary/15 dark:text-secondary",
-  neutral: "bg-surface-container text-ink-variant dark:bg-surface-high dark:text-muted",
+  neutral: "bg-surface-container text-on-surface-variant dark:bg-surface-high dark:text-on-surface-variant",
   success: "bg-success-container text-success",
   warning: "bg-warning-container text-warning",
   error: "bg-error-container text-error",

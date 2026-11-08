@@ -97,8 +97,8 @@ export function InsightConversation() {
               <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
             </span>
             <div>
-              <p className="text-label-md font-semibold text-ink">Weekly insight</p>
-              <p className="text-[11px] text-muted">grounded · metrics pack #12</p>
+              <p className="text-label-md font-semibold text-on-surface">Weekly insight</p>
+              <p className="text-[11px] text-on-surface-variant">grounded · metrics pack #12</p>
             </div>
           </div>
           <span className="flex items-center gap-1.5 rounded-full bg-success-container px-2.5 py-1 text-[11px] font-semibold text-success">
@@ -136,7 +136,7 @@ export function InsightConversation() {
         {/* Answer bubble */}
         {stage >= 2 ? (
           <div className="mt-4 flex justify-start">
-            <div className="bg-surface-container max-w-[92%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed text-ink">
+            <div className="bg-surface-container max-w-[92%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed text-on-surface">
               {answer}
               {stage === 2 && !reduce && answer.length < 999 ? (
                 <span className="type-caret ml-0.5 inline-block" />
@@ -148,7 +148,7 @@ export function InsightConversation() {
         {/* Grounded sources cascade */}
         {stage >= 3 ? (
           <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-outline-variant pt-4">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">
               grounded in
             </span>
             {["tier sell-through", "orders by day", "stock coverage"].map((chip, i) => (
@@ -164,7 +164,7 @@ export function InsightConversation() {
                 {chip}
               </span>
             ))}
-            <span className="text-muted ml-auto font-mono text-[10px]">
+            <span className="text-on-surface-variant ml-auto font-mono text-[10px]">
               glm-5.3-flash
             </span>
           </div>

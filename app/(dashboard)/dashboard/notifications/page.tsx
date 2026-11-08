@@ -44,31 +44,39 @@ function NotificationItem({ n }: { n: NotificationRow }) {
   const unread = n.read_at === null;
   return (
     <li
-      className={`flex items-start gap-3 rounded-xl border px-4 py-3 transition ${
-        unread
-          ? "border-outline-variant bg-surface-lowest"
-          : "border-transparent bg-surface-low opacity-75"
+      className={`relative flex items-start gap-3 py-2 transition ${
+        unread ? "opacity-100" : "opacity-60"
       }`}
     >
       <span
+        aria-hidden
+        className={`absolute -left-[26px] top-4 flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-surface ${
+          unread ? "bg-secondary" : "bg-outline-variant"
+        }`}
+      >
+        {unread ? (
+          <span className="h-1.5 w-1.5 rounded-full bg-on-secondary-fixed" />
+        ) : null}
+      </span>
+      <span
         className={`material-symbols-outlined mt-0.5 text-[22px] ${
-          unread ? "text-secondary" : "text-muted"
+          unread ? "text-secondary" : "text-on-surface-variant"
         }`}
       >
         {typeIcons[n.type] ?? typeIcons.system}
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="text-headline-sm text-ink truncate">{n.title}</p>
+          <p className="font-headline-sm text-headline-sm text-on-surface truncate">{n.title}</p>
           {unread ? (
             <span className="h-2 w-2 shrink-0 rounded-full bg-secondary" />
           ) : null}
         </div>
         {n.body ? (
-          <p className="text-body-md text-muted mt-0.5">{n.body}</p>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">{n.body}</p>
         ) : null}
         <div className="flex items-center gap-3 mt-1">
-          <span className="text-label-md text-muted">{timeAgo(n.created_at)}</span>
+          <span className="text-label-md text-on-surface-variant">{timeAgo(n.created_at)}</span>
           {n.link ? (
             <a
               href={n.link}
@@ -84,7 +92,7 @@ function NotificationItem({ n }: { n: NotificationRow }) {
           <button
             type="submit"
             title="Mark as read"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted transition hover:bg-surface-container hover:text-ink"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
           >
             <span className="material-symbols-outlined text-[18px]">
               done_all
@@ -108,18 +116,18 @@ export default async function NotificationsPage() {
   const read = all.filter((n) => n.read_at !== null);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="notifications"
-        title="Notifications"
-        subtitle="Orders, stock, events, and system alerts"
+        title="Notifications & Activity Center"
+        subtitle="Monitor operational alerts, ticket check-in bursts, PayPal transaction settlements, catalog stock velocity, and audit activity."
         actions={
           <>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-label-md font-semibold ${
                 unread.length > 0
                   ? "bg-error-container text-error"
-                  : "bg-surface-container text-muted"
+                  : "bg-surface-container text-on-surface-variant"
               }`}
             >
               <span className="material-symbols-outlined text-[14px]">
@@ -151,13 +159,13 @@ export default async function NotificationsPage() {
           body="Order, stock, and event alerts will appear here as they happen."
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-space-lg">
           {unread.length > 0 ? (
             <section>
-              <h3 className="text-label-lg font-semibold text-muted mb-2">
+              <h3 className="font-label-lg text-label-lg font-semibold text-on-surface-variant mb-2">
                 Unread
               </h3>
-              <ul className="space-y-2">
+              <ul className="relative space-y-1 border-l border-outline-variant pl-6">
                 {unread.map((n) => (
                   <NotificationItem key={n.id} n={n} />
                 ))}
@@ -166,10 +174,10 @@ export default async function NotificationsPage() {
           ) : null}
           {read.length > 0 ? (
             <section>
-              <h3 className="text-label-lg font-semibold text-muted mb-2">
+              <h3 className="font-label-lg text-label-lg font-semibold text-on-surface-variant mb-2">
                 Earlier
               </h3>
-              <ul className="space-y-2">
+              <ul className="relative space-y-1 border-l border-outline-variant pl-6">
                 {read.map((n) => (
                   <NotificationItem key={n.id} n={n} />
                 ))}

@@ -76,7 +76,7 @@ export function EventsWorkspace({
         headerName: "Category",
         maxWidth: 150,
         cellRenderer: (p: { value: string | null }) =>
-          p.value ? <Badge tone="primary">{p.value}</Badge> : <span className="text-muted">—</span>,
+          p.value ? <Badge tone="primary">{p.value}</Badge> : <span className="text-on-surface-variant">—</span>,
       },
       {
         headerName: "Dates",
@@ -87,7 +87,7 @@ export function EventsWorkspace({
         cellRenderer: (p: { data?: EventRow }) => {
           if (!p.data) return null;
           return (
-            <span className="whitespace-nowrap text-body-sm text-ink-variant">
+            <span className="whitespace-nowrap text-body-sm text-on-surface-variant">
               {formatDate(p.data.start_at)}
               {p.data.end_at ? ` → ${formatDate(p.data.end_at)}` : ""}
             </span>
@@ -128,7 +128,7 @@ export function EventsWorkspace({
               <button
                 type="button"
                 onClick={() => openEdit(row)}
-                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label-sm text-ink-variant hover:bg-surface-container"
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label-sm text-on-surface-variant hover:bg-surface-container"
               >
                 <span className="material-symbols-outlined text-[14px]">edit</span>
                 Edit
@@ -169,7 +169,7 @@ export function EventsWorkspace({
               className={
                 tab === t.key
                   ? "inline-flex items-center gap-1.5 rounded-full bg-primary-container px-4 py-1.5 text-label-md text-white dark:bg-primary/15 dark:text-primary"
-                  : "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-label-md text-muted hover:bg-surface-container"
+                  : "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-label-md text-on-surface-variant hover:bg-surface-container"
               }
             >
               <Icon name={t.icon} size={16} />
@@ -203,11 +203,13 @@ export function EventsWorkspace({
           }
         />
       ) : tab === "list" ? (
-        <div className="rounded-xl border border-outline-variant bg-surface-lowest p-4">
+        <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
           <DataTable columnDefs={columnDefs} rowData={rows} height={520} />
         </div>
       ) : (
-        <EventScheduler events={rows} licensed={licensed} />
+        <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+          <EventScheduler events={rows} licensed={licensed} />
+        </div>
       )}
 
       <EventModal

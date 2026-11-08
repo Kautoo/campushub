@@ -22,26 +22,28 @@ export default function LoginPage({
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-headline-lg text-ink">Welcome back</h1>
-        <p className="text-body-md text-muted mt-1">
+        <h1 className="font-headline-lg text-headline-lg text-primary">
+          Welcome back
+        </h1>
+        <p className="font-body-md text-body-md text-on-surface-variant mt-1">
           Sign in to your CampusHub organizer workspace.
         </p>
       </div>
 
       <form action={action} className="space-y-4">
         <label className="block">
-          <span className="text-label-md text-ink">Email</span>
+          <span className="text-label-md text-on-surface">Email</span>
           <input
             name="email"
             type="email"
             required
             autoComplete="email"
             placeholder="you@campus.edu.my"
-            className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-lowest px-4 text-body-md text-ink outline-none placeholder:text-muted"
+            className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-lowest px-4 text-body-md text-on-surface outline-none placeholder:text-on-surface-variant"
           />
         </label>
         <label className="block">
-          <span className="text-label-md text-ink">Password</span>
+          <span className="text-label-md text-on-surface">Password</span>
           <input
             name="password"
             type="password"
@@ -49,7 +51,7 @@ export default function LoginPage({
             minLength={8}
             autoComplete="current-password"
             placeholder="••••••••"
-            className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-lowest px-4 text-body-md text-ink outline-none placeholder:text-muted"
+            className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-lowest px-4 text-body-md text-on-surface outline-none placeholder:text-on-surface-variant"
           />
         </label>
 
@@ -72,13 +74,13 @@ export default function LoginPage({
         </Button>
       </form>
 
-      <p className="text-body-sm text-muted mt-6 text-center">
+      <p className="text-body-sm text-on-surface-variant mt-6 text-center">
         New organizer?{" "}
         <Link href="/register" className="text-primary font-semibold">
           Create an account
         </Link>
       </p>
-      <p className="text-body-sm text-muted mt-2 text-center">
+      <p className="text-body-sm text-on-surface-variant mt-2 text-center">
         Just browsing?{" "}
         <Link href="/demo" className="text-primary font-semibold">
           Visit the storefront

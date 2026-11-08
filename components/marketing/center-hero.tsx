@@ -11,7 +11,9 @@ import { Magnetic } from "./magnetic";
  * icon row. Reuses the project's fonts/tokens; motion rests under
  * reduced-motion.
  */
-export function CenterHero({ techIcons }: {
+export function CenterHero({
+  techIcons,
+}: {
   techIcons: { name: string; icon: string }[];
 }) {
   const reduce = useReducedMotion();
@@ -21,15 +23,14 @@ export function CenterHero({ techIcons }: {
       aria-labelledby="hero-heading"
       className="relative mx-auto flex min-h-[calc(100svh-4rem)] w-full flex-col items-center justify-center gap-12 overflow-hidden px-4 pt-40 pb-32 sm:px-8 lg:px-24"
     >
-      {/* Gradient glow bar — blurred ribbon across the top */}
+      {/* Ambient blobs (Stitch landing) */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-28 left-1/2 z-0 h-80 w-[min(900px,120vw)] -translate-x-1/2 opacity-30 dark:opacity-55"
-        style={{
-          background:
-            "linear-gradient(90deg, var(--st-gradient-c) 0%, var(--st-gradient-a) 50%, var(--st-gradient-b) 100%)",
-          filter: "blur(240px)",
-        }}
+        className="pointer-events-none absolute -top-28 left-1/2 z-0 h-80 w-[min(900px,120vw)] -translate-x-1/2 bg-secondary-fixed/15 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 right-[10%] z-0 h-72 w-96 rounded-full bg-tertiary-fixed/10 blur-3xl"
       />
 
       {/* Interactive dot field */}
@@ -46,18 +47,17 @@ export function CenterHero({ techIcons }: {
       >
         <h1
           id="hero-heading"
-          className="max-w-4xl text-[clamp(2.6rem,6.5vw,4.5rem)] font-bold leading-[1.04] tracking-[-0.03em] text-ink"
+          className="max-w-4xl text-[clamp(2.6rem,6.5vw,4.5rem)] font-bold leading-[1.04] tracking-[-0.03em] text-on-surface"
         >
-          Run your campus{" "}
-          <span className="font-editorial text-primary italic font-medium">
-            empire
-          </span>{" "}
-          from one hub.
+          Powering Campus Societies, Hackathons &amp; Collegiate Commerce with{" "}
+          <span className="bg-gradient-to-r from-secondary to-on-tertiary-container bg-clip-text text-transparent">
+            Autonomous AI
+          </span>
         </h1>
-        <p className="max-w-2xl text-lg leading-relaxed text-muted">
-          CampusHub is the events &amp; commerce platform for campus
-          societies — ticketing, storefront, PayPal payments, and AI answers
-          computed from your real numbers.
+        <p className="max-w-2xl text-lg leading-relaxed text-on-surface-variant">
+          CampusHub is the events &amp; commerce platform for campus societies —
+          ticketing, storefront, PayPal payments, and AI insights computed from
+          your real numbers.
         </p>
       </motion.div>
 
@@ -90,9 +90,11 @@ export function CenterHero({ techIcons }: {
             key={item.name}
             title={item.name}
             aria-label={item.name}
-            className="focus-aura flex h-11 w-11 cursor-default items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-container hover:text-ink"
+            className="focus-aura flex h-11 w-11 cursor-default items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
           >
-            <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
+            <span className="material-symbols-outlined text-[22px]">
+              {item.icon}
+            </span>
           </span>
         ))}
       </motion.div>
@@ -102,7 +104,7 @@ export function CenterHero({ techIcons }: {
         initial={reduce ? undefined : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.5 }}
-        className="text-muted relative z-10 text-sm"
+        className="text-on-surface-variant relative z-10 text-sm"
       >
         <span className="material-symbols-outlined align-text-bottom text-[15px] text-success">
           verified

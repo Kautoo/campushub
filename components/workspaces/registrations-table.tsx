@@ -48,10 +48,10 @@ export function RegistrationsTable({ rows }: { rows: RegistrationRow[] }) {
           if (!p.data) return null;
           return (
             <div className="leading-tight">
-              <p className="text-body-sm font-medium text-ink">
+              <p className="text-body-sm font-medium text-on-surface">
                 {p.data.attendee_name}
               </p>
-              <p className="text-body-sm text-muted">{p.data.attendee_email}</p>
+              <p className="text-body-sm text-on-surface-variant">{p.data.attendee_email}</p>
             </div>
           );
         },

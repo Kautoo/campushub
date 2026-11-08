@@ -32,11 +32,11 @@ export default async function EventsPage() {
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
-        icon="event"
-        title="Events"
-        subtitle="Create, publish, and schedule campus events"
+        icon="confirmation_number"
+        title="Event Management"
+        subtitle="Create, monitor, and manage campus hackathons, workshops, and student society ticketing rosters."
       />
       <EventsWorkspace
         rows={rows}

@@ -18,10 +18,10 @@ export default function PrivacyPolicyPage() {
               shield
             </span>
           </span>
-          <span className="text-headline-sm text-ink">Privacy Policy</span>
+          <span className="text-headline-sm text-on-surface">Privacy Policy</span>
           <Link
             href="/"
-            className="link-draw text-label-lg text-muted hover:text-ink ml-auto"
+            className="link-draw text-label-lg text-on-surface-variant hover:text-on-surface ml-auto"
           >
             <span aria-hidden="true" className="mr-1">
               ←
@@ -32,56 +32,56 @@ export default function PrivacyPolicyPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-16 lg:px-8">
-        <p className="font-mono text-label-sm text-muted">
+        <p className="font-mono text-label-sm text-on-surface-variant">
           Last updated: November 2026
         </p>
-        <h1 className="text-display text-ink mt-3">Privacy Policy</h1>
-        <p className="text-muted text-body-lg leading-relaxed mt-4">
+        <h1 className="text-display text-on-surface mt-3">Privacy Policy</h1>
+        <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
           CampusHub is a campus commerce platform for clubs and student
           organizations. This page explains, in plain language, what we store
           and what we deliberately do not do.
         </p>
-        <p className="text-muted text-body-sm mt-2">
+        <p className="text-on-surface-variant text-body-sm mt-2">
           This document is provided as a template and is not legal advice.
         </p>
 
         <div className="mt-10 space-y-12">
           <section>
-            <h2 className="text-headline-md text-ink">What we collect</h2>
-            <ul className="text-muted text-body-lg leading-relaxed mt-4 list-disc space-y-2 pl-5">
+            <h2 className="text-headline-md text-on-surface">What we collect</h2>
+            <ul className="text-on-surface-variant text-body-lg leading-relaxed mt-4 list-disc space-y-2 pl-5">
               <li>
-                <span className="text-ink">Account email and name</span> —
+                <span className="text-on-surface">Account email and name</span> —
                 collected when you register, handled by Auth.js credential sessions.
               </li>
               <li>
-                <span className="text-ink">Organization data</span> — the
+                <span className="text-on-surface">Organization data</span> — the
                 organization profiles, event listings, and product details you
                 enter.
               </li>
               <li>
-                <span className="text-ink">Order and transaction records</span>{" "}
+                <span className="text-on-surface">Order and transaction records</span>{" "}
                 — the orders placed through storefronts on CampusHub.
               </li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-headline-md text-ink">Cookies</h2>
-            <p className="text-muted text-body-lg leading-relaxed mt-4">
+            <h2 className="text-headline-md text-on-surface">Cookies</h2>
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
               We set one first-party cookie that remembers your theme
               preference and keeps your session alive. That is the whole list.
               Your cookie choice from the consent banner is stored locally in
               your browser so the banner does not reappear.
             </p>
-            <p className="text-muted text-body-lg leading-relaxed mt-4">
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
               No tracking cookies, no advertising pixels, no third-party
               analytics.
             </p>
           </section>
 
           <section>
-            <h2 className="text-headline-md text-ink">Payments</h2>
-            <p className="text-muted text-body-lg leading-relaxed mt-4">
+            <h2 className="text-headline-md text-on-surface">Payments</h2>
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
               Payments are processed by PayPal. Card numbers and payment
               credentials never touch CampusHub servers — checkout happens on
               PayPal&apos;s side. For details on how PayPal handles payment
@@ -99,8 +99,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-headline-md text-ink">Data storage</h2>
-            <p className="text-muted text-body-lg leading-relaxed mt-4">
+            <h2 className="text-headline-md text-on-surface">Data storage</h2>
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
               All data lives in a Postgres database (Render Postgres) with
               application-layer org scoping, so each account can only read and
               write the rows it owns.
@@ -108,8 +108,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-headline-md text-ink">Your rights</h2>
-            <p className="text-muted text-body-lg leading-relaxed mt-4">
+            <h2 className="text-headline-md text-on-surface">Your rights</h2>
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
               You may request access to, correction of, or deletion of your
               personal data at any time by emailing{" "}
               <a
@@ -123,8 +123,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-headline-md text-ink">Contact</h2>
-            <p className="text-muted text-body-lg leading-relaxed mt-4">
+            <h2 className="text-headline-md text-on-surface">Contact</h2>
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mt-4">
               Questions about this policy? Email{" "}
               <a
                 href="mailto:privacy@campushub.example"
@@ -144,14 +144,14 @@ export default function PrivacyPolicyPage() {
 
       <footer className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-10 lg:px-8">
-          <p className="text-muted text-sm">
+          <p className="text-on-surface-variant text-sm">
             © CampusHub 2.0 · Built with Next.js, Render Postgres, and PayPal
           </p>
           <nav className="flex gap-6" aria-label="Footer">
-            <Link href="/tos" className="link-draw text-muted text-sm hover:text-ink">
+            <Link href="/tos" className="link-draw text-on-surface-variant text-sm hover:text-on-surface">
               Terms
             </Link>
-            <Link href="/" className="link-draw text-muted text-sm hover:text-ink">
+            <Link href="/" className="link-draw text-on-surface-variant text-sm hover:text-on-surface">
               Home
             </Link>
           </nav>

@@ -16,11 +16,11 @@ export function AnimatedBeamDemo() {
   const aiRef = useRef<HTMLDivElement>(null);
 
   const node =
-    "flex h-12 w-12 items-center justify-center rounded-xl border border-outline-variant bg-surface-lowest text-ink shadow-card";
+    "flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-lowest shadow-sm text-on-surface shadow-card";
 
   return (
-    <div className="rounded-xl border border-outline-variant bg-surface-lowest p-5">
-      <p className="text-label-md text-muted">Data flow</p>
+    <div className="rounded-xl bg-surface-container-lowest shadow-sm p-space-lg">
+      <p className="text-label-md text-on-surface-variant">Data flow</p>
       <div
         ref={containerRef}
         className="relative mt-4 flex h-40 items-center justify-between px-6"
@@ -29,13 +29,13 @@ export function AnimatedBeamDemo() {
           <div ref={paypalRef} className={node}>
             <Icon name="account_balance_wallet" size={22} />
           </div>
-          <span className="text-label-sm text-muted">PayPal</span>
+          <span className="text-label-sm text-on-surface-variant">PayPal</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <div ref={dbRef} className={node}>
             <Icon name="database" size={22} />
           </div>
-          <span className="text-label-sm text-muted">Render Postgres</span>
+          <span className="text-label-sm text-on-surface-variant">Render Postgres</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <div
@@ -44,20 +44,20 @@ export function AnimatedBeamDemo() {
           >
             <Icon name="hub" size={26} />
           </div>
-          <span className="text-label-md text-ink">CampusHub</span>
+          <span className="text-label-md text-on-surface">CampusHub</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <div ref={aiRef} className={node}>
             <Icon name="auto_awesome" size={22} />
           </div>
-          <span className="text-label-sm text-muted">AI</span>
+          <span className="text-label-sm text-on-surface-variant">AI</span>
         </div>
 
         <AnimatedBeam containerRef={containerRef} fromRef={paypalRef} toRef={hubRef} />
         <AnimatedBeam containerRef={containerRef} fromRef={dbRef} toRef={hubRef} delay={0.5} />
         <AnimatedBeam containerRef={containerRef} fromRef={aiRef} toRef={hubRef} delay={1} />
       </div>
-      <p className="text-body-sm text-muted mt-2">
+      <p className="text-body-sm text-on-surface-variant mt-2">
         Insights are generated from a live metrics pack — never from invented
         numbers.
       </p>

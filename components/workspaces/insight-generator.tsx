@@ -46,8 +46,8 @@ export function InsightGenerator({
 
   if (disabled) {
     return (
-      <div className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
-        <p className="text-body-sm text-muted">
+      <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+        <p className="text-body-sm text-on-surface-variant">
           {notice ?? "AI gateway is not configured."}
         </p>
       </div>
@@ -78,16 +78,16 @@ export function InsightGenerator({
           {error}
         </p>
       ) : null}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-space-md md:grid-cols-3">
         {cards.map((c) =>
           results[c.kind] ? (
             <div
               key={c.kind}
-              className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-low p-5"
+              className="relative overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low p-space-lg"
             >
               <BorderBeam size={70} duration={9} />
-              <h3 className="text-headline-sm text-ink">{c.title}</h3>
-              <p className="text-body-sm text-muted mt-2 whitespace-pre-wrap">
+              <h3 className="text-headline-sm text-on-surface">{c.title}</h3>
+              <p className="text-body-sm text-on-surface-variant mt-2 whitespace-pre-wrap">
                 {results[c.kind]}
               </p>
             </div>

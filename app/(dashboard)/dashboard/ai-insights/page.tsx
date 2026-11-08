@@ -27,11 +27,11 @@ export default async function AiInsightsPage() {
   const orgReady = session.orgIds.length > 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="auto_awesome"
         title="AI Commerce Intelligence"
-        subtitle={`Grounded in live aggregates · model ${aiModelId()}`}
+        subtitle={`Turn transaction flow into actionable insights · model ${aiModelId()}`}
         actions={
           <Badge tone={aiReady ? "success" : "warning"}>
             {aiReady ? "gateway connected" : "not configured"}
@@ -48,7 +48,7 @@ export default async function AiInsightsPage() {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-space-lg lg:grid-cols-2">
         <InsightsChat
           disabled={!aiReady || !orgReady || !session}
           notice={
@@ -62,9 +62,9 @@ export default async function AiInsightsPage() {
           {hasChannel3() ? (
             <MarketDiscovery />
           ) : (
-            <div className="rounded-xl border border-dashed border-outline-variant bg-surface-lowest p-5">
-              <p className="text-label-md text-muted">Market discovery</p>
-              <p className="text-body-sm text-muted mt-1">
+            <div className="rounded-xl bg-surface-container-low p-space-lg">
+              <p className="text-label-md text-on-surface-variant">Market discovery</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
                 Channel3 integration is hidden until CHANNEL3_API_KEY is set
                 (see README).
               </p>
@@ -74,9 +74,9 @@ export default async function AiInsightsPage() {
       </div>
 
       <section>
-        <h3 className="text-headline-sm text-ink mb-3">Recent insights</h3>
+        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3">Recent insights</h3>
         {(recent).length === 0 ? (
-          <p className="text-body-sm text-muted">
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
             Nothing yet — generate a summary or ask a question above.
           </p>
         ) : (
@@ -84,22 +84,22 @@ export default async function AiInsightsPage() {
             {recent.map((i) => (
               <li
                 key={i.id}
-                className="rounded-xl border border-outline-variant bg-surface-lowest p-4"
+                className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm"
               >
                 <div className="flex items-center gap-2">
                   <Badge tone={i.kind === "chat" ? "neutral" : "teal"}>
                     {i.kind}
                   </Badge>
-                  <span className="text-label-sm text-muted">
+                  <span className="text-label-sm text-on-surface-variant">
                     {new Date(i.created_at).toLocaleString("en-MY")} · {i.model}
                   </span>
                 </div>
                 {i.prompt ? (
-                  <p className="text-body-sm text-muted mt-2 line-clamp-1">
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 line-clamp-1">
                     Q: {i.prompt}
                   </p>
                 ) : null}
-                <p className="text-body-md text-ink mt-1 line-clamp-4 whitespace-pre-wrap">
+                <p className="text-body-md text-on-surface mt-1 line-clamp-4 whitespace-pre-wrap">
                   {i.response}
                 </p>
               </li>

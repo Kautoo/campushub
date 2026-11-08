@@ -23,7 +23,7 @@ export type ProductModalRow = {
 };
 
 const inputCls =
-  "focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-ink outline-none";
+  "focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none";
 
 /** Create/edit product modal, validated server-side via productSchema. */
 export function ProductModal({
@@ -41,21 +41,21 @@ export function ProductModal({
       role="presentation"
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-outline-variant bg-surface-lowest p-6 shadow-card"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-surface-container-lowest p-space-lg shadow-sm shadow-card"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={product ? "Edit product" : "New product"}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-headline-md text-ink">
+          <h3 className="text-headline-md text-on-surface">
             {product ? "Edit product" : "New product"}
           </h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full p-1 text-muted hover:bg-surface-container hover:text-ink"
+            className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
           >
             <Icon name="close" />
           </button>
@@ -83,11 +83,11 @@ function ProductModalForm({
   }, [state?.ok, onClose]);
 
   return (
-    <form action={action} className="grid gap-4 sm:grid-cols-2">
+    <form action={action} className="grid gap-space-md sm:grid-cols-2">
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
 
       <label className="block sm:col-span-2">
-        <span className="text-label-md text-ink">Name</span>
+        <span className="text-label-md text-on-surface">Name</span>
         <input
           name="name"
           required
@@ -98,7 +98,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">Slug</span>
+        <span className="text-label-md text-on-surface">Slug</span>
         <input
           name="slug"
           placeholder="auto from name"
@@ -109,7 +109,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">Category</span>
+        <span className="text-label-md text-on-surface">Category</span>
         <input
           name="category"
           maxLength={60}
@@ -119,7 +119,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">Price (RM)</span>
+        <span className="text-label-md text-on-surface">Price (RM)</span>
         <input
           name="price"
           required
@@ -132,7 +132,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">SKU</span>
+        <span className="text-label-md text-on-surface">SKU</span>
         <input
           name="sku"
           maxLength={60}
@@ -142,7 +142,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">Stock</span>
+        <span className="text-label-md text-on-surface">Stock</span>
         <input
           name="stock"
           type="number"
@@ -154,7 +154,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">Low stock threshold</span>
+        <span className="text-label-md text-on-surface">Low stock threshold</span>
         <input
           name="low_stock_threshold"
           type="number"
@@ -166,7 +166,7 @@ function ProductModalForm({
       </label>
 
       <label className="block">
-        <span className="text-label-md text-ink">Status</span>
+        <span className="text-label-md text-on-surface">Status</span>
         <select
           name="status"
           defaultValue={product?.status ?? "active"}
@@ -179,13 +179,13 @@ function ProductModalForm({
       </label>
 
       <label className="block sm:col-span-2">
-        <span className="text-label-md text-ink">Description</span>
+        <span className="text-label-md text-on-surface">Description</span>
         <textarea
           name="description"
           rows={3}
           maxLength={4000}
           defaultValue={product?.description ?? ""}
-          className="focus-aura mt-1 w-full rounded-lg border border-outline-variant bg-surface-low px-4 py-3 text-body-md text-ink outline-none"
+          className="focus-aura mt-1 w-full rounded-lg border border-outline-variant bg-surface-low px-4 py-3 text-body-md text-on-surface outline-none"
         />
       </label>
 

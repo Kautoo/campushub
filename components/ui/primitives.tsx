@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { IconTile } from "./icon";
 
 /** Icon tile + heading + subtitle used atop dashboard sections. */
 export function SectionHeader({
@@ -16,13 +15,19 @@ export function SectionHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-start justify-between gap-4", className)}>
-      <div className="flex items-center gap-3">
-        <IconTile icon={icon} tone="teal" size={40} />
+    <div className={cn("flex items-start justify-between gap-space-md", className)}>
+      <div className="flex items-center gap-space-md">
+        <div className="w-10 h-10 rounded-xl bg-secondary-container/40 text-on-secondary-container flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        </div>
         <div>
-          <h2 className="text-headline-md text-ink">{title}</h2>
+          <h2 className="font-headline-sm text-headline-sm text-on-surface">
+            {title}
+          </h2>
           {subtitle ? (
-            <p className="text-body-sm text-muted">{subtitle}</p>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              {subtitle}
+            </p>
           ) : null}
         </div>
       </div>
@@ -48,15 +53,19 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-lowest px-6 py-12 text-center",
+        "flex flex-col items-center justify-center gap-3 rounded-xl bg-surface-container-low px-6 py-12 text-center",
         className,
       )}
     >
-      <span className="material-symbols-outlined text-[32px] text-muted">
+      <span className="material-symbols-outlined text-[32px] text-on-surface-variant">
         {icon}
       </span>
-      <p className="text-headline-sm text-ink">{title}</p>
-      {body ? <p className="max-w-sm text-body-sm text-muted">{body}</p> : null}
+      <p className="font-headline-sm text-headline-sm text-on-surface">{title}</p>
+      {body ? (
+        <p className="max-w-sm font-body-sm text-body-sm text-on-surface-variant">
+          {body}
+        </p>
+      ) : null}
       {action}
     </div>
   );
@@ -74,11 +83,11 @@ export function PriceTag({
 }) {
   return (
     <span className={cn("inline-flex items-baseline gap-1.5", className)}>
-      <span className="text-headline-sm font-semibold text-ink">
+      <span className="text-headline-sm font-semibold text-on-surface">
         {formatted}
       </span>
       {originalFormatted ? (
-        <span className="text-body-sm text-muted line-through">
+        <span className="text-body-sm text-on-surface-variant line-through">
           {originalFormatted}
         </span>
       ) : null}

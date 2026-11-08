@@ -38,8 +38,8 @@ export default function CookieConsent() {
           : "translate-y-4 opacity-0 motion-reduce:translate-y-0 motion-reduce:opacity-100 motion-reduce:transition-none"
       }`}
     >
-      <h2 className="text-headline-sm text-ink">Cookies on CampusHub</h2>
-      <p className="text-muted text-body-sm mt-2">
+      <h2 className="text-headline-sm text-on-surface">Cookies on CampusHub</h2>
+      <p className="text-on-surface-variant text-body-sm mt-2">
         We use a single first-party cookie to remember your theme and session.
         No tracking, no ads, no third-party analytics.{" "}
         <Link href="/privacy" className="link-draw text-primary">
@@ -57,7 +57,7 @@ export default function CookieConsent() {
         <button
           type="button"
           onClick={() => decide("declined")}
-          className="btn-step border-outline-variant text-ink focus-aura inline-flex h-11 items-center rounded-full border px-6 text-label-md font-semibold hover:bg-surface-low"
+          className="btn-step border-outline-variant text-on-surface focus-aura inline-flex h-11 items-center rounded-full border px-6 text-label-md font-semibold hover:bg-surface-low"
         >
           Decline
         </button>

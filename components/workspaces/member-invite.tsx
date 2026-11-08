@@ -27,12 +27,12 @@ export function MemberInvite() {
           name="email"
           required
           placeholder="teammate@campus.edu"
-          className="h-10 min-w-64 flex-1 rounded-lg border border-outline-variant bg-surface-lowest px-3 text-body-md text-ink placeholder:text-muted focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+          className="h-10 min-w-64 flex-1 rounded-lg border border-outline-variant bg-surface-lowest px-3 text-body-md text-on-surface placeholder:text-on-surface-variant focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
         />
         <select
           name="role"
           defaultValue="staff"
-          className="h-10 rounded-lg border border-outline-variant bg-surface-lowest px-3 text-body-md text-ink focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
+          className="h-10 rounded-lg border border-outline-variant bg-surface-lowest px-3 text-body-md text-on-surface focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/30"
         >
           <option value="admin">Admin</option>
           <option value="staff">Staff</option>

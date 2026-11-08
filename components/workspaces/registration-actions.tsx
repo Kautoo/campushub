@@ -37,7 +37,7 @@ export function RegistrationActions({
         value={status}
         disabled={pending || disabled}
         onChange={(e) => changeStatus(e.target.value as RegistrationStatus)}
-        className="h-8 rounded-lg border border-outline-variant bg-surface-low px-2 text-label-md text-ink outline-none disabled:opacity-50"
+        className="h-8 rounded-lg border border-outline-variant bg-surface-low px-2 text-label-md text-on-surface outline-none disabled:opacity-50"
       >
         <option value="pending">Pending</option>
         <option value="confirmed">Confirmed</option>

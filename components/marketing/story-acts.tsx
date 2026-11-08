@@ -76,15 +76,15 @@ function StoryActRow({
         <p className="font-mono text-label-sm uppercase tracking-[0.2em] text-primary">
           {String(index + 1).padStart(2, "0")} · {act.eyebrow}
         </p>
-        <h3 className="text-ink mt-3 text-3xl font-semibold tracking-tight">
+        <h3 className="text-on-surface mt-3 text-3xl font-semibold tracking-tight">
           {act.title}
         </h3>
-        <p className="text-muted mt-4 max-w-md text-base leading-relaxed">
+        <p className="text-on-surface-variant mt-4 max-w-md text-base leading-relaxed">
           {act.body}
         </p>
         <ul className="mt-6 space-y-2.5">
           {act.bullets.map((b) => (
-            <li key={b} className="text-muted flex items-center gap-2.5 text-sm">
+            <li key={b} className="text-on-surface-variant flex items-center gap-2.5 text-sm">
               <span className="material-symbols-outlined text-[18px] text-primary">
                 check_circle
               </span>
@@ -125,18 +125,18 @@ function MiniOrders() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-label-md font-semibold text-ink">Orders</p>
-        <span className="font-mono text-[11px] text-muted">live · MYR</span>
+        <p className="text-label-md font-semibold text-on-surface">Orders</p>
+        <span className="font-mono text-[11px] text-on-surface-variant">live · MYR</span>
       </div>
       <ul>
         {ORDERS.map((o) => (
           <li key={o.no} className="flex items-center justify-between border-t border-outline-variant py-3 first:border-t-0">
             <div>
-              <p className="font-mono text-[11px] text-muted">{o.no}</p>
-              <p className="text-sm text-ink">{o.item}</p>
+              <p className="font-mono text-[11px] text-on-surface-variant">{o.no}</p>
+              <p className="text-sm text-on-surface">{o.item}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm font-semibold text-ink tabular-nums">
+              <p className="text-sm font-semibold text-on-surface tabular-nums">
                 RM {(o.cents / 100).toFixed(2)}
               </p>
               <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone[o.status]}`}>
@@ -155,18 +155,18 @@ function MiniInsight() {
     <div>
       <div className="mb-3 flex items-center gap-2">
         <span className="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
-        <p className="text-label-md font-semibold text-ink">Weekly insight</p>
+        <p className="text-label-md font-semibold text-on-surface">Weekly insight</p>
       </div>
-      <p className="text-sm leading-relaxed text-muted">
-        “VIP tier contributed <strong className="text-ink">RM 3,383</strong> —
+      <p className="text-sm leading-relaxed text-on-surface-variant">
+        “VIP tier contributed <strong className="text-on-surface">RM 3,383</strong> —
         17 of 50 seats sold. Keycap stock covers{" "}
-        <strong className="text-ink">3 weeks</strong> at current sell rate.”
+        <strong className="text-on-surface">3 weeks</strong> at current sell rate.”
       </p>
       <div className="mt-4 flex gap-2">
         <span className="rounded-full bg-secondary-container px-2.5 py-0.5 text-[11px] font-semibold text-primary-container">
           grounded
         </span>
-        <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-[11px] text-muted">
+        <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-[11px] text-on-surface-variant">
           zero fabricated numbers
         </span>
       </div>
@@ -178,7 +178,7 @@ function MiniLaunch() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-label-md font-semibold text-ink">Innovation Week 2026</p>
+        <p className="text-label-md font-semibold text-on-surface">Innovation Week 2026</p>
         <span className="rounded-full bg-success-container px-2.5 py-0.5 text-[11px] font-semibold text-success">
           published
         </span>
@@ -191,10 +191,10 @@ function MiniLaunch() {
         ].map(([name, price, sold, qty]) => (
           <div key={name as string}>
             <div className="flex justify-between text-sm">
-              <span className="text-ink">
-                {name} · <span className="text-muted">{price}</span>
+              <span className="text-on-surface">
+                {name} · <span className="text-on-surface-variant">{price}</span>
               </span>
-              <span className="text-muted tabular-nums">
+              <span className="text-on-surface-variant tabular-nums">
                 {sold}/{qty}
               </span>
             </div>
@@ -207,7 +207,7 @@ function MiniLaunch() {
           </div>
         ))}
       </div>
-      <p className="mt-4 text-[12px] text-muted">
+      <p className="mt-4 text-[12px] text-on-surface-variant">
         QR check-in, capacity control, PayPal checkout included.
       </p>
     </div>

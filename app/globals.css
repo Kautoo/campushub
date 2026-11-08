@@ -136,10 +136,18 @@
   --color-secondary: var(--st-secondary);
   --color-secondary-container: var(--st-secondary-container);
   --color-secondary-fixed: var(--st-secondary-fixed);
+  --color-secondary-fixed-dim: var(--st-secondary-fixed-dim);
+  --color-on-secondary-container: #00312e;
+  --color-on-secondary-fixed: #00312e;
   --color-tertiary: var(--st-tertiary);
   --color-tertiary-container: var(--st-tertiary-container);
+  --color-tertiary-fixed: var(--st-tertiary-fixed-dim);
+  --color-tertiary-fixed-dim: var(--st-tertiary-fixed-dim);
   --color-tertiary-dim: var(--st-tertiary-fixed-dim);
   --color-on-tertiary-container: var(--st-on-tertiary-container);
+  --color-primary-fixed: var(--st-primary-fixed);
+  --color-primary-fixed-dim: var(--st-primary-fixed);
+  --color-on-primary: #ffffff;
   --color-outline: var(--st-outline);
   --color-outline-variant: var(--st-outline-variant);
   --color-error: var(--st-error);
@@ -152,6 +160,13 @@
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Stitch spacing scale → px-space-*, gap-space-*, py-space-* utilities */
+  --spacing-space-xs: 4px;
+  --spacing-space-sm: 8px;
+  --spacing-space-md: 16px;
+  --spacing-space-lg: 24px;
+  --spacing-space-xl: 32px;
 
   --radius-st-sm: 4px;
   --radius-st-md: 8px;
@@ -287,6 +302,42 @@ body {
   font-size: 11px;
   line-height: 14px;
   font-weight: 600;
+}
+
+/* Stitch alias utilities — Stitch HTML pairs font-X with text-X on the
+   same element and uses on-surface-variant naming; additive aliases only. */
+.text-on-surface-variant {
+  color: var(--st-on-surface-variant);
+}
+.text-outline-variant {
+  color: var(--st-outline-variant);
+}
+.font-headline-lg {
+  font-weight: 700;
+}
+.font-headline-md {
+  font-weight: 600;
+}
+.font-headline-sm {
+  font-weight: 600;
+}
+.font-body-sm {
+  font-weight: 400;
+}
+.font-body-md {
+  font-weight: 400;
+}
+.font-body-lg {
+  font-weight: 400;
+}
+.font-label-sm {
+  font-weight: 600;
+}
+.font-label-md {
+  font-weight: 600;
+}
+.font-label-lg {
+  font-weight: 500;
 }
 
 /* Material Symbols icon font (loaded via <link> in layout) */

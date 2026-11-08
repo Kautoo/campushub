@@ -27,11 +27,11 @@ export default async function TransactionsPage() {
   const unverifiedCount = txns.length - verifiedCount;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
-        icon="payments"
-        title="Transactions"
-        subtitle="PayPal payments and refunds with server-side verification status"
+        icon="account_balance_wallet"
+        title="Transaction Management"
+        subtitle="Reconcile PayPal payments, refunds, and server-side verification status."
       />
 
       <StatStrip
@@ -63,7 +63,7 @@ export default async function TransactionsPage() {
         ]}
       />
 
-      <section className="rounded-xl border border-outline-variant bg-surface-lowest">
+      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
         {txns.length === 0 ? (
           <EmptyState
             icon="payments"

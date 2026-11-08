@@ -100,7 +100,7 @@ export function EventScheduler({
       ) : (
         <div
           ref={containerRef}
-          className="rounded-xl border border-outline-variant bg-surface-lowest"
+          className="rounded-xl bg-surface-container-lowest shadow-sm"
         />
       )}
     </div>

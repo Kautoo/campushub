@@ -108,7 +108,7 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
               <button
                 type="button"
                 onClick={() => openEdit(row)}
-                className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 text-label-md text-ink-variant hover:bg-surface-container hover:text-ink"
+                className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
               >
                 <Icon name="edit" size={14} />
                 Edit
@@ -116,7 +116,7 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
               {row.status === "active" || row.status === "archived" ? (
                 <ProductStatusButton id={row.id} status={row.status} />
               ) : (
-                <span className="text-label-sm text-muted">draft</span>
+                <span className="text-label-sm text-on-surface-variant">draft</span>
               )}
             </span>
           );
@@ -129,7 +129,7 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
   return (
     <>
       <div className="flex items-center justify-between px-5 py-4">
-        <h3 className="text-headline-sm text-ink">All products</h3>
+        <h3 className="text-headline-sm text-on-surface">All products</h3>
         <button
           type="button"
           onClick={openNew}

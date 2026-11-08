@@ -1,4 +1,13 @@
 import { SectionHeader } from "@/components/ui/primitives";
+import {
+  AccordionRoot,
+  AccordionItem,
+  AccordionHeading,
+  AccordionTrigger,
+  AccordionIndicator,
+  AccordionPanel,
+  AccordionBody,
+} from "@heroui/react";
 
 export const metadata = { title: "Help — CampusHub 2.0" };
 
@@ -141,40 +150,45 @@ export default function HelpPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="help"
-        title="Help & Support"
-        subtitle="Setup guides, FAQs, and how to reach us"
+        title="Help & Support Center"
+        subtitle="Setup guides, FAQs, and how to reach the CampusHub team."
       />
 
-      <section className="space-y-2">
-        {FAQS.map((faq) => (
-          <details
-            key={faq.id}
-            className="group overflow-hidden rounded-xl border border-outline-variant bg-surface-lowest open:border-secondary/50"
-          >
-            <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
-              <span className="material-symbols-outlined text-[20px] text-secondary">
-                {faq.icon}
-              </span>
-              <span className="flex-1 text-headline-sm text-ink">
-                {faq.question}
-              </span>
-              <span className="material-symbols-outlined text-[20px] text-muted transition-transform group-open:rotate-180">
-                expand_more
-              </span>
-            </summary>
-            <div className="space-y-2 border-t border-outline-variant px-4 py-3 text-body-md text-muted [&_p]:leading-relaxed">
-              {faq.answer}
-            </div>
-          </details>
-        ))}
+      <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+        <AccordionRoot className="flex flex-col">
+          {FAQS.map((faq) => (
+            <AccordionItem key={faq.id} id={faq.id} className="group">
+              <AccordionHeading>
+                <AccordionTrigger className="flex w-full cursor-pointer items-center gap-3 px-space-md py-space-md text-left">
+                  <span className="material-symbols-outlined text-[20px] text-secondary">
+                    {faq.icon}
+                  </span>
+                  <span className="flex-1 font-headline-sm text-headline-sm text-on-surface">
+                    {faq.question}
+                  </span>
+                  <AccordionIndicator className="text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[20px]">
+                      expand_more
+                    </span>
+                  </AccordionIndicator>
+                </AccordionTrigger>
+              </AccordionHeading>
+              <AccordionPanel className="border-t border-outline-variant px-space-md py-space-md">
+                <AccordionBody className="flex flex-col gap-2 font-body-md text-body-md text-on-surface-variant [&_p]:leading-relaxed">
+                  {faq.answer}
+                </AccordionBody>
+              </AccordionPanel>
+            </AccordionItem>
+          ))}
+        </AccordionRoot>
       </section>
 
-      <section className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
-        <h3 className="text-headline-sm text-ink mb-1">Contact support</h3>
-        <p className="text-body-md text-muted mb-4">
+      <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">Contact support</h3>
+        <p className="font-body-md text-body-md text-on-surface-variant mb-4">
           Email us and we’ll get back to you within one business day.
         </p>
         <a
@@ -184,7 +198,7 @@ export default function HelpPage() {
           <span className="material-symbols-outlined text-[18px]">mail</span>
           Email support
         </a>
-        <p className="mt-3 text-body-sm text-muted">
+        <p className="mt-3 font-body-sm text-body-sm text-on-surface-variant">
           Note: in-app support tickets are not yet wired to a backend — email is
           the supported channel for now.
         </p>

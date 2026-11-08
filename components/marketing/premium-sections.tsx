@@ -25,11 +25,11 @@ export function StatWall({
           transition={{ duration: 0.55, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
           className="bg-surface-lowest p-8 text-center"
         >
-          <p className="text-ink text-4xl font-bold tracking-tight tabular-nums">
-            {s.money ? <span className="text-muted text-2xl font-semibold">RM </span> : null}
+          <p className="text-on-surface text-4xl font-bold tracking-tight tabular-nums">
+            {s.money ? <span className="text-on-surface-variant text-2xl font-semibold">RM </span> : null}
             <Counter to={s.value} reduce={!!reduce} />
           </p>
-          <p className="text-muted mt-2 flex items-center justify-center gap-1.5 text-sm">
+          <p className="text-on-surface-variant mt-2 flex items-center justify-center gap-1.5 text-sm">
             <span className="material-symbols-outlined text-[16px] text-primary">{s.icon}</span>
             {s.label}
           </p>

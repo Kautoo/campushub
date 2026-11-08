@@ -42,17 +42,17 @@ export default async function ReportsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="description"
-        title="Reports"
-        subtitle="CSV exports of your commerce and event data"
+        title="Reports & Export Management"
+        subtitle="Generate institutional audit reports, reconcile PayPal settlements, analyze ticket registration velocity, and export verified datasets."
       />
 
       <ReportPanel />
 
       <section>
-        <h3 className="text-headline-sm text-ink mb-3">Recent reports</h3>
+        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3">Recent reports</h3>
         {rows.length === 0 ? (
           <EmptyState
             icon="description"
@@ -60,7 +60,7 @@ export default async function ReportsPage() {
             body="Generate your first CSV export above — it will be listed here."
           />
         ) : (
-          <ul className="divide-y divide-outline-variant overflow-hidden rounded-xl border border-outline-variant bg-surface-lowest">
+          <ul className="divide-y divide-outline-variant overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm">
             {rows.map((row) => {
               const url = downloadUrls.get(row.id);
               return (
@@ -68,7 +68,7 @@ export default async function ReportsPage() {
                   key={row.id}
                   className="flex items-center gap-4 px-4 py-3"
                 >
-                  <span className="material-symbols-outlined text-[20px] text-muted">
+                  <span className="material-symbols-outlined text-[20px] text-on-surface-variant">
                     {row.type === "orders"
                       ? "receipt_long"
                       : row.type === "transactions"
@@ -76,10 +76,10 @@ export default async function ReportsPage() {
                         : "how_to_reg"}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-body-md font-medium text-ink">
+                    <p className="text-body-md font-medium text-on-surface">
                       {row.type}.csv
                     </p>
-                    <p className="text-label-md text-muted">
+                    <p className="text-label-md text-on-surface-variant">
                       {new Date(row.created_at).toLocaleString("en-MY")}
                     </p>
                   </div>
@@ -88,7 +88,7 @@ export default async function ReportsPage() {
                     <a
                       href={url}
                       download={`${row.type}.csv`}
-                      className="inline-flex h-8 items-center gap-1 rounded-full border border-outline-variant px-3 text-label-md font-semibold text-ink-variant transition hover:border-secondary hover:text-secondary"
+                      className="inline-flex h-8 items-center gap-1 rounded-full border border-outline-variant px-3 text-label-md font-semibold text-on-surface-variant transition hover:border-secondary hover:text-secondary"
                     >
                       <span className="material-symbols-outlined text-[16px]">
                         download

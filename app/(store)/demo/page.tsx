@@ -26,7 +26,13 @@ type EventRow = {
   venue: string | null;
   category: string | null;
   start_at: string | null;
-  tiers: { id: string; name: string; price_cents: number; quantity: number; sold: number }[];
+  tiers: {
+    id: string;
+    name: string;
+    price_cents: number;
+    quantity: number;
+    sold: number;
+  }[];
 };
 
 type StorefrontData = {
@@ -60,7 +66,15 @@ async function getStorefrontData(): Promise<StorefrontData | null> {
          where status = 'active'
          order by price_cents asc`,
       ),
-      pool.query<EventRow & { tier_id: string | null; tier_name: string | null; tier_price_cents: number | null; tier_quantity: number | null; tier_sold: number | null }>(
+      pool.query<
+        EventRow & {
+          tier_id: string | null;
+          tier_name: string | null;
+          tier_price_cents: number | null;
+          tier_quantity: number | null;
+          tier_sold: number | null;
+        }
+      >(
         `select e.id, e.title, e.description, e.venue, e.category, e.start_at,
                 tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
                 tt.quantity as tier_quantity, tt.sold as tier_sold
@@ -129,104 +143,163 @@ export default async function DemoStorefront() {
   const events = data.events;
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8">
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-label-md text-muted">{org.name}</p>
-          <h1 className="text-display text-ink">Campus store</h1>
-          <p className="text-body-lg text-muted mt-1 max-w-xl">
-            Merch and event tickets. Guest checkout with PayPal — no account
-            needed.
-          </p>
-        </div>
-        <CartPill />
-      </div>
-
-      <section id="events" className="mb-12">
-        <h2 className="text-headline-md text-ink mb-4">Upcoming events</h2>
-        {events.length === 0 ? (
-          <p className="text-body-md text-muted">No published events yet.</p>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {events.map((e) => {
-              const cheapest = e.tiers
-                ?.filter((t) => t.quantity - t.sold > 0)
-                .sort((a, b) => a.price_cents - b.price_cents)[0];
-              const start = e.start_at
-                ? new Date(e.start_at).toLocaleDateString("en-MY", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : null;
-              return (
-                <article
-                  key={e.id}
-                  className="rounded-xl border border-outline-variant bg-surface-lowest p-5 shadow-card transition-transform duration-200 hover:-translate-y-0.5"
-                >
-                  <div className="flex items-center justify-between">
-                    {e.category ? (
-                      <Badge tone="teal">{e.category}</Badge>
-                    ) : (
-                      <span />
-                    )}
-                    <span className="text-label-sm text-muted">{start}</span>
-                  </div>
-                  <h3 className="text-headline-sm text-ink mt-3">{e.title}</h3>
-                  <p className="text-body-sm text-muted mt-1 line-clamp-2">
-                    {e.description}
-                  </p>
-                  {e.venue ? (
-                    <p className="text-label-md text-muted mt-2 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">
-                        location_on
-                      </span>
-                      {e.venue}
-                    </p>
-                  ) : null}
-                  <div className="mt-4 flex items-center justify-between">
-                    {cheapest ? (
-                      <span className="text-body-sm text-muted">
-                        from{" "}
-                        <strong className="text-ink">
-                          {formatMoney(cheapest.price_cents, org.currency)}
-                        </strong>
-                      </span>
-                    ) : (
-                      <Badge tone="warning">Sold out</Badge>
-                    )}
-                  </div>
-                  {e.tiers?.length ? (
-                    <div className="mt-3 space-y-2 border-t border-outline-variant pt-3">
-                      {e.tiers
-                        .filter((t) => t.quantity - t.sold > 0)
-                        .map((t) => (
-                          <TierBuyButton
-                            key={t.id}
-                            tier={{
-                              tier_id: t.id,
-                              name: `${e.title} — ${t.name}`,
-                              price_cents: t.price_cents,
-                              qty: 1,
-                            }}
-                          />
-                        ))}
-                    </div>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <h2 className="text-headline-md text-ink mb-4">Merch</h2>
-        <StoreGrid
-          products={products}
-          currency={org.currency}
+    <main className="w-full bg-surface">
+      {/* Ambient glow layer (Stitch hero) */}
+      <div className="relative w-full overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-96 bg-secondary-fixed/15 blur-3xl pointer-events-none rounded-full"
         />
-      </section>
+        <div className="relative mx-auto w-full max-w-7xl px-4 lg:px-8">
+          {/* Hero split */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center py-space-xl">
+            <div className="lg:col-span-6 flex flex-col gap-space-md z-10">
+              <div className="flex items-start justify-between gap-4">
+                <div className="inline-flex items-center gap-space-xs px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface shadow-sm ring-1 ring-outline-variant/30 w-fit">
+                  <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                  <span className="font-label-sm text-label-sm font-semibold tracking-wide uppercase text-secondary">
+                    {org.name}
+                  </span>
+                </div>
+                <CartPill />
+              </div>
+              <h1 className="font-headline-lg text-headline-lg lg:text-[44px] lg:leading-[52px] tracking-tight text-primary font-bold">
+                Discover, Shop and Join{" "}
+                <span className="bg-gradient-to-r from-secondary to-on-tertiary-container bg-clip-text text-transparent">
+                  Campus Life
+                </span>
+              </h1>
+              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl leading-relaxed">
+                Official campus events, student club merchandise, and society
+                tickets. Guest checkout with PayPal — no account needed.
+              </p>
+              <div className="flex flex-wrap items-center gap-space-md pt-space-xs">
+                <a
+                  href="#events"
+                  className="px-6 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-space-xs group"
+                >
+                  <span>Explore Events</span>
+                  <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
+                    arrow_forward
+                  </span>
+                </a>
+                <a
+                  href="#merch"
+                  className="px-6 py-3 rounded-full bg-surface-container-lowest hover:bg-surface-container text-primary font-label-lg text-label-lg font-semibold ring-1 ring-outline-variant/40 shadow-sm transition-all flex items-center gap-space-xs"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-secondary">
+                    storefront
+                  </span>
+                  <span>Browse Marketplace</span>
+                </a>
+              </div>
+              <div className="flex items-center gap-space-sm pt-space-sm">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm ring-1 ring-outline-variant/20">
+                  <span aria-hidden>🔥</span>
+                  <span className="font-semibold text-primary">
+                    {events.length} active events
+                  </span>
+                  <span className="text-outline-variant">•</span>
+                  <span>{products.length} club items</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="events" className="pb-space-xl">
+            <h2 className="font-headline-md text-headline-md text-on-surface mb-4">
+              Upcoming events
+            </h2>
+            {events.length === 0 ? (
+              <p className="text-body-md text-on-surface-variant">
+                No published events yet.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {events.map((e) => {
+                  const cheapest = e.tiers
+                    ?.filter((t) => t.quantity - t.sold > 0)
+                    .sort((a, b) => a.price_cents - b.price_cents)[0];
+                  const start = e.start_at
+                    ? new Date(e.start_at).toLocaleDateString("en-MY", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : null;
+                  return (
+                    <article
+                      key={e.id}
+                      className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm transition-shadow hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between">
+                        {e.category ? (
+                          <Badge tone="teal">{e.category}</Badge>
+                        ) : (
+                          <span />
+                        )}
+                        <span className="text-label-sm text-on-surface-variant">
+                          {start}
+                        </span>
+                      </div>
+                      <h3 className="text-headline-sm text-on-surface mt-3">
+                        {e.title}
+                      </h3>
+                      <p className="text-body-sm text-on-surface-variant mt-1 line-clamp-2">
+                        {e.description}
+                      </p>
+                      {e.venue ? (
+                        <p className="text-label-md text-on-surface-variant mt-2 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">
+                            location_on
+                          </span>
+                          {e.venue}
+                        </p>
+                      ) : null}
+                      <div className="mt-4 flex items-center justify-between">
+                        {cheapest ? (
+                          <span className="text-body-sm text-on-surface-variant">
+                            from{" "}
+                            <strong className="text-on-surface">
+                              {formatMoney(cheapest.price_cents, org.currency)}
+                            </strong>
+                          </span>
+                        ) : (
+                          <Badge tone="warning">Sold out</Badge>
+                        )}
+                      </div>
+                      {e.tiers?.length ? (
+                        <div className="mt-3 space-y-2 border-t border-outline-variant pt-3">
+                          {e.tiers
+                            .filter((t) => t.quantity - t.sold > 0)
+                            .map((t) => (
+                              <TierBuyButton
+                                key={t.id}
+                                tier={{
+                                  tier_id: t.id,
+                                  name: `${e.title} — ${t.name}`,
+                                  price_cents: t.price_cents,
+                                  qty: 1,
+                                }}
+                              />
+                            ))}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section id="merch" className="pb-space-xl">
+            <h2 className="font-headline-md text-headline-md text-on-surface mb-4">
+              Merch
+            </h2>
+            <StoreGrid products={products} currency={org.currency} />
+          </section>
+        </div>
+      </div>
     </main>
   );
 }

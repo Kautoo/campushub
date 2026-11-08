@@ -32,11 +32,11 @@ export default async function OrdersPage() {
       : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="receipt_long"
-        title="Orders"
-        subtitle="Storefront and registration orders — click a row for details"
+        title="Order Management"
+        subtitle="Track campus student merchandise orders, inspect payment settlements, and process order fulfillment and parcel pick-ups."
       />
 
       <StatStrip
@@ -69,7 +69,7 @@ export default async function OrdersPage() {
         ]}
       />
 
-      <section className="rounded-xl border border-outline-variant bg-surface-lowest">
+      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
         {orderRows.length === 0 ? (
           <EmptyState
             icon="receipt_long"

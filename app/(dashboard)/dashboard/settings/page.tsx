@@ -37,14 +37,14 @@ export default async function SettingsPage() {
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
         icon="settings"
-        title="Settings"
-        subtitle="Organization profile, members, and gateways"
+        title="Organization Profile & Settings"
+        subtitle="Manage your campus organization's public identity, member permissions, transaction notification channels, and institutional security controls."
       />
       <OrgSettingsForm org={org} />
-      <section className="rounded-xl border border-outline-variant bg-surface-lowest p-6">
+      <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
         <MembersGrid rows={memberRows} canManage />
       </section>
     </div>

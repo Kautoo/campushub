@@ -39,11 +39,11 @@ export default async function ProductsPage() {
   }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-space-lg">
       <SectionHeader
-        icon="inventory_2"
-        title="Products"
-        subtitle="Catalog, stock levels, and inventory movements"
+        icon="shopping_bag"
+        title="Product Management"
+        subtitle="Catalog, monitor stock levels, manage merchandise pricing, and track inventory velocity across campus sales channels."
       />
 
       <StatStrip
@@ -74,14 +74,14 @@ export default async function ProductsPage() {
         ]}
       />
 
-      <section className="rounded-xl border border-outline-variant bg-surface-lowest">
+      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
         <ProductGrid rows={products_} />
       </section>
 
-      <section className="rounded-xl border border-outline-variant bg-surface-lowest">
+      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
         <div className="px-5 py-4">
-          <h3 className="text-headline-sm text-ink">Recent inventory movements</h3>
-          <p className="text-body-sm text-muted">
+          <h3 className="text-headline-sm text-on-surface">Recent inventory movements</h3>
+          <p className="text-body-sm text-on-surface-variant">
             Last 50 stock changes across all products
           </p>
         </div>
@@ -95,7 +95,7 @@ export default async function ProductsPage() {
         ) : (
           <table className="w-full text-left text-body-md">
             <thead>
-              <tr className="border-t border-outline-variant text-label-sm text-muted">
+              <tr className="border-t border-outline-variant text-label-sm text-on-surface-variant">
                 <th className="px-5 py-2 font-semibold">Product</th>
                 <th className="px-5 py-2 font-semibold">Change</th>
                 <th className="px-5 py-2 font-semibold">Reason</th>
@@ -108,7 +108,7 @@ export default async function ProductsPage() {
                   key={m.id}
                   className="border-t border-outline-variant hover:bg-surface-low"
                 >
-                  <td className="px-5 py-3 text-ink">
+                  <td className="px-5 py-3 text-on-surface">
                     {m.products?.name ?? "—"}
                   </td>
                   <td
@@ -118,8 +118,8 @@ export default async function ProductsPage() {
                   >
                     {m.delta >= 0 ? `+${m.delta}` : m.delta}
                   </td>
-                  <td className="px-5 py-3 text-ink-variant">{m.reason}</td>
-                  <td className="px-5 py-3 text-muted">
+                  <td className="px-5 py-3 text-on-surface-variant">{m.reason}</td>
+                  <td className="px-5 py-3 text-on-surface-variant">
                     {new Date(m.created_at).toLocaleString("en-MY", {
                       dateStyle: "medium",
                       timeStyle: "short",

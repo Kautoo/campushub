@@ -43,7 +43,7 @@ export function OrderDetail({
       role="presentation"
     >
       <aside
-        className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-outline-variant bg-surface-lowest p-6"
+        className="flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-outline-variant bg-surface-lowest p-space-lg"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -51,19 +51,19 @@ export function OrderDetail({
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-mono text-[13px] text-ink-variant">
+            <p className="font-mono text-[13px] text-on-surface-variant">
               {order.order_number}
             </p>
-            <h3 className="text-headline-md text-ink">
+            <h3 className="text-headline-md text-on-surface">
               {order.customer_name ?? order.customer_email}
             </h3>
-            <p className="text-body-sm text-muted">{order.customer_email}</p>
+            <p className="text-body-sm text-on-surface-variant">{order.customer_email}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full p-1 text-muted hover:bg-surface-container hover:text-ink"
+            className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
           >
             <Icon name="close" />
           </button>
@@ -73,7 +73,7 @@ export function OrderDetail({
           <Badge tone={statusTone[order.status] ?? "neutral"}>
             {order.status}
           </Badge>
-          <span className="text-body-sm text-muted">
+          <span className="text-body-sm text-on-surface-variant">
             {new Date(order.created_at).toLocaleString("en-MY", {
               dateStyle: "medium",
               timeStyle: "short",
@@ -81,7 +81,7 @@ export function OrderDetail({
           </span>
         </div>
 
-        <h4 className="text-headline-sm mt-6 text-ink">Items</h4>
+        <h4 className="text-headline-sm mt-6 text-on-surface">Items</h4>
         <ul className="mt-2 divide-y divide-outline-variant rounded-lg border border-outline-variant">
           {order.order_items.map((it) => (
             <li
@@ -89,12 +89,12 @@ export function OrderDetail({
               className="flex items-center justify-between gap-3 px-4 py-3"
             >
               <div>
-                <p className="text-body-md text-ink">{it.name_snapshot}</p>
-                <p className="text-body-sm text-muted">
+                <p className="text-body-md text-on-surface">{it.name_snapshot}</p>
+                <p className="text-body-sm text-on-surface-variant">
                   {it.qty} × {formatMoney(it.unit_price_cents, order.currency)}
                 </p>
               </div>
-              <p className="text-body-md font-semibold text-ink">
+              <p className="text-body-md font-semibold text-on-surface">
                 {formatMoney(it.qty * it.unit_price_cents, order.currency)}
               </p>
             </li>
@@ -102,22 +102,22 @@ export function OrderDetail({
         </ul>
 
         <dl className="mt-4 space-y-1.5 text-body-md">
-          <div className="flex justify-between text-ink-variant">
+          <div className="flex justify-between text-on-surface-variant">
             <dt>Subtotal</dt>
             <dd>{formatMoney(order.subtotal_cents || itemsTotal, order.currency)}</dd>
           </div>
-          <div className="flex justify-between text-ink-variant">
+          <div className="flex justify-between text-on-surface-variant">
             <dt>Fee</dt>
             <dd>{formatMoney(order.fee_cents, order.currency)}</dd>
           </div>
-          <div className="flex justify-between border-t border-outline-variant pt-2 text-headline-sm font-semibold text-ink">
+          <div className="flex justify-between border-t border-outline-variant pt-2 text-headline-sm font-semibold text-on-surface">
             <dt>Total</dt>
             <dd>{formatMoney(order.total_cents, order.currency)}</dd>
           </div>
         </dl>
 
         {order.paypal_order_id ? (
-          <p className="mt-4 truncate font-mono text-[12px] text-muted">
+          <p className="mt-4 truncate font-mono text-[12px] text-on-surface-variant">
             PayPal order: {order.paypal_order_id}
           </p>
         ) : null}

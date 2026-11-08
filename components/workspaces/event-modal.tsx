@@ -43,7 +43,7 @@ function toIso(local: string): string {
 }
 
 const inputCls =
-  "focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-ink outline-none";
+  "focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none";
 
 export function EventModal({
   open,
@@ -95,16 +95,16 @@ export function EventModal({
       aria-modal="true"
       aria-label={event ? "Edit event" : "New event"}
     >
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-outline-variant bg-surface-lowest p-6 shadow-card">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-surface-container-lowest p-space-lg shadow-sm shadow-card">
         <div className="flex items-center justify-between">
-          <h3 className="text-headline-md text-ink">
+          <h3 className="text-headline-md text-on-surface">
             {event ? "Edit event" : "New event"}
           </h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="material-symbols-outlined rounded-full p-1 text-muted hover:bg-surface-container"
+            className="material-symbols-outlined rounded-full p-1 text-on-surface-variant hover:bg-surface-container"
           >
             close
           </button>
@@ -112,10 +112,10 @@ export function EventModal({
 
         <form
           action={handleSubmit}
-          className="mt-6 grid gap-4 md:grid-cols-2"
+          className="mt-6 grid gap-space-md md:grid-cols-2"
         >
           <label className="block md:col-span-2">
-            <span className="text-label-md text-ink">Title</span>
+            <span className="text-label-md text-on-surface">Title</span>
             <input
               name="title"
               required
@@ -125,7 +125,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Slug</span>
+            <span className="text-label-md text-on-surface">Slug</span>
             <input
               name="slug"
               placeholder="auto from title"
@@ -135,7 +135,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Category</span>
+            <span className="text-label-md text-on-surface">Category</span>
             <input
               name="category"
               maxLength={60}
@@ -144,7 +144,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Venue</span>
+            <span className="text-label-md text-on-surface">Venue</span>
             <input
               name="venue"
               maxLength={200}
@@ -153,7 +153,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Capacity</span>
+            <span className="text-label-md text-on-surface">Capacity</span>
             <input
               name="capacity"
               type="number"
@@ -164,7 +164,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Starts</span>
+            <span className="text-label-md text-on-surface">Starts</span>
             <input
               name="start_at"
               type="datetime-local"
@@ -173,7 +173,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Ends</span>
+            <span className="text-label-md text-on-surface">Ends</span>
             <input
               name="end_at"
               type="datetime-local"
@@ -182,7 +182,7 @@ export function EventModal({
             />
           </label>
           <label className="block">
-            <span className="text-label-md text-ink">Status</span>
+            <span className="text-label-md text-on-surface">Status</span>
             <select
               name="status"
               defaultValue={event?.status ?? "draft"}
@@ -195,13 +195,13 @@ export function EventModal({
             </select>
           </label>
           <label className="block md:col-span-2">
-            <span className="text-label-md text-ink">Description</span>
+            <span className="text-label-md text-on-surface">Description</span>
             <textarea
               name="description"
               rows={3}
               maxLength={4000}
               defaultValue={event?.description ?? ""}
-              className="focus-aura mt-1 w-full rounded-lg border border-outline-variant bg-surface-low px-4 py-3 text-body-md text-ink outline-none"
+              className="focus-aura mt-1 w-full rounded-lg border border-outline-variant bg-surface-low px-4 py-3 text-body-md text-on-surface outline-none"
             />
           </label>
 
