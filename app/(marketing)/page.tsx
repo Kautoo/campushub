@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@heroui/react";
 import {
-  DotPattern,
   Meteors,
   Marquee,
   NumberTicker,
@@ -9,6 +8,9 @@ import {
   ShimmerButton,
 } from "@/components/magicui";
 import GlobeLazy from "@/components/magicui/globe-lazy";
+import HeroBackgroundLazy from "@/components/marketing/hero-background-lazy";
+import { RevealHeading } from "@/components/marketing/reveal-heading";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { GetStartedGradientButton, TryAiButton } from "@/components/marketing/cta-buttons";
 import { Magnetic } from "@/components/marketing/magnetic";
 import { TypewriterInsight } from "@/components/marketing/typewriter-insight";
@@ -137,6 +139,7 @@ export default function LandingPage() {
             <Link href="/demo" className="link-draw text-label-lg text-muted hover:text-ink">Storefront</Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
+            <ThemeToggle />
             <Link href="/login" className="link-draw hidden text-label-lg text-muted hover:text-ink sm:block">
               Sign in
             </Link>
@@ -150,28 +153,35 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero — fills the first screen alone */}
-      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden">
-        <DotPattern className="text-outline-variant absolute inset-0 [mask-image:radial-gradient(640px_at_50%_28%,white,transparent)]" />
-        <Meteors number={7} />
-        <div className="relative mx-auto w-full max-w-6xl px-4 py-20 lg:px-8">
+      {/* Hero — dark cinematic band, fills the first screen alone */}
+      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-[#070d18] text-white">
+        {/* CSS fallback visible until/if WebGL boots */}
+        <div className="animate-gradient-flow bg-gradient-kinetic absolute inset-0 opacity-40" aria-hidden />
+        <div className="absolute inset-0" aria-hidden>
+          <HeroBackgroundLazy />
+        </div>
+        {/* Legibility scrims */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#070d18]/80 via-[#070d18]/30 to-transparent" aria-hidden />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#070d18] to-transparent" aria-hidden />
+
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-24 lg:px-8">
           <div className="max-w-3xl">
             <BlurFade>
-              <p className="font-mono text-label-sm text-muted uppercase tracking-[0.18em]">
+              <p className="font-mono text-label-sm uppercase tracking-[0.18em] text-[var(--st-primary)]">
                 Campus events · Commerce · Payments
               </p>
             </BlurFade>
             <BlurFade delay={0.08}>
-              <h1 className="text-ink mt-5 text-[clamp(2.75rem,7vw,4.75rem)] font-bold leading-[1.02] tracking-[-0.03em]">
+              <h1 className="mt-5 text-[clamp(2.75rem,7vw,4.75rem)] font-bold leading-[1.02] tracking-[-0.03em] text-white">
                 Run your campus{" "}
-                <span className="font-editorial text-primary italic font-medium">
+                <span className="font-editorial font-medium italic text-[var(--st-primary)]">
                   empire
                 </span>{" "}
                 from one hub.
               </h1>
             </BlurFade>
             <BlurFade delay={0.16}>
-              <p className="text-muted mt-6 max-w-xl text-lg leading-relaxed">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
                 Ticketing, storefront, and PayPal payments for campus
                 societies — with AI answers computed from your real numbers.
               </p>
@@ -189,12 +199,12 @@ export default function LandingPage() {
               </div>
             </BlurFade>
             <BlurFade delay={0.32}>
-              <p className="text-muted mt-7 flex items-center gap-2 text-sm">
-                <span className="material-symbols-outlined text-[16px] text-success">
+              <p className="mt-7 flex items-center gap-2 text-sm text-white/60">
+                <span className="material-symbols-outlined text-[16px] text-[var(--st-tertiary-fixed-dim)]">
                   verified
                 </span>
                 <span>
-                  <strong className="text-ink tabular-nums">RM 45,230</strong>{" "}
+                  <strong className="tabular-nums text-white">RM 45,230</strong>{" "}
                   tracked in the demo workspace — free to explore, no signup.
                 </span>
               </p>
@@ -204,6 +214,13 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute right-[-140px] top-1/2 hidden -translate-y-1/2 opacity-90 lg:block">
             <GlobeLazy />
           </div>
+        </div>
+
+        {/* Scroll cue */}
+        <div className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 md:block" aria-hidden>
+          <span className="material-symbols-outlined animate-bounce text-[20px] text-white/40">
+            keyboard_arrow_down
+          </span>
         </div>
       </section>
 
@@ -240,7 +257,7 @@ export default function LandingPage() {
       {/* Features bento */}
       <section id="features" className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
         <BlurFade>
-          <h2 className="text-display text-ink">Everything a society needs</h2>
+          <RevealHeading text="Everything a society needs" className="text-display text-ink" />
           <p className="text-muted mt-3 max-w-lg text-lg">
             One codebase, one login, one source of truth for events and
             commerce.
@@ -286,10 +303,11 @@ export default function LandingPage() {
             <Badge tone="teal" icon="verified">
               Grounded AI — no fabricated numbers
             </Badge>
-            <h2 className="text-display text-ink mt-4">
-              Ask your data{" "}
-              <span className="font-editorial text-primary italic font-medium">anything.</span>
-            </h2>
+            <RevealHeading
+              text="Ask your data anything."
+              accentWord="anything."
+              className="text-display text-ink mt-4"
+            />
             <p className="text-muted mt-4 text-lg leading-relaxed">
               The AI reads a metrics pack computed live from your database —
               revenue by day, sell-through per tier, refund rate, stock — and
@@ -318,7 +336,7 @@ export default function LandingPage() {
       {/* Pricing */}
       <section id="pricing" className="mx-auto max-w-6xl px-4 py-24 lg:px-8">
         <BlurFade>
-          <h2 className="text-display text-ink text-center">Simple pricing</h2>
+          <RevealHeading text="Simple pricing" className="text-display text-ink text-center" />
           <p className="text-muted mt-3 text-center text-lg">
             Start free. Upgrade when your society starts selling.
           </p>
@@ -371,10 +389,11 @@ export default function LandingPage() {
       <section className="bg-primary-container relative overflow-hidden py-24 text-white dark:bg-surface-container dark:text-ink">
         <Meteors number={5} />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
-          <h2 className="text-display">
-            Your campus,{" "}
-            <span className="font-editorial italic font-medium">one hub.</span>
-          </h2>
+          <RevealHeading
+            text="Your campus, one hub."
+            accentWord="one"
+            className="text-display text-white dark:text-ink"
+          />
           <p className="mt-4 text-lg opacity-80">
             Connect Supabase, add PayPal sandbox keys, sell at your next event.
           </p>
@@ -399,6 +418,8 @@ export default function LandingPage() {
           <nav className="flex gap-6" aria-label="Footer">
             <Link href="/demo" className="link-draw text-muted text-sm hover:text-ink">Storefront</Link>
             <Link href="/styleguide" className="link-draw text-muted text-sm hover:text-ink">Styleguide</Link>
+            <Link href="/privacy" className="link-draw text-muted text-sm hover:text-ink">Privacy</Link>
+            <Link href="/tos" className="link-draw text-muted text-sm hover:text-ink">Terms</Link>
             <Link href="/login" className="link-draw text-muted text-sm hover:text-ink">Sign in</Link>
           </nav>
         </div>
