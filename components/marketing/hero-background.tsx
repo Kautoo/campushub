@@ -64,10 +64,10 @@ void main() {
   vec3 cyan = vec3(0.024, 0.714, 0.831);        // #06b6d4
 
   vec3 col = base;
-  col = mix(col, navy, smoothstep(0.1, 0.7, n2) * 0.85);
-  float glow = aurora * (0.35 + 0.35 * sin(uv.y * 3.0 + t * 2.0));
-  col += teal * glow * 0.34;
-  col += cyan * pow(aurora, 3.0) * 0.22;
+  col = mix(col, navy, smoothstep(0.1, 0.7, n2) * 0.7);
+  float glow = aurora * (0.28 + 0.28 * sin(uv.y * 3.0 + t * 2.0));
+  col += teal * glow * 0.2;
+  col += cyan * pow(aurora, 3.0) * 0.12;
 
   // Vignette keeps the center readable behind text
   float vig = smoothstep(1.25, 0.25, distance(uv, vec2(0.62, 0.45)));
@@ -75,6 +75,10 @@ void main() {
 
   // Gentle top darkening so the nav and headline hold contrast
   col *= 0.82 + 0.18 * smoothstep(0.0, 0.55, uv.y);
+
+  // Left-column darkening: the headline column sits at x < 0.45 and must
+  // stay near-black for AA contrast, whatever the aurora is doing.
+  col *= mix(0.32, 1.0, smoothstep(0.05, 0.62, uv.x));
 
   gl_FragColor = vec4(col, 1.0);
 }
