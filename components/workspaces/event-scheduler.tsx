@@ -11,7 +11,9 @@ type SchedulerCtor = new (config: Record<string, unknown>) => SchedulerInstance;
 
 const DAY = 86_400_000;
 
-/** Timeline tab: real events rendered on a Bryntum Scheduler (vanilla build via ref). */
+/**
+ * 1:1 Stitch-Themed Bryntum Timeline Scheduler for Campus Events.
+ */
 export function EventScheduler({
   events,
   licensed,
@@ -27,9 +29,8 @@ export function EventScheduler({
     let cancelled = false;
 
     (async () => {
-      // Static import is not possible here: Bryntum's module init touches
-      // browser globals, so it must stay off the SSR code path of this
-      // client component (loaded only in the effect, browser-only).
+      // Exception: static import is not possible here — Bryntum touches browser globals
+      // (window/navigator) during module init, which breaks during Next.js SSR build.
       const mod = await import("@bryntum/scheduler-community");
       if (cancelled || !containerRef.current) return;
       const Scheduler = mod.Scheduler as unknown as SchedulerCtor;
@@ -57,11 +58,16 @@ export function EventScheduler({
         appendTo: containerRef.current,
         startDate: viewStart,
         endDate: viewEnd,
-        rowHeight: 44,
-        barMargin: 6,
-        columns: [{ field: "name", text: "Event", width: 240 }],
+        rowHeight: 48,
+        barMargin: 8,
+        columns: [
+          {
+            field: "name",
+            text: "Event Initiative",
+            width: 260,
+          },
+        ],
         project: {
-          // One resource row per event; each event bar renders on its own row.
           resourceStore: {
             data: dated.map((e) => ({ id: e.id, name: e.title })),
           },
@@ -85,12 +91,43 @@ export function EventScheduler({
   }, [events]);
 
   return (
-    <div className="space-y-3">
-      {!licensed ? (
-        <Badge tone="warning" icon="warning">
-          Bryntum trial — unlicensed
-        </Badge>
-      ) : null}
+    <div className="flex flex-col gap-space-md">
+      {/* Header bar matching Stitch Workspace pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-space-xs gap-3">
+        <div className="flex items-center gap-space-sm">
+          <div className="w-10 h-10 rounded-xl bg-secondary-container/40 text-on-secondary-container flex items-center justify-center shrink-0 shadow-xs">
+            <span className="material-symbols-outlined text-[20px]">
+              calendar_view_week
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <h3 className="font-headline-sm text-headline-sm font-bold text-primary">
+                Bryntum Campus Timeline
+              </h3>
+              <span className="px-2 py-0.5 rounded-full bg-secondary-container/30 text-on-secondary-container font-label-sm text-[10px] font-semibold">
+                Resource Grid
+              </span>
+            </div>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">
+              Multi-day calendar matrix across university lecture halls and student quads
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!licensed ? (
+            <Badge tone="warning" icon="warning">
+              Bryntum Trial Mode
+            </Badge>
+          ) : (
+            <Badge tone="success" icon="verified">
+              Licensed Enterprise
+            </Badge>
+          )}
+        </div>
+      </div>
+
       {events.length === 0 ? (
         <EmptyState
           icon="view_timeline"
@@ -98,10 +135,12 @@ export function EventScheduler({
           body="Events with a start date will appear here once created."
         />
       ) : (
-        <div
-          ref={containerRef}
-          className="rounded-xl bg-surface-container-lowest shadow-sm"
-        />
+        <div className="rounded-2xl border border-outline-variant/30 overflow-hidden shadow-sm bg-surface-container-lowest">
+          <div
+            ref={containerRef}
+            className="bryntum-stitch-theme min-h-[480px] w-full"
+          />
+        </div>
       )}
     </div>
   );

@@ -145,8 +145,28 @@ export default function LandingPage() {
           />
         </BlurFade>
         <BlurFade delay={0.1}>
-          <div className="mt-10">
-            <DashboardPreview />
+          <div className="mt-10 w-full rounded-3xl bg-surface-container-lowest shadow-[0_20px_60px_-15px_rgba(0,22,46,0.12)] overflow-hidden ring-1 ring-outline-variant/30">
+            {/* Mock Browser Chrome Top Bar (Stitch Landing 1:1) */}
+            <div className="h-11 bg-surface-container px-5 flex items-center justify-between border-b border-outline-variant/20">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-error" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                <span className="ml-3 font-label-sm text-label-sm text-on-surface-variant font-mono hidden sm:inline">
+                  campushub.edu/workspace/tech-society
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-[11px] font-medium">
+                  Live Production Pod #04
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+            </div>
+            {/* Real Dashboard Overview Content */}
+            <div className="p-4 sm:p-6 lg:p-8 bg-surface">
+              <DashboardPreview />
+            </div>
           </div>
         </BlurFade>
       </section>

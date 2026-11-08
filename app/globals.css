@@ -601,6 +601,61 @@ body {
   color: var(--st-primary);
 }
 
+/* ============================================================
+   Bryntum Scheduler — Stitch Design System Integration
+   Aligns Bryntum headers, event bars, and grid to the Stitch palette.
+   ============================================================ */
+.bryntum-stitch-container .b-scheduler {
+  font-family: inherit !important;
+  border-radius: 12px;
+  background-color: var(--st-surface-lowest) !important;
+  color: var(--st-on-surface) !important;
+}
+
+.bryntum-stitch-container .b-grid-header-container,
+.bryntum-stitch-container .b-grid-headers,
+.bryntum-stitch-theme .b-grid-header-container,
+.bryntum-stitch-theme .b-grid-headers {
+  background: var(--st-primary-container) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.bryntum-stitch-container .b-sch-header-text,
+.bryntum-stitch-theme .b-sch-header-text {
+  color: #ffffff !important;
+}
+
+.bryntum-stitch-container .b-grid-cell,
+.bryntum-stitch-theme .b-grid-cell {
+  color: var(--st-on-surface) !important;
+  font-size: 13px;
+  border-color: var(--st-outline-variant) !important;
+}
+
+.bryntum-stitch-container .b-sch-event,
+.bryntum-stitch-theme .b-sch-event {
+  background: linear-gradient(135deg, var(--st-primary-container) 0%, var(--st-secondary) 100%) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--st-secondary-fixed) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.bryntum-stitch-container .b-sch-event:hover,
+.bryntum-stitch-theme .b-sch-event:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.bryntum-stitch-container .b-sch-timeaxis-cell,
+.bryntum-stitch-theme .b-sch-timeaxis-cell {
+  border-color: var(--st-surface-container) !important;
+}
+
 /* Scrollbar */
 * {
   scrollbar-width: thin;
