@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { addToCart, type CartLine } from "@/components/store/cart";
 import { Badge } from "@/components/ui/badge";
-import { formatMoney } from "@/lib/money";
+import { useStoreCurrency } from "@/components/store/currency-provider";
 
-/** Buy control for a ticket tier: shows tier name, perks, availability, price, qty select + add-to-cart. */
+/** Buy control for a ticket tier: shows tier name, perks, availability, converted price, qty select + add-to-cart. */
 export function TierBuyButton({
   tier,
   perks,
   remaining,
-  currency = "MYR",
 }: {
   tier: CartLine;
   perks?: string[] | null;
@@ -19,6 +18,7 @@ export function TierBuyButton({
 }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const { format } = useStoreCurrency();
 
   const tierLabel = tier.name.includes(" — ")
     ? tier.name.split(" — ")[1]
@@ -38,9 +38,7 @@ export function TierBuyButton({
             {tierLabel}
           </span>
           <span className="text-body-md font-bold text-primary tabular-nums">
-            {tier.price_cents === 0
-              ? "Free"
-              : formatMoney(tier.price_cents, currency)}
+            {tier.price_cents === 0 ? "Free" : format(tier.price_cents)}
           </span>
           {remaining !== undefined ? (
             <span className="text-[11px] text-on-surface-variant tabular-nums">
@@ -81,7 +79,7 @@ export function TierBuyButton({
         <button
           type="button"
           onClick={add}
-          className="focus-aura inline-flex items-center gap-1 bg-primary text-on-primary h-8 rounded-full px-3.5 text-label-md font-semibold hover:bg-primary-container transition-all active:scale-95"
+          className="focus-aura inline-flex items-center gap-1 bg-primary text-on-primary h-8 rounded-full px-3.5 text-label-md font-semibold hover:opacity-90 transition-all active:scale-95"
         >
           <span className="material-symbols-outlined text-[15px]">
             {added ? "check" : "confirmation_number"}

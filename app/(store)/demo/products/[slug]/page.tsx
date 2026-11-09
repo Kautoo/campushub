@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { hasDatabaseEnv } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { ProductBuyBox } from "@/components/store/product-buy-box";
+import { StorePrice } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
-import { formatMoney } from "@/lib/money";
 import { getStorefrontData, resolveProductImage } from "@/lib/storefront";
 
 export const instant = false;
@@ -31,7 +31,7 @@ export default async function ProductDetailPage({
   const related = products.filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-12">
       {/* Breadcrumb */}
       <nav className="flex flex-wrap items-center gap-2 text-label-md text-on-surface-variant">
         <Link href="/demo" className="hover:text-primary transition-colors">
@@ -90,11 +90,12 @@ export default async function ProductDetailPage({
             </h1>
 
             <div className="flex items-baseline gap-3 pt-1 tabular-nums">
-              <span className="text-headline-lg font-bold text-primary">
-                {formatMoney(product.price_cents, org.currency)}
-              </span>
+              <StorePrice
+                cents={product.price_cents}
+                className="text-headline-lg font-bold text-primary"
+              />
               <span className="text-body-sm text-on-surface-variant">
-                Subsidized student member pricing ·MYR
+                Subsidized student member pricing
               </span>
             </div>
           </div>
@@ -117,10 +118,9 @@ export default async function ProductDetailPage({
               price_cents: product.price_cents,
               stock: product.stock,
             }}
-            currency={org.currency}
           />
 
-          {/* Fulfillment & Escrow Guarantees */}
+          {/* Fulfillment & Buyer Protection Guarantees */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-outline-variant/40 text-body-sm">
             <div className="rounded-xl bg-surface-low p-3.5 border border-outline-variant/40 flex items-start gap-2.5">
               <span className="material-symbols-outlined text-[19px] text-secondary shrink-0 mt-0.5">
@@ -131,7 +131,7 @@ export default async function ProductDetailPage({
                   Campus Union Pick-Up
                 </p>
                 <p className="text-on-surface-variant text-xs mt-0.5">
-                  Ready for collection at Student Union Desk with your order ID.
+                  Collect at the Student Union Desk with your order confirmation.
                 </p>
               </div>
             </div>
@@ -141,10 +141,10 @@ export default async function ProductDetailPage({
               </span>
               <div>
                 <p className="font-semibold text-on-surface">
-                  PayPal v2 Protected
+                  PayPal Buyer Protection
                 </p>
                 <p className="text-on-surface-variant text-xs mt-0.5">
-                  Atomic stock decrement and verified bursary settlement.
+                  Instant stock reservation and verified society checkout.
                 </p>
               </div>
             </div>
@@ -190,9 +190,10 @@ export default async function ProductDetailPage({
                         {item.category ?? "Merch"}
                       </p>
                     </div>
-                    <span className="text-headline-sm font-bold text-primary tabular-nums shrink-0">
-                      {formatMoney(item.price_cents, org.currency)}
-                    </span>
+                    <StorePrice
+                      cents={item.price_cents}
+                      className="text-headline-sm font-bold text-primary tabular-nums shrink-0"
+                    />
                   </div>
                 </Link>
               );

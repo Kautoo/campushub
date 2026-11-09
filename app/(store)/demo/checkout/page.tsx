@@ -15,7 +15,7 @@ import {
   clearCart,
   type CartLine,
 } from "@/components/store/cart";
-import { formatMoney } from "@/lib/money";
+import { useStoreCurrency } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
 
 type Stage = "cart" | "details" | "paying" | "done" | "error";
@@ -24,7 +24,7 @@ type DbOrder = { id: string; order_number: string; total_cents: number };
 const STEPS = [
   { key: "cart", label: "1. Review Bag", icon: "shopping_bag" },
   { key: "details", label: "2. Student Details", icon: "badge" },
-  { key: "paying", label: "3. PayPal Escrow", icon: "account_balance_wallet" },
+  { key: "paying", label: "3. PayPal Payment", icon: "account_balance_wallet" },
   { key: "done", label: "4. Confirmed", icon: "check_circle" },
 ] as const;
 
@@ -77,6 +77,7 @@ export default function CheckoutPage() {
   const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const { format, currency } = useStoreCurrency();
 
   useEffect(() => {
     const sync = () => setCart(readCart());
@@ -171,7 +172,7 @@ export default function CheckoutPage() {
 
   if (stage === "done") {
     return (
-      <main className="mx-auto w-full max-w-2xl px-4 py-16">
+      <main className="mx-auto w-full max-w-2xl px-4 py-12">
         <div className="rounded-3xl border border-outline-variant/60 bg-surface-lowest p-8 sm:p-10 text-center shadow-lg space-y-5">
           <div className="w-16 h-16 rounded-2xl bg-success-container text-success flex items-center justify-center mx-auto">
             <span className="material-symbols-outlined text-[36px]">
@@ -180,7 +181,7 @@ export default function CheckoutPage() {
           </div>
           <div className="space-y-1.5">
             <Badge tone="success" icon="verified">
-              PayPal Orders v2 Captured
+              Payment Complete
             </Badge>
             <h1 className="text-display font-bold text-on-surface mt-2">
               Order Confirmed &amp; Passes Issued
@@ -190,8 +191,8 @@ export default function CheckoutPage() {
               <strong className="font-mono text-primary">
                 {dbOrder?.order_number}
               </strong>{" "}
-              is settled. A confirmation receipt and QR entry passes have been
-              recorded for <strong className="text-on-surface">{email}</strong>.
+              is confirmed. Your receipt and digital QR passes have been sent to{" "}
+              <strong className="text-on-surface">{email}</strong>.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
@@ -205,10 +206,10 @@ export default function CheckoutPage() {
               </span>
             </Link>
             <Link
-              href="/dashboard/orders"
+              href="/demo/events"
               className="inline-flex h-11 items-center gap-2 rounded-full border border-outline-variant/60 bg-surface-low px-6 text-label-lg font-semibold text-on-surface hover:bg-surface-container transition-all"
             >
-              <span>Inspect in Orders AG Grid</span>
+              <span>Explore More Events</span>
             </Link>
           </div>
         </div>
@@ -217,7 +218,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
       {/* Checkout Header + Stepper */}
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div className="space-y-1">
@@ -236,11 +237,10 @@ export default function CheckoutPage() {
             <span className="text-on-surface font-semibold">Checkout</span>
           </nav>
           <h1 className="text-display font-bold text-on-surface tracking-tight">
-            Checkout &amp; Escrow Settlement
+            Express Guest Checkout
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            Guest checkout powered by atomic Postgres stock verification and
-            PayPal Orders v2.
+            Complete your student details and settle securely with PayPal.
           </p>
         </div>
 
@@ -259,7 +259,7 @@ export default function CheckoutPage() {
           </h2>
           <p className="text-body-md text-on-surface-variant max-w-md mx-auto">
             Add event passes or official society merchandise before proceeding
-            to payment settlement.
+            to payment.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link
@@ -292,11 +292,11 @@ export default function CheckoutPage() {
                       Student &amp; Attendee Details
                     </h2>
                     <p className="text-body-sm text-on-surface-variant">
-                      Used for QR pass registration and official order receipts
+                      Used for QR pass delivery and order confirmation
                     </p>
                   </div>
                 </div>
-                <Badge tone="teal">Guest Allowed</Badge>
+                <Badge tone="teal">Guest Checkout</Badge>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -340,7 +340,7 @@ export default function CheckoutPage() {
                       Order Items ({itemCount} units)
                     </h2>
                     <p className="text-body-sm text-on-surface-variant">
-                      Adjust quantities or remove items before locking stock
+                      Adjust quantities or remove items before payment
                     </p>
                   </div>
                 </div>
@@ -363,14 +363,14 @@ export default function CheckoutPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <Badge tone={isTicket ? "teal" : "primary"}>
-                            {isTicket ? "Event Pass" : "Merch SKU"}
+                            {isTicket ? "Event Pass" : "Merch"}
                           </Badge>
                           <p className="text-body-md font-semibold text-on-surface truncate">
                             {l.name}
                           </p>
                         </div>
                         <p className="text-body-sm text-on-surface-variant mt-0.5 tabular-nums">
-                          Unit price: {formatMoney(l.price_cents)}
+                          Unit price: {format(l.price_cents)}
                         </p>
                       </div>
 
@@ -398,7 +398,7 @@ export default function CheckoutPage() {
                         </div>
 
                         <span className="text-body-md font-bold text-primary min-w-[85px] text-right">
-                          {formatMoney(l.qty * l.price_cents)}
+                          {format(l.qty * l.price_cents)}
                         </span>
 
                         <button
@@ -419,19 +419,19 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          {/* Right 5 Cols: Sticky Receipt & PayPal Orders v2 Settlement */}
+          {/* Right 5 Cols: Sticky Receipt & PayPal Settlement */}
           <aside className="lg:col-span-5 lg:sticky lg:top-24 rounded-2xl border border-outline-variant/60 bg-surface-lowest p-6 shadow-md space-y-5">
             <div className="flex items-center justify-between border-b border-outline-variant/40 pb-4">
               <div>
                 <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
-                  Bursary Escrow Receipt
+                  Order Receipt
                 </span>
                 <h2 className="text-headline-md font-bold text-on-surface mt-0.5">
                   Payment Summary
                 </h2>
               </div>
               <Badge tone="primary" icon="lock">
-                MYR
+                {currency}
               </Badge>
             </div>
 
@@ -439,18 +439,16 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-on-surface-variant">
                 <dt>Items Subtotal ({itemCount} units)</dt>
                 <dd className="font-semibold text-on-surface">
-                  {formatMoney(total)}
+                  {format(total)}
                 </dd>
               </div>
               <div className="flex justify-between text-on-surface-variant">
-                <dt>Platform &amp; PayPal Fee (2.9% + RM 0.50)</dt>
-                <dd className="font-semibold text-on-surface">
-                  {formatMoney(fee)}
-                </dd>
+                <dt>Service &amp; Processing Fee</dt>
+                <dd className="font-semibold text-on-surface">{format(fee)}</dd>
               </div>
               <div className="flex justify-between border-t border-outline-variant/50 pt-3 text-headline-md font-bold text-primary">
                 <dt>Total Due</dt>
-                <dd>{formatMoney(grandTotal)}</dd>
+                <dd>{format(grandTotal)}</dd>
               </div>
             </dl>
 
@@ -486,7 +484,7 @@ export default function CheckoutPage() {
                   {!name.trim() || !email.trim() ? (
                     <p className="text-body-sm text-on-surface-variant text-center rounded-xl bg-surface-low p-3 border border-outline-variant/40">
                       Enter your full name and student email in Step 1 to unlock
-                      PayPal settlement.
+                      PayPal checkout.
                     </p>
                   ) : stage !== "paying" ? (
                     <Button
@@ -494,7 +492,7 @@ export default function CheckoutPage() {
                       className="h-11 w-full rounded-full text-label-lg font-semibold"
                       onPress={() => setStage("paying")}
                     >
-                      Confirm Details &amp; Enable PayPal
+                      Confirm Details &amp; Pay with PayPal
                     </Button>
                   ) : null}
                 </PayPalScriptProvider>
@@ -503,20 +501,12 @@ export default function CheckoutPage() {
               <div className="rounded-xl border border-warning/30 bg-warning-container p-4 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Badge tone="warning" icon="info">
-                    Sandbox Keys Required
+                    Payment Gateway Notice
                   </Badge>
-                  <span className="font-mono text-[11px] text-warning">
-                    PayPal Orders v2
-                  </span>
                 </div>
                 <p className="text-body-sm text-warning leading-relaxed pt-1">
-                  PayPal live/sandbox capture is disabled until{" "}
-                  <code className="font-mono text-xs">PAYPAL_CLIENT_ID</code>{" "}
-                  and{" "}
-                  <code className="font-mono text-xs">
-                    NEXT_PUBLIC_PAYPAL_CLIENT_ID
-                  </code>{" "}
-                  are set in <code className="font-mono text-xs">.env.local</code>.
+                  PayPal checkout is currently offline in this demo environment
+                  until sandbox credentials are configured.
                 </p>
               </div>
             )}
@@ -527,20 +517,17 @@ export default function CheckoutPage() {
                 className="flex flex-wrap items-center justify-center gap-2"
                 aria-label="Supported payment methods"
               >
-                {["PayPal Orders v2", "FPX Banking", "Visa", "Mastercard"].map(
-                  (g) => (
-                    <span
-                      key={g}
-                      className="rounded-lg border border-outline-variant/50 bg-surface-low px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-on-surface-variant"
-                    >
-                      {g}
-                    </span>
-                  ),
-                )}
+                {["PayPal", "FPX Banking", "Visa", "Mastercard"].map((g) => (
+                  <span
+                    key={g}
+                    className="rounded-lg border border-outline-variant/50 bg-surface-low px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-on-surface-variant"
+                  >
+                    {g}
+                  </span>
+                ))}
               </div>
               <p className="text-[11px] text-center text-on-surface-variant">
-                Verified by Postgres <code className="font-mono">place_order</code>{" "}
-                atomic stock lock &amp; HMAC webhook deduplication.
+                100% Buyer Protection · Instant QR Pass Delivery
               </p>
             </div>
           </aside>

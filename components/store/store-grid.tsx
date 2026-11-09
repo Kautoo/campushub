@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { addToCart } from "@/components/store/cart";
-import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
+import { useStoreCurrency } from "@/components/store/currency-provider";
 
 export type StoreProduct = {
   id: string;
@@ -41,15 +41,14 @@ const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
 type SortKey = "featured" | "price-asc" | "price-desc" | "stock-desc";
 
 /**
- * Interactive CampusHub 2.0 Merchandise Catalog Grid with links to /demo/products/[slug] PDPs.
+ * Interactive CampusHub 2.0 Merchandise Catalog Grid with live currency formatting.
  */
 export function StoreGrid({
   products,
-  currency,
   initialCategory = "all",
 }: {
   products: StoreProduct[];
-  currency: string;
+  currency?: string;
   initialCategory?: string;
 }) {
   const [addedId, setAddedId] = useState<string | null>(null);
@@ -57,6 +56,7 @@ export function StoreGrid({
     useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<SortKey>("featured");
+  const { format } = useStoreCurrency();
 
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
@@ -255,14 +255,14 @@ export function StoreGrid({
                       Member Price
                     </span>
                     <span className="text-headline-sm font-bold text-primary">
-                      {formatMoney(p.price_cents, currency)}
+                      {format(p.price_cents)}
                     </span>
                   </div>
                   <button
                     type="button"
                     disabled={isOut}
                     onClick={() => add(p)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:bg-primary-container hover:text-white text-on-primary text-label-md font-semibold transition-all shadow-2xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:opacity-90 text-on-primary text-label-md font-semibold transition-all shadow-2xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {addedId === p.id ? "check" : "add_shopping_cart"}

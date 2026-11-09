@@ -9,11 +9,12 @@ import {
   clearCart,
   type CartLine,
 } from "@/components/store/cart";
-import { formatMoney } from "@/lib/money";
+import { useStoreCurrency } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
 
 export default function ShoppingBagPage() {
   const [cart, setCart] = useState<CartLine[]>([]);
+  const { format, currency } = useStoreCurrency();
 
   useEffect(() => {
     const sync = () => setCart(readCart());
@@ -38,7 +39,7 @@ export default function ShoppingBagPage() {
     .reduce((s, l) => s + l.qty, 0);
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
       {/* Header */}
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1.5">
@@ -53,8 +54,8 @@ export default function ShoppingBagPage() {
             Your Campus Shopping Bag
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            Combine event passes and official club merchandise in one atomic
-            PayPal Orders v2 checkout.
+            Combine event passes and official club merchandise in one protected
+            PayPal guest checkout.
           </p>
         </div>
 
@@ -162,7 +163,7 @@ export default function ShoppingBagPage() {
                               : "Official Merchandise"}
                           </Badge>
                           <span className="text-label-sm text-on-surface-variant tabular-nums">
-                            {formatMoney(line.price_cents)} each
+                            {format(line.price_cents)} each
                           </span>
                         </div>
                         <h3 className="text-headline-sm font-bold text-on-surface truncate">
@@ -170,8 +171,8 @@ export default function ShoppingBagPage() {
                         </h3>
                         <p className="text-body-sm text-on-surface-variant">
                           {isTicket
-                            ? "Instant cryptographic QR token issued on payment capture"
-                            : "Reserved from active society stock via Postgres place_order RPC"}
+                            ? "Instant digital QR pass delivered on payment confirmation"
+                            : "Campus pick-up at Student Union Desk"}
                         </p>
                       </div>
                     </div>
@@ -202,7 +203,7 @@ export default function ShoppingBagPage() {
 
                       <div className="text-right min-w-[95px]">
                         <span className="text-headline-sm font-bold text-primary block">
-                          {formatMoney(line.qty * line.price_cents)}
+                          {format(line.qty * line.price_cents)}
                         </span>
                       </div>
 
@@ -246,31 +247,32 @@ export default function ShoppingBagPage() {
 
           {/* Right 4 Cols: Sticky Order Summary */}
           <aside className="lg:col-span-4 lg:sticky lg:top-24 rounded-2xl border border-outline-variant/60 bg-surface-lowest p-6 shadow-md space-y-5">
-            <div className="border-b border-outline-variant/40 pb-4">
-              <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
-                Settlement Breakdown
-              </span>
-              <h2 className="text-headline-md font-bold text-on-surface mt-0.5">
-                Order Summary
-              </h2>
+            <div className="flex items-center justify-between border-b border-outline-variant/40 pb-4">
+              <div>
+                <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
+                  Order Breakdown
+                </span>
+                <h2 className="text-headline-md font-bold text-on-surface mt-0.5">
+                  Order Summary
+                </h2>
+              </div>
+              <Badge tone="primary">{currency}</Badge>
             </div>
 
             <dl className="space-y-3 text-body-md tabular-nums">
               <div className="flex justify-between text-on-surface-variant">
                 <dt>Items Subtotal ({itemCount} units)</dt>
                 <dd className="font-semibold text-on-surface">
-                  {formatMoney(subtotal)}
+                  {format(subtotal)}
                 </dd>
               </div>
               <div className="flex justify-between text-on-surface-variant">
-                <dt>Gateway &amp; Escrow Fee (2.9% + RM 0.50)</dt>
-                <dd className="font-semibold text-on-surface">
-                  {formatMoney(fee)}
-                </dd>
+                <dt>Service &amp; Processing Fee</dt>
+                <dd className="font-semibold text-on-surface">{format(fee)}</dd>
               </div>
               <div className="flex justify-between border-t border-outline-variant/50 pt-3 text-headline-md font-bold text-primary">
                 <dt>Estimated Total</dt>
-                <dd>{formatMoney(grandTotal)}</dd>
+                <dd>{format(grandTotal)}</dd>
               </div>
             </dl>
 
@@ -292,8 +294,8 @@ export default function ShoppingBagPage() {
                 <span>Protected Guest Checkout</span>
               </div>
               <p className="text-xs leading-relaxed">
-                No student account login required. Stock and seat capacity are
-                verified server-side before PayPal capture.
+                No student account login required. Instant QR event pass
+                delivery upon payment confirmation.
               </p>
             </div>
           </aside>

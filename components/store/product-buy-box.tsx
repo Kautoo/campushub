@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addToCart } from "@/components/store/cart";
-import { formatMoney } from "@/lib/money";
+import { useStoreCurrency } from "@/components/store/currency-provider";
 
 export function ProductBuyBox({
   product,
-  currency = "MYR",
 }: {
   product: {
     id: string;
@@ -20,6 +19,7 @@ export function ProductBuyBox({
   const router = useRouter();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const { format } = useStoreCurrency();
 
   const isOut = product.stock <= 0;
   const maxQty = Math.min(10, Math.max(1, product.stock));
@@ -85,7 +85,7 @@ export function ProductBuyBox({
             Line Subtotal
           </span>
           <span className="text-headline-sm font-bold text-primary">
-            {formatMoney(product.price_cents * qty, currency)}
+            {format(product.price_cents * qty)}
           </span>
         </div>
       </div>

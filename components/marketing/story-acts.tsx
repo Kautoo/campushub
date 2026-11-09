@@ -2,11 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { Badge } from "@/components/ui/badge";
 
-/**
- * Alternating "spotlight" panels that scroll-story the platform:
- * visual on one side, headline + copy revealing on the other.
- */
 export type StoryAct = {
   id: string;
   eyebrow: string;
@@ -18,7 +15,7 @@ export type StoryAct = {
 
 export function StoryActs({ acts }: { acts: StoryAct[] }) {
   return (
-    <div className="space-y-24">
+    <div className="space-y-16">
       {acts.map((act, i) => (
         <StoryActRow key={act.id} act={act} flip={i % 2 === 1} index={i} />
       ))}
@@ -40,108 +37,213 @@ function StoryActRow({
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
     if (reduce) {
-      // Reduced motion: reveal immediately via rAF (no setState in effect body).
       const raf = requestAnimationFrame(() => setInView(true));
       return () => cancelAnimationFrame(raf);
     }
+    const el = ref.current;
+    if (!el) return;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
+        if (entries[0]?.isIntersecting) {
           setInView(true);
           io.disconnect();
         }
       },
-      { rootMargin: "-20% 0px" },
+      { threshold: 0.2 },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [reduce]);
 
+  const isOrders = act.id === "sell" || act.id === "act-orders";
+  const isInsight = act.id === "insight" || act.id === "act-ai";
+
   return (
     <div
       ref={ref}
-      className={`grid items-center gap-10 lg:grid-cols-2 lg:gap-16 ${
+      className={`grid items-center gap-8 lg:grid-cols-12 lg:gap-12 rounded-3xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 lg:p-10 shadow-xs ${
         flip ? "lg:[&>*:first-child]:order-2" : ""
       }`}
     >
-      {/* Copy */}
+      {/* Copy Column (6 cols) */}
       <motion.div
-        initial={reduce ? undefined : { opacity: 0, y: 32 }}
+        initial={reduce ? undefined : { opacity: 0, y: 24 }}
         animate={inView ? { opacity: 1, y: 0 } : undefined}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="lg:col-span-6 space-y-4"
       >
-        <p className="font-mono text-label-sm uppercase tracking-[0.2em] text-primary">
-          {String(index + 1).padStart(2, "0")} · {act.eyebrow}
-        </p>
-        <h3 className="text-on-surface mt-3 text-3xl font-semibold tracking-tight">
+        <div className="inline-flex items-center gap-2 rounded-full bg-surface-low border border-outline-variant/50 px-3 py-1">
+          <span className="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[11px] font-bold tabular-nums">
+            {index + 1}
+          </span>
+          <span className="font-mono text-label-sm uppercase tracking-wider text-secondary font-bold">
+            {act.eyebrow}
+          </span>
+        </div>
+
+        <h3 className="text-headline-lg font-bold text-on-surface tracking-tight">
           {act.title}
         </h3>
-        <p className="text-on-surface-variant mt-4 max-w-md text-base leading-relaxed">
+
+        <p className="text-body-lg text-on-surface-variant leading-relaxed">
           {act.body}
         </p>
-        <ul className="mt-6 space-y-2.5">
+
+        <ul className="space-y-2.5 pt-2 border-t border-outline-variant/40">
           {act.bullets.map((b) => (
-            <li key={b} className="text-on-surface-variant flex items-center gap-2.5 text-sm">
-              <span className="material-symbols-outlined text-[18px] text-primary">
+            <li
+              key={b}
+              className="text-on-surface flex items-start gap-2.5 text-body-md"
+            >
+              <span className="material-symbols-outlined text-[18px] text-secondary shrink-0 mt-0.5">
                 check_circle
               </span>
-              {b}
+              <span>{b}</span>
             </li>
           ))}
         </ul>
       </motion.div>
 
-      {/* Visual panel: real data, real UI, no screenshots */}
+      {/* Live UI Visual Panel (6 cols) */}
       <motion.div
-        initial={reduce ? undefined : { opacity: 0, scale: 0.96, y: 24 }}
+        initial={reduce ? undefined : { opacity: 0, scale: 0.97, y: 20 }}
         animate={inView ? { opacity: 1, scale: 1, y: 0 } : undefined}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+        className="lg:col-span-6"
       >
-        <div className="relative rounded-2xl border border-outline-variant bg-surface-lowest p-6 shadow-card">
-          <div className="animate-glow pointer-events-none absolute -inset-px rounded-2xl" aria-hidden />
-          {act.id === "sell" ? <MiniOrders /> : act.id === "insight" ? <MiniInsight /> : <MiniLaunch />}
+        <div className="rounded-2xl border border-outline-variant/60 bg-surface-low/60 p-5 sm:p-6">
+          {isOrders ? (
+            <MiniOrders />
+          ) : isInsight ? (
+            <MiniInsight />
+          ) : (
+            <MiniLaunch />
+          )}
         </div>
       </motion.div>
     </div>
   );
 }
 
-/* ---------- mini product visuals (real seed figures) ---------- */
+/* ---------- Live Product Visual Cards ---------- */
 
-const ORDERS: { no: string; item: string; cents: number; status: string }[] = [
-  { no: "CH-1040", item: "Hoodie — Midnight × 1", cents: 11900, status: "paid" },
-  { no: "CH-1039", item: "Innovation Week — VIP × 2", cents: 39800, status: "paid" },
-  { no: "CH-1038", item: "Sticker Pack × 3", cents: 2400, status: "pending" },
+const ORDERS = [
+  {
+    no: "CH-1040",
+    buyer: "Aminah Hassan",
+    item: "Hoodie — Midnight × 1",
+    cents: 11900,
+    status: "paid" as const,
+  },
+  {
+    no: "CH-1039",
+    buyer: "Wei Jian Lim",
+    item: "Innovation Week — VIP × 2",
+    cents: 39800,
+    status: "fulfilled" as const,
+  },
+  {
+    no: "CH-1038",
+    buyer: "Priya Nair",
+    item: "Sticker Pack (12) × 3",
+    cents: 2400,
+    status: "paid" as const,
+  },
 ];
 
-function MiniOrders() {
-  const tone: Record<string, string> = {
-    paid: "bg-success-container text-success",
-    pending: "bg-warning-container text-warning",
-  };
+function MiniLaunch() {
   return (
-    <div>
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-label-md font-semibold text-on-surface">Orders</p>
-        <span className="font-mono text-[11px] text-on-surface-variant">live · MYR</span>
+    <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-5 shadow-xs space-y-4">
+      <div className="flex items-center justify-between border-b border-outline-variant/40 pb-3">
+        <div>
+          <span className="text-[10.5px] uppercase tracking-wider font-bold text-secondary block">
+            Bryntum Venue Track · Main Hall, Block C
+          </span>
+          <p className="text-headline-sm font-bold text-on-surface">
+            Innovation Week 2026
+          </p>
+        </div>
+        <Badge tone="success" icon="verified">
+          Published
+        </Badge>
       </div>
-      <ul>
-        {ORDERS.map((o) => (
-          <li key={o.no} className="flex items-center justify-between border-t border-outline-variant py-3 first:border-t-0">
-            <div>
-              <p className="font-mono text-[11px] text-on-surface-variant">{o.no}</p>
-              <p className="text-sm text-on-surface">{o.item}</p>
+      <div className="space-y-3">
+        {[
+          ["Student Pass", "RM 49.00", 142, 300],
+          ["Standard Pass", "RM 99.00", 61, 150],
+          ["VIP Pass", "RM 199.00", 17, 50],
+        ].map(([name, price, sold, qty]) => {
+          const pct = Math.round(((sold as number) / (qty as number)) * 100);
+          return (
+            <div key={name as string} className="space-y-1">
+              <div className="flex justify-between text-body-sm">
+                <span className="font-semibold text-on-surface">
+                  {name} ·{" "}
+                  <span className="text-primary font-bold">{price}</span>
+                </span>
+                <span className="text-on-surface-variant tabular-nums">
+                  {sold}/{qty} ({pct}%)
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
+                <div
+                  className="bg-secondary h-full rounded-full"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm font-semibold text-on-surface tabular-nums">
+          );
+        })}
+      </div>
+      <div className="flex items-center justify-between pt-2 border-t border-outline-variant/40 text-xs text-on-surface-variant">
+        <span>Instant QR pass token issued on checkout</span>
+        <span className="font-semibold text-secondary">220 / 500 sold</span>
+      </div>
+    </div>
+  );
+}
+
+function MiniOrders() {
+  return (
+    <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-5 shadow-xs space-y-3">
+      <div className="flex items-center justify-between border-b border-outline-variant/40 pb-3">
+        <div>
+          <span className="text-[10.5px] uppercase tracking-wider font-bold text-secondary block">
+            AG Grid Orders Ledger
+          </span>
+          <p className="text-headline-sm font-bold text-on-surface">
+            Live PayPal Orders v2 Captures
+          </p>
+        </div>
+        <Badge tone="teal" icon="lock">
+          HMAC Verified
+        </Badge>
+      </div>
+      <ul className="divide-y divide-outline-variant/40">
+        {ORDERS.map((o) => (
+          <li
+            key={o.no}
+            className="flex items-center justify-between py-2.5 gap-3"
+          >
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-surface-container px-1.5 py-0.2 font-mono text-[11px] font-semibold text-primary">
+                  {o.no}
+                </span>
+                <span className="text-body-sm font-semibold text-on-surface truncate">
+                  {o.buyer}
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant mt-0.5">{o.item}</p>
+            </div>
+            <div className="text-right shrink-0 tabular-nums">
+              <p className="text-body-sm font-bold text-primary">
                 RM {(o.cents / 100).toFixed(2)}
               </p>
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone[o.status]}`}>
+              <Badge tone={o.status === "fulfilled" ? "teal" : "success"}>
                 {o.status}
-              </span>
+              </Badge>
             </div>
           </li>
         ))}
@@ -152,64 +254,38 @@ function MiniOrders() {
 
 function MiniInsight() {
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
-        <span className="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
-        <p className="text-label-md font-semibold text-on-surface">Weekly insight</p>
-      </div>
-      <p className="text-sm leading-relaxed text-on-surface-variant">
-        “VIP tier contributed <strong className="text-on-surface">RM 3,383</strong> —
-        17 of 50 seats sold. Keycap stock covers{" "}
-        <strong className="text-on-surface">3 weeks</strong> at current sell rate.”
-      </p>
-      <div className="mt-4 flex gap-2">
-        <span className="rounded-full bg-secondary-container px-2.5 py-0.5 text-[11px] font-semibold text-primary-container">
-          grounded
-        </span>
-        <span className="rounded-full bg-surface-container px-2.5 py-0.5 text-[11px] text-on-surface-variant">
-          zero fabricated numbers
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function MiniLaunch() {
-  return (
-    <div>
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-label-md font-semibold text-on-surface">Innovation Week 2026</p>
-        <span className="rounded-full bg-success-container px-2.5 py-0.5 text-[11px] font-semibold text-success">
-          published
-        </span>
-      </div>
-      <div className="space-y-3">
-        {[
-          ["Student Pass", "RM 49", 142, 300],
-          ["Standard Pass", "RM 99", 61, 150],
-          ["VIP Pass", "RM 199", 17, 50],
-        ].map(([name, price, sold, qty]) => (
-          <div key={name as string}>
-            <div className="flex justify-between text-sm">
-              <span className="text-on-surface">
-                {name} · <span className="text-on-surface-variant">{price}</span>
-              </span>
-              <span className="text-on-surface-variant tabular-nums">
-                {sold}/{qty}
-              </span>
-            </div>
-            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-container">
-              <div
-                className="animate-gradient-flow bg-gradient-kinetic h-full rounded-full"
-                style={{ width: `${Math.round(((sold as number) / (qty as number)) * 100)}%` }}
-              />
-            </div>
+    <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-5 shadow-xs space-y-4">
+      <div className="flex items-center justify-between border-b border-outline-variant/40 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+            <span className="material-symbols-outlined text-[17px]">
+              auto_awesome
+            </span>
           </div>
-        ))}
+          <div>
+            <p className="text-headline-sm font-bold text-on-surface">
+              Grounded Weekly Brief
+            </p>
+            <span className="text-[11px] text-on-surface-variant">
+              Computed from live Postgres metrics pack
+            </span>
+          </div>
+        </div>
+        <Badge tone="teal">Zero-PII</Badge>
       </div>
-      <p className="mt-4 text-[12px] text-on-surface-variant">
-        QR check-in, capacity control, PayPal checkout included.
+      <p className="text-body-md leading-relaxed text-on-surface">
+        “VIP tier contributed{" "}
+        <strong className="text-primary">RM 3,383.00</strong> across 17 sold
+        passes (34% sell-through). Mech Keycap Set has{" "}
+        <strong className="text-warning">8 units left</strong> — restock
+        recommended before Innovation Week.”
       </p>
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-outline-variant/40">
+        <Badge tone="teal" icon="verified">
+          Grounded in Postgres
+        </Badge>
+        <Badge tone="neutral">Zero fabricated numbers</Badge>
+      </div>
     </div>
   );
 }

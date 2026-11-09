@@ -51,7 +51,7 @@ export default async function EventDetailPage({
     : null;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-10">
       {/* Breadcrumb */}
       <nav className="flex flex-wrap items-center gap-2 text-label-md text-on-surface-variant">
         <Link href="/demo" className="hover:text-primary transition-colors">
@@ -81,7 +81,7 @@ export default async function EventDetailPage({
             <div className="absolute top-5 left-5 right-5 flex items-center justify-between gap-2">
               <Badge tone="teal">{event.category ?? "Campus Event"}</Badge>
               <span className="rounded-full bg-[#00162e]/90 text-white border border-white/15 px-3.5 py-1 text-label-sm font-bold">
-                Verified QR Entry
+                Instant QR Entry
               </span>
             </div>
             <div className="absolute bottom-6 left-6 right-6 text-white space-y-1">
@@ -89,7 +89,7 @@ export default async function EventDetailPage({
                 <span className="material-symbols-outlined text-[16px]">
                   verified_user
                 </span>
-                Organized by {org.name}
+                Hosted by {org.name}
               </p>
               <h1 className="text-display font-bold text-white tracking-tight">
                 {event.title}
@@ -101,7 +101,7 @@ export default async function EventDetailPage({
           <section className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 shadow-xs space-y-5">
             <div>
               <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
-                Initiative Overview
+                Event Overview
               </span>
               <h2 className="text-headline-md font-bold text-on-surface mt-0.5">
                 About This Event
@@ -124,7 +124,7 @@ export default async function EventDetailPage({
                   {event.venue ?? "Main Hall, Block C"}
                 </p>
                 <p className="text-body-sm text-on-surface-variant">
-                  QR Gate Check-In opens 45 mins prior
+                  Doors &amp; QR check-in open 45 mins prior
                 </p>
               </div>
 
@@ -133,27 +133,27 @@ export default async function EventDetailPage({
                   <span className="material-symbols-outlined text-[16px] text-secondary">
                     calendar_month
                   </span>
-                  Schedule Window
+                  Date &amp; Time
                 </span>
                 <p className="text-body-md font-bold text-on-surface tabular-nums">
                   {startDateStr}
                 </p>
                 {endDateStr ? (
                   <p className="text-body-sm text-on-surface-variant tabular-nums">
-                    Concludes: {endDateStr}
+                    Ends: {endDateStr}
                   </p>
                 ) : null}
               </div>
             </div>
 
-            {/* Gate & Escrow Guarantees */}
+            {/* Attendee Perks & Guarantees */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div className="rounded-xl border border-outline-variant/40 p-3 flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-[20px] text-secondary">
                   qr_code_2
                 </span>
                 <span className="text-label-sm text-on-surface">
-                  Instant QR Pass Token
+                  Instant Digital QR Pass
                 </span>
               </div>
               <div className="rounded-xl border border-outline-variant/40 p-3 flex items-center gap-2.5">
@@ -161,22 +161,22 @@ export default async function EventDetailPage({
                   shield
                 </span>
                 <span className="text-label-sm text-on-surface">
-                  PayPal v2 Buyer Escrow
+                  100% PayPal Protected
                 </span>
               </div>
               <div className="rounded-xl border border-outline-variant/40 p-3 flex items-center gap-2.5">
                 <span className="material-symbols-outlined text-[20px] text-secondary">
-                  how_to_reg
+                  badge
                 </span>
                 <span className="text-label-sm text-on-surface">
-                  Synced to Gate Roster
+                  Official Society Certificate
                 </span>
               </div>
             </div>
           </section>
         </div>
 
-        {/* Right 5 Cols: Sticky Pass Tier Selector & Capacity Card */}
+        {/* Right 5 Cols: Sticky Pass Tier Selector */}
         <aside className="lg:col-span-5 lg:sticky lg:top-24 rounded-2xl border border-outline-variant/60 bg-surface-lowest p-6 shadow-md space-y-5">
           <div className="flex items-start justify-between gap-3 border-b border-outline-variant/40 pb-4">
             <div>
@@ -188,7 +188,7 @@ export default async function EventDetailPage({
               </h2>
             </div>
             <Badge tone="success" icon="verified">
-              Registration Open
+              Tickets Available
             </Badge>
           </div>
 
@@ -196,7 +196,7 @@ export default async function EventDetailPage({
           <div className="rounded-xl bg-surface-low p-4 border border-outline-variant/45 tabular-nums space-y-1.5">
             <div className="flex items-center justify-between text-label-md">
               <span className="text-on-surface-variant">
-                Live Seat Allocation
+                Seats Reserved
               </span>
               <span className="font-bold text-primary">
                 {totalSold} / {cap} claimed ({pct}%)
@@ -209,8 +209,7 @@ export default async function EventDetailPage({
               />
             </div>
             <p className="text-[11px] text-on-surface-variant">
-              Seats are locked atomically via Postgres{" "}
-              <code className="font-mono">place_order</code> RPC at checkout.
+              Switch currency in the top bar to preview prices in your preferred currency.
             </p>
           </div>
 
@@ -229,7 +228,6 @@ export default async function EventDetailPage({
                   }}
                   perks={t.perks}
                   remaining={t.quantity - t.sold}
-                  currency={org.currency}
                 />
               ))}
           </div>
@@ -242,16 +240,16 @@ export default async function EventDetailPage({
               <span className="material-symbols-outlined text-[18px]">
                 shopping_bag
               </span>
-              <span>Review Shopping Bag &amp; Checkout</span>
+              <span>Review Bag &amp; Checkout</span>
             </Link>
             <Link
-              href="/dashboard/events"
+              href="/demo/shop"
               className="w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-lowest py-2.5 px-4 text-label-md font-semibold text-on-surface hover:bg-surface-low transition-colors"
             >
               <span className="material-symbols-outlined text-[16px] text-secondary">
-                view_timeline
+                shopping_bag
               </span>
-              <span>Inspect on Bryntum Timeline</span>
+              <span>Bundle with Official Society Merch</span>
             </Link>
           </div>
         </aside>
@@ -288,7 +286,7 @@ export default async function EventDetailPage({
                   </p>
                 </div>
                 <span className="text-label-sm font-semibold text-secondary">
-                  Inspect passes →
+                  View passes →
                 </span>
               </Link>
             ))}

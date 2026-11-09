@@ -18,124 +18,83 @@ import { Badge } from "@/components/ui/badge";
 import { IconTile } from "@/components/ui/icon";
 import { SectionHeader } from "@/components/ui/primitives";
 
-const HERO_ICONS = [
-  { name: "PayPal Orders v2", icon: "account_balance_wallet" },
-  { name: "Render Postgres", icon: "database" },
-  { name: "Bryntum Scheduler 8.0", icon: "view_timeline" },
-  { name: "AG Grid Community 36", icon: "table_chart" },
-  { name: "Grounded AI SDK", icon: "auto_awesome" },
-  { name: "Next.js 16 App Router", icon: "code_blocks" },
-];
-
 const ARCHITECTURE_PILLARS = [
   {
-    eyebrow: "01 · CONSUMER E-COMMERCE",
-    title: "Multi-Page Student Storefront & Ticketing",
-    badge: "Storefront 2.0",
-    tone: "teal" as const,
+    step: "01",
+    title: "Student Storefront",
+    badge: "E-Commerce",
     icon: "storefront",
-    description:
-      "Purpose-built e-commerce experience with dedicated pages for Campus Events, Pass Tiers, Official Merch Shop, Product Detail Pages (PDPs), Shopping Bag, and PayPal Guest Checkout.",
-    specs: [
-      "Dedicated /demo/events/[slug] & /demo/products/[slug] pages",
-      "Persistent guest shopping bag combining passes & apparel",
-      "Atomic stock & seat reservation via Postgres place_order RPC",
-    ],
-    primaryHref: "/demo",
-    primaryLabel: "Open Storefront Home",
-    secondaryHref: "/demo/shop",
-    secondaryLabel: "Merch Shop",
+    summary:
+      "Multi-page campus shop for event passes and licensed club merch with live currency switching and guest cart.",
+    href: "/demo",
+    cta: "Explore Storefront →",
   },
   {
-    eyebrow: "02 · TEMPORAL SCHEDULING ENGINE",
-    title: "Bryntum Scheduler 8.0 Timeline & Calendar",
+    step: "02",
+    title: "Venue Timeline",
     badge: "Bryntum 8.0",
-    tone: "primary" as const,
     icon: "view_timeline",
-    description:
-      "Native CampusHub timeline and vertical calendar workspace for managing university lecture halls, labs, and society initiatives without spreadsheet conflicts.",
-    specs: [
-      "Group tracks dynamically by Campus Venue, Program Track, or Event",
-      "Switch between Day, Week, Multi-Week & Semester horizon presets",
-      "Drag-and-drop rescheduling, duration resize & native inspector drawer",
-    ],
-    primaryHref: "/dashboard/events",
-    primaryLabel: "Launch Event Scheduler",
-    secondaryHref: "/demo/events",
-    secondaryLabel: "Public Events",
+    summary:
+      "Visual multi-venue event scheduler with Day, Week, and Semester calendar presets and drag-and-drop rescheduling.",
+    href: "/dashboard/events",
+    cta: "Open Scheduler →",
   },
   {
-    eyebrow: "03 · ENTERPRISE DATA TABLES",
-    title: "AG Grid Community 36 Operational Ledgers",
+    step: "03",
+    title: "Commerce Ledgers",
     badge: "AG Grid 36",
-    tone: "success" as const,
     icon: "table_chart",
-    description:
-      "Standardized high-density data management tables across all 6 operational domains with instant column filtering, status filter pills, density controls, and CSV export.",
-    specs: [
-      "Events, Registrations, Products, Orders, Transactions & Members",
-      "Real-time quick-filter search & semantic status count chips",
-      "Tabular numerals, stock health meters & one-click CSV audit export",
-    ],
-    primaryHref: "/dashboard/orders",
-    primaryLabel: "Inspect Orders AG Grid",
-    secondaryHref: "/dashboard/products",
-    secondaryLabel: "SKU Catalog",
+    summary:
+      "High-density data tables across Events, Registrations, Products, Orders, and Transactions with instant CSV export.",
+    href: "/dashboard/orders",
+    cta: "View Ledgers →",
   },
   {
-    eyebrow: "04 · FINANCIAL ESCROW & AI",
-    title: "PayPal Orders v2 & Zero-PII Grounded AI",
-    badge: "Verified Escrow",
-    tone: "teal" as const,
-    icon: "account_balance_wallet",
-    description:
-      "End-to-end payment integrity paired with an autonomous commerce analyst that answers organizer questions strictly from live Postgres aggregates.",
-    specs: [
-      "Server-side PayPal Orders v2 capture & HMAC webhook verification",
-      "24-hour HMAC-signed CSV report downloads stored in Postgres",
-      "Zero-hallucination AI briefs & streaming chat grounded in live metrics",
-    ],
-    primaryHref: "/dashboard/ai-insights",
-    primaryLabel: "Open AI Workspace",
-    secondaryHref: "/dashboard/transactions",
-    secondaryLabel: "Webhook Ledger",
+    step: "04",
+    title: "PayPal & Grounded AI",
+    badge: "Verified",
+    icon: "auto_awesome",
+    summary:
+      "PayPal Orders v2 escrow capture paired with an AI analyst grounded strictly in live Postgres metrics.",
+    href: "/dashboard/ai-insights",
+    cta: "Explore AI →",
   },
 ];
 
 const STORY_ACTS = [
   {
     id: "act-launch",
-    eyebrow: "Act I · Venue Scheduling & Pass Launch",
-    title: "Schedule venues in Bryntum, publish tiers in seconds",
-    body: "Allocate Main Hall or CS Labs on the interactive Bryntum timeline, configure Student, Standard, and VIP pass tiers with perks, and go live on the storefront immediately.",
+    eyebrow: "Schedule & Launch",
+    title: "Schedule venues in Bryntum, publish pass tiers in seconds",
+    body: "Assign lecture halls or labs on the interactive Bryntum timeline, configure Student, Standard, and VIP pass tiers with perks, and publish directly to the student storefront.",
     bullets: [
-      "Multi-venue conflict visibility across Day, Week, and Semester views",
-      "Drag-and-drop date adjustments persisted directly to Postgres",
-      "Instant QR token generation for every confirmed attendee registration",
+      "Conflict-free venue scheduling across Day, Week, and Semester views",
+      "Drag-and-drop date changes saved directly to Postgres",
+      "Instant QR pass token issued for every confirmed attendee",
     ],
     icon: "confirmation_number",
   },
   {
     id: "act-orders",
-    eyebrow: "Act II · Multi-Page Checkout & AG Grid Fulfillment",
-    title: "Every ringgit captured, verified, and reconciled",
-    body: "Students shop event passes and society merchandise in a single cart. PayPal Orders v2 captures funds while organizers track fulfillment and webhook status in AG Grid.",
+    eyebrow: "Checkout & Fulfillment",
+    title: "Every ringgit captured, verified, and reconciled in AG Grid",
+    body: "Students combine event passes and club merchandise in one shopping bag. PayPal Orders v2 settles payments while organizers manage fulfillment and webhooks in AG Grid.",
     bullets: [
-      "Atomic place_order Postgres function prevents overselling on drops",
-      "Cryptographic PayPal webhook verification with idempotent deduplication",
+      "Atomic Postgres stock reservation prevents overselling on drops",
+      "Cryptographic PayPal webhook verification with deduplication",
       "Slide-over order inspector and one-click CSV exports for bursary audits",
     ],
     icon: "receipt_long",
   },
   {
     id: "act-ai",
-    eyebrow: "Act III · Grounded Commerce Intelligence",
+    eyebrow: "Grounded Intelligence",
     title: "AI that cites your real ledger — never invented figures",
-    body: "Each AI summary, anomaly scan, and chat turn builds a fresh metrics pack from Postgres (daily revenue, tier sell-through, refunds, low stock) with zero student PII.",
+    body: "Every AI brief, anomaly scan, and chat turn builds a fresh metrics pack from your database (daily revenue, tier sell-through, refunds, low stock) with zero student PII.",
     bullets: [
-      "Strict system contract forbids citing numbers outside the live pack",
-      "Proactively flags low-stock SKUs and top-converting ticket tiers",
-      "Auditable insight history persisted per organization",
+      "Strict grounding contract forbids citing numbers outside your live data",
+      "Proactively surfaces low-stock SKUs and fastest-selling pass tiers",
+      "Full audit trail of generated insights stored per organization",
     ],
     icon: "auto_awesome",
   },
@@ -155,7 +114,7 @@ const FEATURES = [
   {
     icon: "storefront",
     title: "Multi-Page Storefront",
-    body: "Dedicated consumer routes for Events (/demo/events), Merch Shop (/demo/shop), Product Details, Shopping Bag (/demo/cart), and Checkout.",
+    body: "Dedicated buyer pages for Events, Merch Shop, Product Details, Shopping Bag, and Express Checkout with currency switching.",
   },
   {
     icon: "account_balance_wallet",
@@ -231,8 +190,8 @@ export default function LandingPage() {
     <div className="bg-background">
       <SiteNav />
 
-      {/* ACT I — Hero */}
-      <CenterHero techIcons={HERO_ICONS} />
+      {/* ACT I — Centered Hero */}
+      <CenterHero />
 
       {/* Technology Proof Band */}
       <section
@@ -263,76 +222,54 @@ export default function LandingPage() {
         </Marquee>
       </section>
 
-      {/* ACT II — Complete Service Architecture Breakdown */}
+      {/* ACT II — Simplified 4-Column Purpose-Built Systems Overview */}
       <section
         id="architecture"
-        className="mx-auto max-w-7xl px-4 py-20 lg:px-8 space-y-10"
+        className="mx-auto max-w-7xl px-4 py-20 lg:px-8 space-y-8"
       >
         <BlurFade>
           <SectionHeader
             icon="hub"
-            eyebrow="Service & Technology Architecture"
+            eyebrow="Platform Architecture"
             title="Purpose-Built Systems for Every Layer of Campus Commerce"
-            subtitle="Explore how CampusHub 2.0 separates consumer e-commerce, temporal event scheduling (Bryntum), tabular financial management (AG Grid), and grounded AI into one cohesive platform."
+            subtitle="Four specialized modules working together across student shopping, event scheduling, data management, and financial intelligence."
           />
         </BlurFade>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {ARCHITECTURE_PILLARS.map((pillar, idx) => (
             <BlurFade key={pillar.title} delay={idx * 0.05}>
-              <article className="h-full rounded-2xl border border-outline-variant/55 bg-surface-lowest p-6 sm:p-7 shadow-xs hover:border-secondary/50 transition-all flex flex-col justify-between gap-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-label-sm font-mono font-bold uppercase tracking-wider text-secondary">
-                      {pillar.eyebrow}
-                    </span>
-                    <Badge tone={pillar.tone} icon={pillar.icon}>
-                      {pillar.badge}
-                    </Badge>
+              <Link
+                href={pillar.href}
+                className="group h-full rounded-2xl border border-outline-variant/55 bg-surface-lowest p-6 shadow-xs hover:border-secondary/50 hover:shadow-md transition-all flex flex-col justify-between gap-5"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[20px]">
+                        {pillar.icon}
+                      </span>
+                    </div>
+                    <Badge tone="teal">{pillar.badge}</Badge>
                   </div>
 
                   <div>
-                    <h3 className="text-headline-md font-bold text-on-surface">
+                    <span className="font-mono text-[11px] font-bold text-secondary">
+                      STEP {pillar.step}
+                    </span>
+                    <h3 className="text-headline-sm font-bold text-on-surface group-hover:text-secondary transition-colors mt-0.5">
                       {pillar.title}
                     </h3>
-                    <p className="text-body-md text-on-surface-variant mt-2 leading-relaxed">
-                      {pillar.description}
+                    <p className="text-body-sm text-on-surface-variant mt-1.5 leading-relaxed">
+                      {pillar.summary}
                     </p>
                   </div>
-
-                  <ul className="space-y-2 pt-3 border-t border-outline-variant/40">
-                    {pillar.specs.map((spec) => (
-                      <li
-                        key={spec}
-                        className="flex items-start gap-2.5 text-body-sm text-on-surface"
-                      >
-                        <span className="material-symbols-outlined text-[16px] text-secondary shrink-0 mt-0.5">
-                          check_circle
-                        </span>
-                        <span>{spec}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-outline-variant/35">
-                  <Link
-                    href={pillar.primaryHref}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-full bg-primary px-4 text-label-md font-semibold text-on-primary hover:opacity-90 transition-all"
-                  >
-                    <span>{pillar.primaryLabel}</span>
-                    <span className="material-symbols-outlined text-[16px]">
-                      arrow_forward
-                    </span>
-                  </Link>
-                  <Link
-                    href={pillar.secondaryHref}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-low px-4 text-label-md font-semibold text-on-surface hover:bg-surface-container transition-colors"
-                  >
-                    <span>{pillar.secondaryLabel}</span>
-                  </Link>
-                </div>
-              </article>
+                <span className="text-label-md font-semibold text-secondary group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
+                  {pillar.cta}
+                </span>
+              </Link>
             </BlurFade>
           ))}
         </div>
@@ -340,14 +277,14 @@ export default function LandingPage() {
 
       <SectionBeat />
 
-      {/* ACT III — Live Interactive Console Preview */}
+      {/* ACT III — 1:1 Live Organizer Workspace Preview */}
       <section id="story" className="mx-auto max-w-7xl px-4 py-20 lg:px-8">
         <BlurFade>
           <SectionHeader
             icon="space_dashboard"
             eyebrow="Live Organizer Workspace"
             title="One Dashboard, Every Ringgit Accounted For"
-            subtitle="Orders, event passes, settlement velocity, and SKU stock in one view — rendered with the actual CampusHub 2.0 components and Tech Society seed data."
+            subtitle="The exact Executive Overview console your committee uses daily — rendered live with Tech Society seed metrics."
             actions={
               <Link
                 href="/dashboard"
@@ -378,13 +315,13 @@ export default function LandingPage() {
                   href="/dashboard/events"
                   className="px-2.5 py-1 rounded-md bg-surface-lowest border border-outline-variant/50 text-on-surface text-[11px] font-semibold hover:border-secondary"
                 >
-                  Bryntum Timeline →
+                  Events &amp; Timeline →
                 </Link>
                 <Link
                   href="/demo"
                   className="px-2.5 py-1 rounded-md bg-secondary-container text-on-secondary-container text-[11px] font-semibold"
                 >
-                  Public Storefront →
+                  Student Storefront →
                 </Link>
               </div>
             </div>
@@ -397,21 +334,17 @@ export default function LandingPage() {
 
       <SectionBeat />
 
-      {/* ACT IV — Scroll Story */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 lg:px-8">
+      {/* ACT IV — Improved End-to-End Operational Flow */}
+      <section className="mx-auto max-w-7xl px-4 py-20 lg:px-8 space-y-10">
         <BlurFade>
-          <p className="font-mono text-label-sm text-secondary uppercase tracking-[0.2em] font-bold">
-            End-to-End Operational Flow
-          </p>
-          <RevealHeading
-            text="From launch week to restock day."
-            accentWord="restock"
-            className="text-display text-on-surface mt-2 max-w-2xl"
+          <SectionHeader
+            icon="route"
+            eyebrow="End-to-End Operational Flow"
+            title="From Venue Scheduling to Restock Day"
+            subtitle="See how an event moves from Bryntum timeline planning to student checkout, AG Grid fulfillment, and grounded AI review."
           />
         </BlurFade>
-        <div className="mt-14">
-          <StoryActs acts={STORY_ACTS} />
-        </div>
+        <StoryActs acts={STORY_ACTS} />
       </section>
 
       <SectionBeat />
@@ -452,7 +385,7 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ACT VI — Grounded AI Showcase */}
+      {/* ACT VI — Grounded AI Showcase (No model identifier badge) */}
       <section className="relative overflow-hidden border-y border-outline-variant/60 bg-surface-low py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 lg:grid-cols-2 lg:px-8">
           <div>
@@ -486,8 +419,9 @@ export default function LandingPage() {
           <div className="relative">
             <InsightConversation />
             <div className="mt-4 flex justify-end gap-2">
-              <Badge tone="teal">glm-5.3-flash</Badge>
-              <Badge tone="neutral">verified Postgres aggregates</Badge>
+              <Badge tone="teal" icon="verified">
+                Verified Postgres Aggregates Only
+              </Badge>
             </div>
           </div>
         </div>
@@ -586,8 +520,8 @@ export default function LandingPage() {
             className="text-display text-on-surface"
           />
           <p className="text-on-surface-variant mx-auto mt-4 max-w-xl text-body-lg leading-relaxed">
-            Explore the multi-page student storefront or sign in to the
-            seeded Tech Society organizer workspace right now.
+            Explore the student storefront or sign in to the seeded Tech
+            Society organizer workspace right now.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
             <Magnetic>
@@ -602,7 +536,7 @@ export default function LandingPage() {
               href="/demo"
               className="inline-flex h-12 items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-lowest px-7 text-label-lg font-semibold text-on-surface hover:bg-surface-low transition-colors"
             >
-              <span>Browse Demo Storefront</span>
+              <span>Browse Student Storefront</span>
               <span className="material-symbols-outlined text-[18px]">
                 arrow_forward
               </span>

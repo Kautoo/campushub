@@ -3,13 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { CAMPUS_SOCIETIES } from "@/lib/storefront";
 
 export const metadata = {
-  title: "Accredited Campus Societies — CampusHub 2.0 Storefront",
+  title: "Accredited Campus Societies — CampusHub Storefront",
 };
 
 export default function DemoSocietiesPage() {
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Header */}
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+      {/* Consumer Header */}
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs space-y-4">
         <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
           <Link href="/demo" className="hover:text-primary transition-colors">
@@ -17,32 +17,32 @@ export default function DemoSocietiesPage() {
           </Link>
           <span>/</span>
           <span className="text-on-surface font-semibold">
-            Accredited Campus Societies
+            Campus Societies
           </span>
         </nav>
 
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <Badge tone="teal" icon="verified">
-              University Registry Verified
+              University Student Union Accredited
             </Badge>
             <h1 className="text-display font-bold text-on-surface tracking-tight">
               Accredited Student Societies &amp; Club Organizers
             </h1>
             <p className="text-body-lg text-on-surface-variant leading-relaxed">
-              Every club on CampusHub 2.0 operates an isolated Postgres
-              workspace with role-based committee permissions, Bryntum venue
-              scheduling, and direct PayPal bursary settlement.
+              Discover the official university clubs and faculty societies
+              hosting this semester&apos;s conferences, hackathons, creative
+              workshops, and varsity tournaments.
             </p>
           </div>
           <Link
-            href="/register"
+            href="/demo/events"
             className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-label-md font-semibold text-on-primary hover:opacity-90 transition-all shrink-0"
           >
             <span className="material-symbols-outlined text-[18px]">
-              domain_add
+              confirmation_number
             </span>
-            <span>Onboard Your Society</span>
+            <span>Browse All Society Events</span>
           </Link>
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function DemoSocietiesPage() {
                     {soc.merchCount}
                   </span>
                   <span className="text-[10.5px] text-on-surface-variant">
-                    Merch SKUs
+                    Merch Items
                   </span>
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default function DemoSocietiesPage() {
                   href="/demo/shop"
                   className="inline-flex h-9 items-center justify-center rounded-lg border border-outline-variant/60 bg-surface-lowest text-on-surface text-label-sm font-semibold hover:bg-surface-low transition-colors"
                 >
-                  Browse Merch
+                  Shop Merch
                 </Link>
               </div>
             </div>

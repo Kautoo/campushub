@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { CartLine } from "@/components/store/cart";
-import { formatMoney } from "@/lib/money";
+import { useStoreCurrency } from "@/components/store/currency-provider";
 
-/** Header shopping bag pill; syncs count and subtotal via ch-cart-changed events. */
+/** Single shopping bag pill in the storefront navbar; formats total in selected currency. */
 export function CartPill({ className }: { className?: string }) {
   const [count, setCount] = useState(0);
   const [total, setTotal] = useState(0);
+  const { format } = useStoreCurrency();
 
   useEffect(() => {
     function sync() {
@@ -27,15 +28,15 @@ export function CartPill({ className }: { className?: string }) {
     <Link
       href="/demo/cart"
       className={
-        "focus-aura inline-flex h-10 items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-lowest px-4 text-label-md font-semibold text-on-surface shadow-2xs hover:bg-surface-low transition-colors tabular-nums " +
+        "btn-step focus-aura inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-label-md font-semibold text-on-primary shadow-2xs hover:opacity-90 transition-all tabular-nums " +
         (className ?? "")
       }
       aria-label={`Shopping bag, ${count} items`}
     >
-      <span className="material-symbols-outlined text-[19px] text-secondary">
+      <span className="material-symbols-outlined text-[17px]">
         shopping_bag
       </span>
-      <span>{count > 0 ? `${count} · ${formatMoney(total)}` : "Bag (0)"}</span>
+      <span>{count > 0 ? `${count} · ${format(total)}` : "Bag"}</span>
     </Link>
   );
 }

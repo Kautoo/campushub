@@ -2,12 +2,12 @@ import Link from "next/link";
 import { hasDatabaseEnv } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
+import { StorePrice } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
-import { formatMoney } from "@/lib/money";
 import { getStorefrontData, STITCH_EVENT_IMAGES } from "@/lib/storefront";
 
 export const metadata = {
-  title: "Campus Events & Digital Passes — CampusHub 2.0 Storefront",
+  title: "Campus Events & Digital Passes — CampusHub Storefront",
 };
 
 export default async function DemoEventsCatalogPage() {
@@ -24,8 +24,8 @@ export default async function DemoEventsCatalogPage() {
   );
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Breadcrumb + Header */}
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+      {/* Breadcrumb + Consumer Header */}
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs space-y-4">
         <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
           <Link href="/demo" className="hover:text-primary transition-colors">
@@ -43,35 +43,35 @@ export default async function DemoEventsCatalogPage() {
               <Badge tone="teal" icon="confirmation_number">
                 Instant QR Ticketing
               </Badge>
-              <Badge tone="primary">{events.length} Published Events</Badge>
+              <Badge tone="primary">{events.length} Upcoming Events</Badge>
             </div>
             <h1 className="text-display font-bold text-on-surface tracking-tight">
-              Campus Events &amp; Society Pass Roster
+              Campus Events &amp; Society Pass Lineup
             </h1>
             <p className="text-body-lg text-on-surface-variant leading-relaxed">
               Browse verified university conferences, 48-hour hackathons, ML
-              bootcamps, and career fairs. Select a pass tier or open any event
-              page for full venue and agenda details.
+              bootcamps, and career fairs. Select your pass tier below or open
+              any event page for full venue and schedule details.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 tabular-nums">
             <div className="rounded-xl border border-outline-variant/50 bg-surface-low px-4 py-2.5">
               <span className="text-[11px] uppercase tracking-wider text-on-surface-variant block">
-                Passes Issued
+                Students Registered
               </span>
               <span className="text-headline-sm font-bold text-primary">
-                {totalSold.toLocaleString()} / {totalSeats.toLocaleString()}
+                {totalSold.toLocaleString()} / {totalSeats.toLocaleString()} seats
               </span>
             </div>
             <Link
-              href="/dashboard/events"
+              href="/demo/cart"
               className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-5 text-label-md font-semibold text-on-primary hover:opacity-90 transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">
-                view_timeline
+                shopping_bag
               </span>
-              <span>View Bryntum Venue Timeline</span>
+              <span>View Bag &amp; Checkout</span>
             </Link>
           </div>
         </div>
@@ -145,9 +145,11 @@ export default async function DemoEventsCatalogPage() {
                       <span className="tabular-nums">
                         From{" "}
                         <strong className="text-primary">
-                          {cheapest
-                            ? formatMoney(cheapest.price_cents, org.currency)
-                            : "Free"}
+                          {cheapest ? (
+                            <StorePrice cents={cheapest.price_cents} />
+                          ) : (
+                            "Free"
+                          )}
                         </strong>
                       </span>
                     </div>
@@ -155,7 +157,7 @@ export default async function DemoEventsCatalogPage() {
                       href={`/demo/events/${e.slug}`}
                       className="inline-flex items-center gap-1 text-label-md font-semibold text-secondary hover:underline"
                     >
-                      <span>Open Event Page</span>
+                      <span>View Event Details</span>
                       <span className="material-symbols-outlined text-[16px]">
                         arrow_forward
                       </span>
@@ -170,10 +172,10 @@ export default async function DemoEventsCatalogPage() {
                   <div className="rounded-xl bg-surface-low p-3 border border-outline-variant/40 tabular-nums">
                     <div className="flex items-center justify-between text-label-sm mb-1">
                       <span className="text-on-surface-variant">
-                        Venue Capacity Utilization
+                        Seat Availability
                       </span>
                       <span className="font-bold text-on-surface">
-                        {sold} / {cap} seats registered ({pct}%)
+                        {sold} / {cap} seats claimed ({pct}%)
                       </span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-surface-container-high overflow-hidden">
@@ -204,7 +206,6 @@ export default async function DemoEventsCatalogPage() {
                           }}
                           perks={t.perks}
                           remaining={t.quantity - t.sold}
-                          currency={org.currency}
                         />
                       ))}
                   </div>
