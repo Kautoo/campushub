@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@heroui/react";
-import { signUp, type AuthState } from "@/app/actions/auth";
+import { signUp, createDemoSandbox, type AuthState } from "@/app/actions/auth";
 import { Badge } from "@/components/ui/badge";
 
 export default function RegisterPage() {
@@ -87,12 +87,25 @@ export default function RegisterPage() {
         </Button>
       </form>
 
+      <div className="space-y-2">
+        <form action={createDemoSandbox}>
+          <button
+            type="submit"
+            className="btn-step w-full inline-flex h-11 items-center justify-center gap-2 rounded-full border border-secondary/50 bg-secondary-container/35 px-4 text-label-md font-bold text-on-secondary-container hover:bg-secondary-container/60 transition-all shadow-2xs"
+          >
+            <span className="material-symbols-outlined text-[18px] text-secondary">
+              science
+            </span>
+            <span>Or Launch 1-Click Sandbox Playground</span>
+          </button>
+        </form>
+      </div>
+
       <div className="rounded-xl border border-outline-variant/50 bg-surface-low p-3.5 text-body-sm text-on-surface-variant">
-        Want to inspect the seeded{" "}
-        <strong className="text-on-surface">Tech Society</strong> dataset (6
-        events, 12 products, 40 orders)?{" "}
+        Want to explore the seeded{" "}
+        <strong className="text-on-surface">Tech Society</strong> showroom?{" "}
         <Link href="/login" className="text-secondary font-semibold hover:underline">
-          Sign in with the demo account →
+          Sign in with shared demo credentials →
         </Link>
       </div>
 

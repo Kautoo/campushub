@@ -32,6 +32,7 @@ export type StorefrontData = {
     slug: string;
     description: string | null;
     currency: string;
+    isCustomOrg?: boolean;
   };
   products: StoreProduct[];
   events: StoreEvent[];
@@ -79,14 +80,27 @@ export function resolveProductImage(p: {
     DEFAULT_PRODUCT_IMAGES["hoodie-midnight"]
   );
 }
+export type CampusSocietyMeta = {
+  slug: string;
+  name: string;
+  faculty: string;
+  badge: string;
+  badgeTone: "teal" | "success" | "primary" | "warning";
+  icon: string;
+  members: number;
+  eventsCount: number;
+  merchCount: number;
+  description: string;
+  highlights: string[];
+};
 
-export const CAMPUS_SOCIETIES = [
+export const CAMPUS_SOCIETIES: CampusSocietyMeta[] = [
   {
     slug: "tech-society",
     name: "Tech Society",
     faculty: "Faculty of Computer Science & Engineering",
     badge: "Tier 1 Society",
-    badgeTone: "teal" as const,
+    badgeTone: "teal",
     icon: "terminal",
     members: 480,
     eventsCount: 6,
@@ -104,7 +118,7 @@ export const CAMPUS_SOCIETIES = [
     name: "Design & Multimedia Guild",
     faculty: "School of Creative Media & Design",
     badge: "Creative Partner",
-    badgeTone: "success" as const,
+    badgeTone: "success",
     icon: "palette",
     members: 310,
     eventsCount: 8,
@@ -122,7 +136,7 @@ export const CAMPUS_SOCIETIES = [
     name: "Sports & Esports Council",
     faculty: "University Arena & Student Union",
     badge: "Council Body",
-    badgeTone: "primary" as const,
+    badgeTone: "primary",
     icon: "sports_esports",
     members: 620,
     eventsCount: 24,
@@ -137,33 +151,127 @@ export const CAMPUS_SOCIETIES = [
   },
 ];
 
+export type StorefrontSocietyItem = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  currency: string;
+  eventCount: number;
+  productCount: number;
+  isDemoOrg: boolean;
+};
+
 /**
- * Cached public storefront dataset shared across /demo and its e-commerce subpages.
+ * Lists all registered campus organizations from Postgres with live counts
+ * of published events and active products.
  */
-export async function getStorefrontData(): Promise<StorefrontData | null> {
+export async function listAllStorefrontSocieties(): Promise<StorefrontSocietyItem[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag("storefront");
 
   const pool = getPool();
-  let orgRes, productsRes, eventsRes;
   try {
-    [orgRes, productsRes, eventsRes] = await Promise.all([
-      pool.query<{
+    const res = await pool.query<{
+      id: string;
+      name: string;
+      slug: string;
+      description: string | null;
+      currency: string;
+      event_count: string;
+      product_count: string;
+      created_at: string;
+    }>(
+      `select o.id, o.name, o.slug, o.description, o.currency, o.created_at,
+              (select count(*) from public.events e where e.org_id = o.id and e.status = 'published') as event_count,
+              (select count(*) from public.products p where p.org_id = o.id and p.status = 'active') as product_count
+       from public.organizations o
+       order by o.created_at asc`,
+    );
+
+    return res.rows.map((r, i) => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      description: r.description,
+      currency: r.currency,
+      eventCount: Number(r.event_count) || 0,
+      productCount: Number(r.product_count) || 0,
+      isDemoOrg: i === 0,
+    }));
+  } catch (err) {
+    console.error("listAllStorefrontSocieties failed", err);
+    return [];
+  }
+}
+
+/**
+ * Multi-Tenant Storefront Data Loader:
+ * - If `orgSlugOrId` is provided (e.g., from `?org=...`), loads that specific organization.
+ * - If not provided, defaults to the primary showroom organization (Tech Society).
+ * Caches per orgSlugOrId with tag "storefront".
+ */
+export async function getStorefrontData(
+  orgSlugOrId?: string,
+): Promise<StorefrontData | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("storefront");
+
+  const pool = getPool();
+  let orgRes;
+
+  try {
+    if (orgSlugOrId && orgSlugOrId.trim()) {
+      orgRes = await pool.query<{
         id: string;
         name: string;
         slug: string;
         description: string | null;
         currency: string;
+        created_at: string;
       }>(
-        `select id, name, slug, description, currency from public.organizations
-         order by created_at asc limit 1`,
-      ),
+        `select id, name, slug, description, currency, created_at
+         from public.organizations
+         where lower(slug) = lower($1) or id::text = $1
+         limit 1`,
+        [orgSlugOrId.trim()],
+      );
+    }
+
+    if (!orgRes || orgRes.rows.length === 0) {
+      orgRes = await pool.query<{
+        id: string;
+        name: string;
+        slug: string;
+        description: string | null;
+        currency: string;
+        created_at: string;
+      }>(
+        `select id, name, slug, description, currency, created_at
+         from public.organizations
+         order by created_at asc
+         limit 1`,
+      );
+    }
+  } catch (err) {
+    console.error("storefront org query failed", err);
+    return null;
+  }
+
+  const org = orgRes.rows[0];
+  if (!org) return null;
+
+  let productsRes, eventsRes;
+  try {
+    [productsRes, eventsRes] = await Promise.all([
       pool.query<StoreProduct>(
         `select id, name, slug, description, images, category, price_cents, stock, sku, low_stock_threshold
          from public.products
-         where status = 'active'
+         where status = 'active' and org_id = $1::uuid
          order by price_cents asc`,
+        [org.id],
       ),
       pool.query<{
         id: string;
@@ -186,18 +294,17 @@ export async function getStorefrontData(): Promise<StorefrontData | null> {
         `select e.id, e.title, e.slug, e.description, e.cover_url, e.venue, e.category, e.start_at, e.end_at, e.capacity,
                 tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
                 tt.quantity as tier_quantity, tt.sold as tier_sold, tt.perks as tier_perks
+         from public.events e
          left join public.ticket_tiers tt on tt.event_id = e.id
-         where e.status = 'published'
+         where e.status = 'published' and e.org_id = $1::uuid
          order by e.start_at asc, tt.price_cents asc`,
+        [org.id],
       ),
     ]);
   } catch (err) {
-    console.error("storefront data unavailable", err);
+    console.error("storefront products/events query failed", err);
     return null;
   }
-
-  const org = orgRes.rows[0];
-  if (!org) return null;
 
   const byEvent = new Map<string, StoreEvent>();
   const events: StoreEvent[] = [];
@@ -242,6 +349,7 @@ export async function getStorefrontData(): Promise<StorefrontData | null> {
       slug: org.slug,
       description: org.description,
       currency: org.currency,
+      isCustomOrg: org.slug !== "tech-society",
     },
     products: productsRes.rows,
     events,

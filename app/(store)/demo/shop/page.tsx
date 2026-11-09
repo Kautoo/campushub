@@ -3,24 +3,31 @@ import { hasDatabaseEnv } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { StoreGrid } from "@/components/store/store-grid";
 import { Badge } from "@/components/ui/badge";
+import { StorefrontBanner } from "@/components/store/storefront-banner";
 import { getStorefrontData } from "@/lib/storefront";
-
 export const metadata = {
   title: "Official Merch Shop — CampusHub Storefront",
 };
 
-export default async function DemoMerchShopPage() {
+export default async function DemoMerchShopPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ org?: string }>;
+}) {
   if (!hasDatabaseEnv()) return <SetupNotice what="the merchandise shop" />;
 
-  const data = await getStorefrontData();
+  const params = await searchParams;
+  const data = await getStorefrontData(params?.org);
   if (!data) return <SetupNotice what="merchandise data" />;
-
   const { org, products } = data;
   const totalUnits = products.reduce((s, p) => s + p.stock, 0);
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      {/* Consumer Shop Header Banner */}
+      <StorefrontBanner
+        orgName={org.name}
+        isCustomOrg={org.isCustomOrg}
+      />
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs space-y-4">
         <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
           <Link href="/demo" className="hover:text-primary transition-colors">

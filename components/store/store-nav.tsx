@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CartPill } from "@/components/store/cart-pill";
@@ -17,10 +17,12 @@ const NAV_ITEMS = [
 
 function StoreNavLinks({
   pathname,
+  org,
   onNavigate,
   mobile = false,
 }: {
   pathname: string | null;
+  org?: string | null;
   onNavigate?: () => void;
   mobile?: boolean;
 }) {
@@ -33,6 +35,7 @@ function StoreNavLinks({
       }
     >
       {NAV_ITEMS.map((item) => {
+        const href = org ? `${item.href}?org=${encodeURIComponent(org)}` : item.href;
         const active = pathname
           ? item.exact
             ? pathname === item.href
@@ -41,7 +44,7 @@ function StoreNavLinks({
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
@@ -71,9 +74,12 @@ function StoreNavActive({
   mobile?: boolean;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const org = searchParams.get("org");
   return (
     <StoreNavLinks
       pathname={pathname}
+      org={org}
       onNavigate={onNavigate}
       mobile={mobile}
     />
@@ -81,8 +87,8 @@ function StoreNavActive({
 }
 
 /**
- * Floating pill navbar for the /demo Storefront (matches Landing Page SiteNav style).
- * Includes single Shopping Bag pill, Currency Switcher, and Theme Toggle.
+ * Floating pill navbar for the /demo Storefront.
+ * Preserves multi-tenant organization state across subpages.
  */
 export function StoreNav() {
   const [scrolled, setScrolled] = useState(false);

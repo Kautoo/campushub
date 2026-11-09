@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { orgSettingsSchema } from "@/lib/validation";
-import { hasDatabaseEnv } from "@/lib/db";
+import { hasDatabaseEnv, getPool } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
 import { orgs } from "@/lib/db/repo";
 
@@ -45,4 +45,28 @@ export async function updateOrgSettings(
   if (!updated) return { error: "Could not save the organization settings." };
   revalidatePath("/dashboard/settings");
   return { ok: "Organization settings saved." };
+}
+
+/** Restore demo organization events and merchandise to active status */
+export async function resetDemoCatalog(): Promise<SettingsState> {
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const org = await orgs.firstForUser(session.user.id);
+  if (!org) return { error: "No organization found." };
+
+  const pool = getPool();
+  await pool.query(
+    `update public.products set status = 'active', stock = case when stock <= 0 then 45 else stock end where org_id = $1::uuid`,
+    [org.id],
+  );
+  await pool.query(
+    `update public.events set status = 'published' where org_id = $1::uuid and status = 'draft'`,
+    [org.id],
+  );
+
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
+  return { ok: "Demo catalog refreshed: all products and events reset to active status." };
 }

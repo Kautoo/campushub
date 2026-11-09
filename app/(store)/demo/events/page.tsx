@@ -4,18 +4,22 @@ import { SetupNotice } from "@/components/layout/setup-notice";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
 import { StorePrice } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
+import { StorefrontBanner } from "@/components/store/storefront-banner";
 import { getStorefrontData, STITCH_EVENT_IMAGES } from "@/lib/storefront";
-
 export const metadata = {
   title: "Campus Events & Digital Passes — CampusHub Storefront",
 };
 
-export default async function DemoEventsCatalogPage() {
+export default async function DemoEventsCatalogPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ org?: string }>;
+}) {
   if (!hasDatabaseEnv()) return <SetupNotice what="the events catalog" />;
 
-  const data = await getStorefrontData();
+  const params = await searchParams;
+  const data = await getStorefrontData(params?.org);
   if (!data) return <SetupNotice what="events data" />;
-
   const { org, events } = data;
   const totalSeats = events.reduce((s, e) => s + (e.capacity || 0), 0);
   const totalSold = events.reduce(
@@ -25,7 +29,10 @@ export default async function DemoEventsCatalogPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      {/* Breadcrumb + Consumer Header */}
+      <StorefrontBanner
+        orgName={org.name}
+        isCustomOrg={org.isCustomOrg}
+      />
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs space-y-4">
         <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
           <Link href="/demo" className="hover:text-primary transition-colors">

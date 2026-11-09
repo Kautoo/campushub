@@ -4,8 +4,10 @@ import { useActionState } from "react";
 import { Button } from "@heroui/react";
 import {
   updateOrgSettings,
+  resetDemoCatalog,
   type SettingsState,
 } from "@/app/actions/settings";
+import { useState, useTransition } from "react";
 import { SectionHeader } from "@/components/ui/primitives";
 
 export type OrgRow = {
@@ -21,6 +23,8 @@ export function OrgSettingsForm({ org }: { org: OrgRow }) {
     updateOrgSettings,
     null,
   );
+  const [resetPending, startReset] = useTransition();
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
   const gateways = (org.settings?.gateways ?? {}) as {
     paypal?: boolean;
   };
@@ -99,6 +103,37 @@ export function OrgSettingsForm({ org }: { org: OrgRow }) {
           {state?.error ? (
             <p className="text-body-sm text-error">{state.error}</p>
           ) : null}
+        </div>
+
+        <div className="md:col-span-2 pt-5 border-t border-outline-variant/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h4 className="text-body-md font-bold text-on-surface">
+              Demo Catalog Recovery Tool
+            </h4>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              Restores all products and events to active publication status if modified during public evaluations.
+            </p>
+            {resetMsg ? (
+              <p className="text-xs text-success font-semibold mt-1">{resetMsg}</p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            disabled={resetPending}
+            onClick={() => {
+              startReset(async () => {
+                const res = await resetDemoCatalog();
+                setResetMsg(res?.ok ?? res?.error ?? "Catalog refreshed.");
+                setTimeout(() => setResetMsg(null), 4000);
+              });
+            }}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant/60 bg-surface-lowest px-3.5 text-label-sm font-semibold text-on-surface hover:bg-surface-low transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-[16px] text-secondary">
+              restore
+            </span>
+            <span>{resetPending ? "Restoring…" : "Restore Demo Catalog"}</span>
+          </button>
         </div>
       </form>
     </section>

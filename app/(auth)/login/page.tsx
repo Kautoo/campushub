@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@heroui/react";
-import { signIn, type AuthState } from "@/app/actions/auth";
+import { signIn, createDemoSandbox, type AuthState } from "@/app/actions/auth";
 import { Badge } from "@/components/ui/badge";
 
 export default function LoginPage({
@@ -84,6 +84,23 @@ export default function LoginPage({
           {pending ? "Signing in…" : "Sign in to Workspace"}
         </Button>
       </form>
+      {/* 1-Click Isolated Sandbox Playground */}
+      <div className="space-y-2">
+        <form action={createDemoSandbox}>
+          <button
+            type="submit"
+            className="btn-step w-full inline-flex h-11 items-center justify-center gap-2 rounded-full border border-secondary/50 bg-secondary-container/35 px-4 text-label-md font-bold text-on-secondary-container hover:bg-secondary-container/60 transition-all shadow-2xs"
+          >
+            <span className="material-symbols-outlined text-[18px] text-secondary">
+              science
+            </span>
+            <span>Launch 1-Click Sandbox Playground</span>
+          </button>
+        </form>
+        <p className="text-[11px] text-center text-on-surface-variant">
+          Creates your own private workspace with cloned events &amp; products — test adding/editing freely without affecting other evaluators.
+        </p>
+      </div>
 
       {/* Demo Credentials Box */}
       <div className="rounded-xl border border-outline-variant/50 bg-surface-low p-3.5 text-body-sm space-y-1">
@@ -91,15 +108,13 @@ export default function LoginPage({
           <span className="material-symbols-outlined text-[16px] text-secondary">
             key
           </span>
-          Seeded Tech Society Demo Accounts
+          Shared Demo Account
         </p>
         <p className="text-on-surface-variant text-xs leading-relaxed">
-          Email: <code className="font-mono text-on-surface">owner@campushub.test</code>{" "}
-          (or <code className="font-mono text-on-surface">admin@campushub.test</code>) ·
+          Email: <code className="font-mono text-on-surface">owner@campushub.test</code> ·
           Password: <code className="font-mono text-on-surface">campushub-demo</code>
         </p>
       </div>
-
       <div className="pt-2 border-t border-outline-variant/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-body-sm text-on-surface-variant">
         <span>
           New organizer?{" "}

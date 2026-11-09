@@ -5,6 +5,7 @@ import { StoreGrid } from "@/components/store/store-grid";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
 import { StorePrice } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
+import { StorefrontBanner } from "@/components/store/storefront-banner";
 import {
   getStorefrontData,
   STITCH_EVENT_IMAGES,
@@ -15,10 +16,15 @@ export const metadata = {
   title: "Storefront & Campus Marketplace — CampusHub 2.0",
 };
 
-export default async function DemoStorefront() {
+export default async function DemoStorefront({
+  searchParams,
+}: {
+  searchParams?: Promise<{ org?: string }>;
+}) {
   if (!hasDatabaseEnv()) return <SetupNotice what="the storefront" />;
 
-  const data = await getStorefrontData();
+  const params = await searchParams;
+  const data = await getStorefrontData(params?.org);
   if (!data) return <SetupNotice what="store data" />;
 
   const { org, products, events } = data;
@@ -39,6 +45,10 @@ export default async function DemoStorefront() {
 
   return (
     <main className="w-full bg-surface min-h-screen">
+      <StorefrontBanner
+        orgName={org.name}
+        isCustomOrg={org.isCustomOrg}
+      />
       {/* ============================================================
           1. HERO & FLAGSHIP EVENT SPOTLIGHT
           ============================================================ */}
