@@ -9,24 +9,22 @@ export type ChipTone =
   | "error";
 
 /**
- * Stitch badge / chip tokens (from Cards board `a085039c` & `7b64c5f2`):
- * - success: bg-tertiary-fixed/30 text-on-tertiary-container
- * - primary: bg-primary-fixed text-primary
- * - teal: bg-secondary-container text-on-secondary-container
- * - error: bg-error-container text-on-error-container
- * - warning: bg-warning-container text-warning
- * - neutral: bg-surface-container text-on-surface-variant
+ * Semantic status & category badges with guaranteed WCAG AA contrast in both Light and Dark themes.
  */
 const tones: Record<ChipTone, string> = {
-  primary: "bg-primary-fixed text-primary",
-  teal: "bg-secondary-container text-on-secondary-container",
-  neutral: "bg-surface-container text-on-surface-variant",
-  success: "bg-tertiary-fixed/30 text-on-tertiary-container",
-  warning: "bg-warning-container text-warning",
-  error: "bg-error-container text-on-error-container",
+  primary:
+    "bg-primary-fixed text-primary border border-primary/20 dark:border-primary/30",
+  teal: "bg-secondary-container text-on-secondary-container border border-secondary/20",
+  neutral:
+    "bg-surface-container text-on-surface-variant border border-outline-variant/50",
+  success:
+    "bg-success-container text-success border border-success/25",
+  warning:
+    "bg-warning-container text-warning border border-warning/25",
+  error:
+    "bg-error-container text-on-error-container border border-error/25",
 };
 
-/** Stitch pill badge: 1:1 with Stitch chips showcase. */
 export function Badge({
   children,
   tone = "neutral",
@@ -41,23 +39,19 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full font-label-sm text-label-sm font-semibold whitespace-nowrap",
+        "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-sm font-semibold whitespace-nowrap",
         tones[tone],
         className,
       )}
     >
       {icon ? (
-        <span className="material-symbols-outlined text-[12px]">{icon}</span>
+        <span className="material-symbols-outlined text-[13px]">{icon}</span>
       ) : null}
       {children}
     </span>
   );
 }
 
-/**
- * Stitch DeltaBadge: 1:1 with Stitch KPI cards.
- * Uses `trending_up` / `trending_down` icons (14px) and Stitch tertiary-fixed chip.
- */
 export function DeltaBadge({
   value,
   suffix = "%",
@@ -72,10 +66,10 @@ export function DeltaBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full font-label-sm text-label-sm",
+        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-label-sm font-semibold tabular-nums",
         up
-          ? "bg-tertiary-fixed/30 text-on-tertiary-container"
-          : "bg-error-container text-on-error-container",
+          ? "bg-success-container text-success border border-success/25"
+          : "bg-error-container text-on-error-container border border-error/25",
         className,
       )}
     >

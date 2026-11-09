@@ -10,6 +10,7 @@ import {
 import { Button } from "@heroui/react";
 import {
   readCart,
+  updateCartQty,
   removeFromCart,
   clearCart,
   type CartLine,
@@ -20,12 +21,11 @@ import { Badge } from "@/components/ui/badge";
 type Stage = "cart" | "details" | "paying" | "done" | "error";
 type DbOrder = { id: string; order_number: string; total_cents: number };
 
-/** Stitch checkout stepper — Items → Details → Payment → Done, mapped onto the stage machine. */
 const STEPS = [
-  { key: "cart", label: "Items", icon: "shopping_bag" },
-  { key: "details", label: "Details", icon: "badge" },
-  { key: "paying", label: "Payment", icon: "account_balance_wallet" },
-  { key: "done", label: "Done", icon: "check_circle" },
+  { key: "cart", label: "1. Review Bag", icon: "shopping_bag" },
+  { key: "details", label: "2. Student Details", icon: "badge" },
+  { key: "paying", label: "3. PayPal Escrow", icon: "account_balance_wallet" },
+  { key: "done", label: "4. Confirmed", icon: "check_circle" },
 ] as const;
 
 function Stepper({ stage }: { stage: Stage }) {
@@ -34,28 +34,33 @@ function Stepper({ stage }: { stage: Stage }) {
   const idx = current < 0 ? 0 : current;
   return (
     <div
-      className="flex items-center gap-space-sm"
+      className="flex flex-wrap items-center gap-2"
       aria-label="Checkout progress"
     >
       {STEPS.map((s, i) => (
-        <div key={s.key} className="flex items-center gap-space-sm">
+        <div key={s.key} className="flex items-center gap-2">
           <div
             aria-current={i === idx ? "step" : undefined}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-label-sm text-label-sm ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-label-sm font-semibold border transition-all ${
               i < idx
-                ? "bg-tertiary-fixed/30 text-on-tertiary-container"
+                ? "bg-success-container text-success border-success/30"
                 : i === idx
-                  ? "bg-secondary-container text-on-secondary-container font-semibold"
-                  : "bg-surface-container-low text-on-surface-variant"
+                  ? "bg-primary text-on-primary border-primary shadow-2xs"
+                  : "bg-surface-low text-on-surface-variant border-outline-variant/50"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span className="material-symbols-outlined text-[15px]">
               {i < idx ? "check" : s.icon}
             </span>
-            {s.label}
+            <span>{s.label}</span>
           </div>
           {i < STEPS.length - 1 ? (
-            <span aria-hidden className="w-6 h-0.5 bg-secondary rounded-full" />
+            <span
+              aria-hidden
+              className={`hidden sm:inline-block w-5 h-0.5 rounded-full ${
+                i < idx ? "bg-success" : "bg-outline-variant"
+              }`}
+            />
           ) : null}
         </div>
       ))}
@@ -66,7 +71,7 @@ function Stepper({ stage }: { stage: Stage }) {
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [orgId, setOrgId] = useState<string | null>(null);
-  const [stage, setStage] = useState<Stage>("cart");
+  const [stage, setStage] = useState<Stage>("details");
   const [error, setError] = useState<string | null>(null);
   const [dbOrder, setDbOrder] = useState<DbOrder | null>(null);
   const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
@@ -74,25 +79,28 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    // Sync external stores (localStorage + fetch) into state from callbacks;
-    // the cart read is deferred a tick so the effect body stays a pure sync.
-    const raf = requestAnimationFrame(() => setCart(readCart()));
+    const sync = () => setCart(readCart());
+    const raf = requestAnimationFrame(sync);
+    window.addEventListener("ch-cart-changed", sync);
     fetch("/api/store-config")
       .then((r) => r.json())
       .then((cfg: { org_id?: string; paypal_client_id?: string | null }) => {
         if (cfg.org_id) setOrgId(cfg.org_id);
         if (cfg.paypal_client_id) setPaypalClientId(cfg.paypal_client_id);
       })
-      .catch(() => setError("Store unavailable."));
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only store sync
+      .catch(() => setError("Store configuration unavailable."));
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("ch-cart-changed", sync);
+    };
   }, []);
 
+  const itemCount = cart.reduce((s, l) => s + l.qty, 0);
   const total = cart.reduce((s, l) => s + l.qty * l.price_cents, 0);
-  const fee = Math.round((total * 29) / 1000) + 50;
+  const fee = total > 0 ? Math.round((total * 29) / 1000) + 50 : 0;
+  const grandTotal = total + fee;
 
   async function placeOrderAndPay(): Promise<string> {
-    // 1. create DB order (server validates stock/price)
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -113,7 +121,7 @@ export default function CheckoutPage() {
     }
     const order = json.order as DbOrder;
     setDbOrder(order);
-    // 2. create PayPal order from DB total
+
     const pp = await fetch("/api/paypal/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -156,221 +164,386 @@ export default function CheckoutPage() {
       }
     },
     onError: () => {
-      setError("PayPal error — try again.");
+      setError("PayPal error — please verify your details and try again.");
       setStage("error");
     },
   };
 
   if (stage === "done") {
     return (
-      <main className="mx-auto w-full max-w-xl px-4 py-16 text-center">
-        <span className="material-symbols-outlined text-[48px] text-success">
-          check_circle
-        </span>
-        <h1 className="text-headline-lg text-on-surface mt-2">
-          Payment complete
-        </h1>
-        <p className="text-body-md text-on-surface-variant mt-2">
-          Order {dbOrder?.order_number} is confirmed. A receipt is on its way to{" "}
-          {email}.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <Link
-            href="/demo"
-            className="focus-aura bg-primary text-white dark:text-[#00201c] inline-flex h-11 items-center rounded-full px-6 text-label-lg font-semibold"
-          >
-            Continue shopping
-          </Link>
+      <main className="mx-auto w-full max-w-2xl px-4 py-16">
+        <div className="rounded-3xl border border-outline-variant/60 bg-surface-lowest p-8 sm:p-10 text-center shadow-lg space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-success-container text-success flex items-center justify-center mx-auto">
+            <span className="material-symbols-outlined text-[36px]">
+              check_circle
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            <Badge tone="success" icon="verified">
+              PayPal Orders v2 Captured
+            </Badge>
+            <h1 className="text-display font-bold text-on-surface mt-2">
+              Order Confirmed &amp; Passes Issued
+            </h1>
+            <p className="text-body-lg text-on-surface-variant">
+              Order{" "}
+              <strong className="font-mono text-primary">
+                {dbOrder?.order_number}
+              </strong>{" "}
+              is settled. A confirmation receipt and QR entry passes have been
+              recorded for <strong className="text-on-surface">{email}</strong>.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <Link
+              href="/demo"
+              className="focus-aura bg-primary text-on-primary inline-flex h-11 items-center gap-2 rounded-full px-6 text-label-lg font-semibold hover:opacity-90 transition-all"
+            >
+              <span>Return to Storefront</span>
+              <span className="material-symbols-outlined text-[17px]">
+                arrow_forward
+              </span>
+            </Link>
+            <Link
+              href="/dashboard/orders"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-outline-variant/60 bg-surface-low px-6 text-label-lg font-semibold text-on-surface hover:bg-surface-container transition-all"
+            >
+              <span>Inspect in Orders AG Grid</span>
+            </Link>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-space-xl">
-      <div className="flex flex-col gap-space-md">
-        <div>
-          <h1 className="font-headline-lg text-headline-lg text-primary">
-            Checkout
+    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Checkout Header + Stepper */}
+      <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        <div className="space-y-1">
+          <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
+            <Link href="/demo" className="hover:text-primary transition-colors">
+              Storefront
+            </Link>
+            <span>/</span>
+            <Link
+              href="/demo/cart"
+              className="hover:text-primary transition-colors"
+            >
+              Shopping Bag
+            </Link>
+            <span>/</span>
+            <span className="text-on-surface font-semibold">Checkout</span>
+          </nav>
+          <h1 className="text-display font-bold text-on-surface tracking-tight">
+            Checkout &amp; Escrow Settlement
           </h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            Guest checkout — pay with PayPal.
+          <p className="text-body-md text-on-surface-variant">
+            Guest checkout powered by atomic Postgres stock verification and
+            PayPal Orders v2.
           </p>
         </div>
+
         <Stepper stage={stage} />
       </div>
 
       {cart.length === 0 ? (
-        <div className="mt-space-xl rounded-xl bg-surface-container-low p-10 text-center">
-          <span className="material-symbols-outlined text-[32px] text-on-surface-variant">
-            shopping_bag
-          </span>
-          <p className="font-headline-sm text-headline-sm text-on-surface mt-2">
-            Your cart is empty
+        <div className="rounded-3xl border border-outline-variant/50 bg-surface-lowest p-12 text-center space-y-4 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-surface-low border border-outline-variant/40 flex items-center justify-center mx-auto text-on-surface-variant">
+            <span className="material-symbols-outlined text-[28px]">
+              shopping_bag
+            </span>
+          </div>
+          <h2 className="text-headline-md font-bold text-on-surface">
+            Your checkout bag is empty
+          </h2>
+          <p className="text-body-md text-on-surface-variant max-w-md mx-auto">
+            Add event passes or official society merchandise before proceeding
+            to payment settlement.
           </p>
-          <Link
-            href="/demo"
-            className="text-primary mt-3 inline-block font-label-lg text-label-lg font-semibold"
-          >
-            Browse the store →
-          </Link>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <Link
+              href="/demo/events"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-primary px-6 text-label-lg font-semibold text-on-primary"
+            >
+              Browse Events &amp; Passes
+            </Link>
+            <Link
+              href="/demo/shop"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-lowest px-6 text-label-lg font-semibold text-on-surface"
+            >
+              Browse Merch Shop
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="mt-6 grid gap-6 md:grid-cols-5">
-          {/* Cart lines */}
-          <section className="md:col-span-3 space-y-3">
-            {cart.map((l, i) => (
-              <div
-                key={`${l.product_id ?? l.tier_id}-${i}`}
-                className="flex items-center justify-between rounded-lg border border-outline-variant bg-surface-lowest px-4 py-3"
-              >
-                <div>
-                  <p className="text-body-md text-on-surface">{l.name}</p>
-                  <p className="text-body-sm text-on-surface-variant">
-                    {l.qty} × {formatMoney(l.price_cents)}
-                  </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left 7 Cols: Buyer Details + Bag Items Review */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Step 1: Student / Buyer Information */}
+            <section className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-outline-variant/40 pb-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center text-label-md font-bold">
+                    1
+                  </div>
+                  <div>
+                    <h2 className="text-headline-sm font-bold text-on-surface">
+                      Student &amp; Attendee Details
+                    </h2>
+                    <p className="text-body-sm text-on-surface-variant">
+                      Used for QR pass registration and official order receipts
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-headline-sm text-on-surface">
-                    {formatMoney(l.qty * l.price_cents)}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${l.name}`}
-                    onClick={() => {
-                      removeFromCart(i);
-                      setCart(readCart());
-                    }}
-                    className="text-on-surface-variant hover:text-error"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      delete
-                    </span>
-                  </button>
-                </div>
+                <Badge tone="teal">Guest Allowed</Badge>
               </div>
-            ))}
-          </section>
 
-          {/* Summary + pay */}
-          <section className="md:col-span-2">
-            <div className="rounded-xl bg-surface-container-lowest shadow-sm p-space-lg">
-              <h2 className="font-headline-sm text-headline-sm text-on-surface">
-                Summary
-              </h2>
-              <dl className="mt-3 space-y-2 text-body-md">
-                <div className="flex justify-between text-on-surface-variant">
-                  <dt>Subtotal</dt>
-                  <dd>{formatMoney(total)}</dd>
-                </div>
-                <div className="flex justify-between text-on-surface-variant">
-                  <dt>Fee (2.9% + RM 0.50)</dt>
-                  <dd>{formatMoney(fee)}</dd>
-                </div>
-                <div className="flex justify-between border-t border-outline-variant pt-2 text-headline-sm font-semibold text-on-surface">
-                  <dt>Total</dt>
-                  <dd>{formatMoney(total + fee)}</dd>
-                </div>
-              </dl>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-label-md font-semibold text-on-surface">
+                    Full Name
+                  </span>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Aminah Hassan"
+                    required
+                    className="focus-aura mt-1.5 h-11 w-full rounded-xl border border-outline-variant/70 bg-surface-low px-4 text-body-md text-on-surface outline-none placeholder:text-on-surface-variant focus:bg-surface-lowest"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-label-md font-semibold text-on-surface">
+                    Campus or Personal Email
+                  </span>
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
+                    placeholder="aminah.h@campus.edu.my"
+                    required
+                    className="focus-aura mt-1.5 h-11 w-full rounded-xl border border-outline-variant/70 bg-surface-low px-4 text-body-md text-on-surface outline-none placeholder:text-on-surface-variant focus:bg-surface-lowest"
+                  />
+                </label>
+              </div>
+            </section>
 
-              {stage === "error" ? (
-                <p
-                  role="alert"
-                  className="mt-3 rounded-lg bg-error-container px-3 py-2 text-body-sm text-error"
+            {/* Step 2: Order Items & Quantity Adjustments */}
+            <section className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-outline-variant/40 pb-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center text-label-md font-bold">
+                    2
+                  </div>
+                  <div>
+                    <h2 className="text-headline-sm font-bold text-on-surface">
+                      Order Items ({itemCount} units)
+                    </h2>
+                    <p className="text-body-sm text-on-surface-variant">
+                      Adjust quantities or remove items before locking stock
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/demo/cart"
+                  className="text-label-sm font-semibold text-secondary hover:underline"
                 >
-                  {error}
-                  <button
-                    type="button"
-                    className="ml-2 underline"
-                    onClick={() => setStage("details")}
-                  >
-                    Retry
-                  </button>
-                </p>
-              ) : null}
+                  Edit in Full Bag →
+                </Link>
+              </div>
 
-              {paypalClientId && orgId ? (
-                <div className="mt-4">
-                  {stage !== "paying" ? (
-                    <div className="space-y-3">
-                      <label className="block">
-                        <span className="text-label-md text-on-surface">
-                          Name
-                        </span>
-                        <input
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          required
-                          className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none"
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="text-label-md text-on-surface">
-                          Email
-                        </span>
-                        <input
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          type="email"
-                          required
-                          className="focus-aura mt-1 h-11 w-full rounded-lg border border-outline-variant bg-surface-low px-4 text-body-md text-on-surface outline-none"
-                        />
-                      </label>
-                    </div>
-                  ) : null}
-                  <div className={stage === "paying" ? "" : "mt-4"}>
-                    <PayPalScriptProvider
-                      options={{
-                        clientId: paypalClientId,
-                        currency: "MYR",
-                        intent: "capture",
-                      }}
+              <div className="divide-y divide-outline-variant/40">
+                {cart.map((l, i) => {
+                  const isTicket = Boolean(l.tier_id);
+                  return (
+                    <div
+                      key={`${l.product_id ?? l.tier_id}-${i}`}
+                      className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                     >
-                      <PayPalButtons
-                        {...buttonProps}
-                        disabled={stage !== "paying"}
-                      />
-                      {!name || !email ? (
-                        <p className="text-body-sm text-on-surface-variant mt-2 text-center">
-                          Enter your name and email to enable PayPal.
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Badge tone={isTicket ? "teal" : "primary"}>
+                            {isTicket ? "Event Pass" : "Merch SKU"}
+                          </Badge>
+                          <p className="text-body-md font-semibold text-on-surface truncate">
+                            {l.name}
+                          </p>
+                        </div>
+                        <p className="text-body-sm text-on-surface-variant mt-0.5 tabular-nums">
+                          Unit price: {formatMoney(l.price_cents)}
                         </p>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          className="mt-3 h-11 w-full rounded-full text-label-lg"
-                          onPress={() => setStage("paying")}
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 tabular-nums">
+                        <div className="inline-flex items-center rounded-lg border border-outline-variant/60 bg-surface-low">
+                          <button
+                            type="button"
+                            onClick={() => updateCartQty(i, l.qty - 1)}
+                            aria-label={`Decrease ${l.name}`}
+                            className="h-8 w-8 flex items-center justify-center text-on-surface hover:bg-surface-container font-bold"
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center text-body-sm font-bold text-on-surface">
+                            {l.qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateCartQty(i, l.qty + 1)}
+                            aria-label={`Increase ${l.name}`}
+                            className="h-8 w-8 flex items-center justify-center text-on-surface hover:bg-surface-container font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <span className="text-body-md font-bold text-primary min-w-[85px] text-right">
+                          {formatMoney(l.qty * l.price_cents)}
+                        </span>
+
+                        <button
+                          type="button"
+                          aria-label={`Remove ${l.name}`}
+                          onClick={() => removeFromCart(i)}
+                          className="p-1.5 rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-colors"
                         >
-                          Continue to PayPal
-                        </Button>
-                      )}
-                    </PayPalScriptProvider>
-                  </div>
-                  {/* Supported gateways — display-only branding; PayPal button above is the real flow */}
-                  <div
-                    className="mt-4 flex items-center justify-center gap-2"
-                    aria-label="Supported payment methods"
-                  >
-                    {["PayPal", "FPX", "Visa", "Mastercard"].map((g) => (
-                      <span
-                        key={g}
-                        className="rounded-md bg-surface-container-low px-2 py-1 font-label-sm text-[10px] font-bold tracking-wide text-on-surface-variant"
-                      >
-                        {g}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4 rounded-lg bg-warning-container px-3 py-3 text-center">
-                  <Badge tone="warning">Checkout disabled</Badge>
-                  <p className="text-body-sm text-warning mt-1">
-                    PayPal keys are not configured. Set PAYPAL_CLIENT_ID and
-                    NEXT_PUBLIC_PAYPAL_CLIENT_ID — see README.
-                  </p>
-                </div>
-              )}
+                          <span className="material-symbols-outlined text-[17px]">
+                            delete
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+
+          {/* Right 5 Cols: Sticky Receipt & PayPal Orders v2 Settlement */}
+          <aside className="lg:col-span-5 lg:sticky lg:top-24 rounded-2xl border border-outline-variant/60 bg-surface-lowest p-6 shadow-md space-y-5">
+            <div className="flex items-center justify-between border-b border-outline-variant/40 pb-4">
+              <div>
+                <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
+                  Bursary Escrow Receipt
+                </span>
+                <h2 className="text-headline-md font-bold text-on-surface mt-0.5">
+                  Payment Summary
+                </h2>
+              </div>
+              <Badge tone="primary" icon="lock">
+                MYR
+              </Badge>
             </div>
-          </section>
+
+            <dl className="space-y-2.5 text-body-md tabular-nums">
+              <div className="flex justify-between text-on-surface-variant">
+                <dt>Items Subtotal ({itemCount} units)</dt>
+                <dd className="font-semibold text-on-surface">
+                  {formatMoney(total)}
+                </dd>
+              </div>
+              <div className="flex justify-between text-on-surface-variant">
+                <dt>Platform &amp; PayPal Fee (2.9% + RM 0.50)</dt>
+                <dd className="font-semibold text-on-surface">
+                  {formatMoney(fee)}
+                </dd>
+              </div>
+              <div className="flex justify-between border-t border-outline-variant/50 pt-3 text-headline-md font-bold text-primary">
+                <dt>Total Due</dt>
+                <dd>{formatMoney(grandTotal)}</dd>
+              </div>
+            </dl>
+
+            {stage === "error" && error ? (
+              <div
+                role="alert"
+                className="rounded-xl border border-error/30 bg-error-container px-4 py-3 text-body-sm text-on-error-container flex items-center justify-between gap-2"
+              >
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="font-semibold underline shrink-0"
+                  onClick={() => setStage("details")}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : null}
+
+            {paypalClientId && orgId ? (
+              <div className="space-y-3 pt-1">
+                <PayPalScriptProvider
+                  options={{
+                    clientId: paypalClientId,
+                    currency: "MYR",
+                    intent: "capture",
+                  }}
+                >
+                  <PayPalButtons
+                    {...buttonProps}
+                    disabled={stage !== "paying"}
+                  />
+                  {!name.trim() || !email.trim() ? (
+                    <p className="text-body-sm text-on-surface-variant text-center rounded-xl bg-surface-low p-3 border border-outline-variant/40">
+                      Enter your full name and student email in Step 1 to unlock
+                      PayPal settlement.
+                    </p>
+                  ) : stage !== "paying" ? (
+                    <Button
+                      variant="primary"
+                      className="h-11 w-full rounded-full text-label-lg font-semibold"
+                      onPress={() => setStage("paying")}
+                    >
+                      Confirm Details &amp; Enable PayPal
+                    </Button>
+                  ) : null}
+                </PayPalScriptProvider>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-warning/30 bg-warning-container p-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Badge tone="warning" icon="info">
+                    Sandbox Keys Required
+                  </Badge>
+                  <span className="font-mono text-[11px] text-warning">
+                    PayPal Orders v2
+                  </span>
+                </div>
+                <p className="text-body-sm text-warning leading-relaxed pt-1">
+                  PayPal live/sandbox capture is disabled until{" "}
+                  <code className="font-mono text-xs">PAYPAL_CLIENT_ID</code>{" "}
+                  and{" "}
+                  <code className="font-mono text-xs">
+                    NEXT_PUBLIC_PAYPAL_CLIENT_ID
+                  </code>{" "}
+                  are set in <code className="font-mono text-xs">.env.local</code>.
+                </p>
+              </div>
+            )}
+
+            {/* Supported Gateways & Security */}
+            <div className="pt-3 border-t border-outline-variant/40 space-y-3">
+              <div
+                className="flex flex-wrap items-center justify-center gap-2"
+                aria-label="Supported payment methods"
+              >
+                {["PayPal Orders v2", "FPX Banking", "Visa", "Mastercard"].map(
+                  (g) => (
+                    <span
+                      key={g}
+                      className="rounded-lg border border-outline-variant/50 bg-surface-low px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-on-surface-variant"
+                    >
+                      {g}
+                    </span>
+                  ),
+                )}
+              </div>
+              <p className="text-[11px] text-center text-on-surface-variant">
+                Verified by Postgres <code className="font-mono">place_order</code>{" "}
+                atomic stock lock &amp; HMAC webhook deduplication.
+              </p>
+            </div>
+          </aside>
         </div>
       )}
     </main>

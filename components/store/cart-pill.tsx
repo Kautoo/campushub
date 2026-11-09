@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { CartLine } from "@/components/store/cart";
 import { formatMoney } from "@/lib/money";
 
-/** Floating cart pill; count syncs via ch-cart-changed events. */
+/** Header shopping bag pill; syncs count and subtotal via ch-cart-changed events. */
 export function CartPill({ className }: { className?: string }) {
   const [count, setCount] = useState(0);
   const [total, setTotal] = useState(0);
@@ -25,17 +25,17 @@ export function CartPill({ className }: { className?: string }) {
 
   return (
     <Link
-      href="/demo/checkout"
+      href="/demo/cart"
       className={
-        "focus-aura inline-flex h-10 items-center gap-2 rounded-full border border-outline-variant bg-surface-lowest px-4 text-label-lg text-on-surface shadow-card hover:bg-surface-low " +
+        "focus-aura inline-flex h-10 items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-lowest px-4 text-label-md font-semibold text-on-surface shadow-2xs hover:bg-surface-low transition-colors tabular-nums " +
         (className ?? "")
       }
-      aria-label={`Cart, ${count} items`}
+      aria-label={`Shopping bag, ${count} items`}
     >
-      <span className="material-symbols-outlined text-[20px]">
+      <span className="material-symbols-outlined text-[19px] text-secondary">
         shopping_bag
       </span>
-      {count > 0 ? `${count} · ${formatMoney(total)}` : "Cart"}
+      <span>{count > 0 ? `${count} · ${formatMoney(total)}` : "Bag (0)"}</span>
     </Link>
   );
 }

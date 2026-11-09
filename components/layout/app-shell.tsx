@@ -171,7 +171,7 @@ export function AppShell({
           <div className="flex items-center justify-between px-2 mb-6">
             <Link href="/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-xs">
-                <span className="material-symbols-outlined text-[22px] text-secondary-fixed">
+                <span className="material-symbols-outlined text-[22px]">
                   school
                 </span>
               </div>
@@ -215,7 +215,7 @@ export function AppShell({
                           <span
                             className={cn(
                               "material-symbols-outlined text-[19px]",
-                              active ? "text-secondary-fixed" : "",
+                              active ? "text-on-primary" : "",
                             )}
                           >
                             {item.icon}

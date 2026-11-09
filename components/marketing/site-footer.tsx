@@ -9,27 +9,32 @@ export function SiteFooter() {
   const reduce = useReducedMotion();
   const cols = [
     {
-      title: "Product",
+      title: "Storefront Pages",
       links: [
-        { href: "/demo", label: "Storefront" },
-        { href: "/#story", label: "Product tour" },
-        { href: "/#features", label: "Features" },
-        { href: "/#pricing", label: "Pricing" },
+        { href: "/demo", label: "Storefront Home" },
+        { href: "/demo/events", label: "Events & Passes" },
+        { href: "/demo/shop", label: "Official Merch Shop" },
+        { href: "/demo/societies", label: "Campus Societies" },
+        { href: "/demo/cart", label: "Shopping Bag" },
       ],
     },
     {
-      title: "Company",
+      title: "Organizer SaaS",
       links: [
-        { href: "/login", label: "Sign in" },
-        { href: "/register", label: "Get started" },
-        { href: "/styleguide", label: "Styleguide" },
+        { href: "/dashboard", label: "Executive Console" },
+        { href: "/dashboard/events", label: "Bryntum Scheduler" },
+        { href: "/dashboard/products", label: "AG Grid Ledgers" },
+        { href: "/dashboard/ai-insights", label: "Grounded AI" },
+        { href: "/styleguide", label: "Design System" },
       ],
     },
     {
-      title: "Legal",
+      title: "Account & Legal",
       links: [
-        { href: "/privacy", label: "Privacy policy" },
-        { href: "/tos", label: "Terms of service" },
+        { href: "/login", label: "Organizer Sign In" },
+        { href: "/register", label: "Create Workspace" },
+        { href: "/privacy", label: "Privacy Policy" },
+        { href: "/tos", label: "Terms of Service" },
       ],
     },
   ];

@@ -172,19 +172,20 @@ export function DashboardPreview() {
         ]}
       />
 
-      <div className="grid gap-space-md lg:grid-cols-3">
-        <div className="flex flex-col rounded-xl bg-surface-container-lowest p-space-lg shadow-sm lg:col-span-2">
-          <div className="mb-2 flex items-center justify-between">
+      <div className="grid gap-4 lg:grid-cols-3 items-stretch">
+        <div className="flex flex-col justify-between rounded-2xl border border-outline-variant/45 bg-surface-lowest p-5 shadow-xs lg:col-span-2">
+          <div className="mb-3 flex items-center justify-between border-b border-outline-variant/40 pb-3">
             <div className="flex flex-col">
-              <h2 className="font-headline-sm text-headline-sm text-primary">
-                Revenue — last 30 days
+              <h2 className="text-headline-sm font-bold text-on-surface">
+                Daily Settlement Velocity — Last 30 Days
               </h2>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
-                Refunds RM 330.00 · currency MYR
+              <span className="text-body-sm text-on-surface-variant">
+                PayPal Orders v2 captures · Refunds RM 330.00 · Currency MYR
               </span>
             </div>
+            <Badge tone="teal">Live Seed</Badge>
           </div>
-          <div className="h-56 w-full">
+          <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={CHART}
@@ -246,17 +247,26 @@ export function DashboardPreview() {
         </div>
 
         {/* Lifetime volume tile — same as dashboard */}
-        <div className="relative overflow-hidden rounded-xl bg-primary-container p-6 text-white dark:bg-surface-container dark:text-on-surface">
+        <div className="relative overflow-hidden rounded-2xl border border-outline-variant/45 bg-primary-container p-6 text-on-primary-container flex flex-col justify-between">
           <BorderBeam size={70} duration={9} />
-          <div className="relative">
-            <p className="text-label-lg opacity-80">Lifetime gross volume</p>
-            <p className="text-display-lg mt-2 tracking-tight dark:text-primary">
-              <NumberTicker value={REVENUE_CENTS / 100} decimalPlaces={2} />
+          <div className="relative space-y-2">
+            <Badge tone="teal" icon="verified">
+              Escrow Verified
+            </Badge>
+            <p className="text-label-lg text-white/80 pt-1">
+              Lifetime Gross Volume
             </p>
-            <p className="text-body-sm mt-1 opacity-70">
-              {formatMoney(REVENUE_CENTS)} across {PAID_ORDER_COUNT} paid orders
-              · currency MYR
+            <p className="text-display text-white tracking-tight tabular-nums">
+              RM <NumberTicker value={REVENUE_CENTS / 100} decimalPlaces={2} />
             </p>
+            <p className="text-body-sm text-white/75 leading-relaxed">
+              {formatMoney(REVENUE_CENTS)} settled across {PAID_ORDER_COUNT} paid
+              orders and {TICKETS_SOLD} event passes.
+            </p>
+          </div>
+          <div className="relative mt-4 pt-3 border-t border-white/15 flex items-center justify-between text-label-sm text-white/80 tabular-nums">
+            <span>Platform Fee: 2.9% + RM 0.50</span>
+            <span>MYR</span>
           </div>
         </div>
       </div>

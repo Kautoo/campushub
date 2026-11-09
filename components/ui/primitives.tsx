@@ -25,7 +25,7 @@ export function SectionHeader({
     >
       <div className="flex items-start sm:items-center gap-3.5">
         <div className="w-11 h-11 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-xs ring-1 ring-outline-variant/20">
-          <span className="material-symbols-outlined text-[21px] text-secondary-fixed">
+          <span className="material-symbols-outlined text-[21px]">
             {icon}
           </span>
         </div>

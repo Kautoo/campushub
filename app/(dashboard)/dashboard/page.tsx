@@ -89,11 +89,12 @@ export default async function DashboardOverview({
   }));
 
   const periodRevenueCents = chartData.reduce((s, pt) => s + pt.cents, 0);
+  const dailyAvgCents = Math.round(periodRevenueCents / windowDays);
+  const activeSettlementDays = chartData.filter((pt) => pt.cents > 0).length;
   const peakDayPoint = chartData.reduce(
     (best, pt) => (pt.cents > best.cents ? pt : best),
     { day: "—", cents: 0 },
   );
-
   const greeting = greetingFor(new Date().getHours());
   const topProducts = allProducts.slice(0, 4);
   const upcomingEvents = allEvents
@@ -208,10 +209,10 @@ export default async function DashboardOverview({
       {/* ============================================================
           SECTION 3: REVENUE VELOCITY CHART + GROUNDED AI INTELLIGENCE
           ============================================================ */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left 8 Cols: Sales Performance Chart */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left 8 Cols: Sales Performance Chart — balanced spacing & 4-metric telemetry strip */}
         <div className="lg:col-span-8 flex flex-col justify-between rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
-          <div>
+          <div className="flex flex-col flex-1 justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-outline-variant/40 gap-3">
               <div>
                 <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
@@ -221,29 +222,54 @@ export default async function DashboardOverview({
                   Daily Settlement Velocity ({windowDays}d Window)
                 </h2>
               </div>
-
-              <div className="flex items-center gap-3 tabular-nums">
-                <div className="rounded-lg bg-surface-low px-3 py-1.5 border border-outline-variant/40">
-                  <span className="text-[10px] uppercase tracking-wider text-on-surface-variant block">
-                    Window Volume
-                  </span>
-                  <span className="text-label-md font-bold text-primary">
-                    {formatMoney(periodRevenueCents)}
-                  </span>
-                </div>
-                <div className="rounded-lg bg-surface-low px-3 py-1.5 border border-outline-variant/40">
-                  <span className="text-[10px] uppercase tracking-wider text-on-surface-variant block">
-                    Peak Day ({peakDayPoint.day})
-                  </span>
-                  <span className="text-label-md font-bold text-secondary">
-                    {formatMoney(peakDayPoint.cents)}
-                  </span>
-                </div>
+              <div className="flex items-center gap-2">
+                <Badge tone="teal" icon="trending_up">
+                  MYR Settlement
+                </Badge>
               </div>
             </div>
 
-            <div className="mt-5 w-full">
-              <RevenueChart data={chartData} />
+            {/* 4-Column Chart Summary Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 tabular-nums">
+              <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant block">
+                  Window Volume
+                </span>
+                <span className="text-headline-sm font-bold text-primary mt-0.5 block">
+                  {formatMoney(periodRevenueCents)}
+                </span>
+              </div>
+              <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant block">
+                  Daily Average
+                </span>
+                <span className="text-headline-sm font-bold text-on-surface mt-0.5 block">
+                  {formatMoney(dailyAvgCents)}
+                </span>
+              </div>
+              <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant block">
+                  Peak Day ({peakDayPoint.day})
+                </span>
+                <span className="text-headline-sm font-bold text-secondary mt-0.5 block">
+                  {formatMoney(peakDayPoint.cents)}
+                </span>
+              </div>
+              <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
+                <span className="text-[10.5px] font-semibold uppercase tracking-wider text-on-surface-variant block">
+                  Active Days
+                </span>
+                <span className="text-headline-sm font-bold text-on-surface mt-0.5 block">
+                  {activeSettlementDays} / {windowDays}d
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full pt-1">
+              <RevenueChart
+                data={chartData}
+                className="h-[260px] sm:h-[290px] w-full"
+              />
             </div>
           </div>
 
@@ -272,7 +298,7 @@ export default async function DashboardOverview({
           <div className="relative z-10">
             <div className="flex items-center justify-between pb-4 border-b border-outline-variant/40">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-primary text-secondary-fixed flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-[19px]">
                     auto_awesome
                   </span>

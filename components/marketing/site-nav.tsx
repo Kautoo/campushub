@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 /**
- * Floating pill navbar: centered links, blur backdrop, shadow on scroll.
- * Mobile: hamburger → full-screen menu with staggered link entry.
+ * Floating pill navbar with links to Product Architecture, Storefront Subpages, and Organizer SaaS.
  */
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -19,14 +18,13 @@ export function SiteNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // NOTE: the mobile menu closes via the link onClick handlers below
-  // (setOpen(false)), not an effect — route changes unmount the menu overlay.
-
   const links = [
-    { href: "/#story", label: "Product" },
-    { href: "/#features", label: "Features" },
+    { href: "/#architecture", label: "Architecture" },
+    { href: "/#story", label: "Live Console" },
+    { href: "/#features", label: "Capabilities" },
     { href: "/#pricing", label: "Pricing" },
     { href: "/demo", label: "Storefront" },
+    { href: "/demo/shop", label: "Merch Shop" },
   ];
 
   return (
@@ -34,50 +32,59 @@ export function SiteNav() {
       <header className="fixed inset-x-0 top-0 z-40 px-4 pt-3">
         <nav
           aria-label="Primary"
-          className={`mx-auto flex h-14 max-w-4xl items-center gap-3 rounded-2xl border px-4 transition-all duration-300 ${
+          className={`mx-auto flex h-14 max-w-5xl items-center gap-3 rounded-2xl border px-4 transition-all duration-300 ${
             scrolled
-              ? "border-outline-variant bg-surface-lowest/85 shadow-card backdrop-blur-lg"
-              : "border-transparent bg-transparent"
+              ? "border-outline-variant/70 bg-surface-lowest/90 shadow-lg backdrop-blur-xl"
+              : "border-outline-variant/40 bg-surface-lowest/75 backdrop-blur-md"
           }`}
         >
-          <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub 2.0 home">
-            <span className="bg-primary-container flex h-8 w-8 items-center justify-center rounded-lg text-white transition-transform duration-200 hover:scale-105 dark:bg-primary dark:text-[#00201c]">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5"
+            aria-label="CampusHub 2.0 home"
+          >
+            <span className="bg-primary text-on-primary flex h-8 w-8 items-center justify-center rounded-lg shadow-2xs">
               <span className="material-symbols-outlined text-[18px]">hub</span>
             </span>
-            <span className="text-headline-sm text-on-surface">CampusHub</span>
-            <span className="hidden rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant sm:block">
-              2.0
+            <span className="text-headline-sm font-bold text-on-surface tracking-tight">
+              CampusHub <span className="text-secondary">2.0</span>
             </span>
           </Link>
 
-          <div className="mx-auto hidden items-center gap-1 md:flex">
+          <div className="mx-auto hidden items-center gap-1 lg:flex">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-full px-3.5 py-1.5 text-label-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
+                className="link-draw text-on-surface-variant hover:text-on-surface rounded-lg px-3 py-1.5 text-label-md font-semibold transition-colors"
               >
                 {l.label}
               </Link>
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <ThemeToggle />
             <Link
-              href="/register"
-              className="btn-step bg-primary text-white dark:text-[#00201c] focus-aura hidden h-9 items-center rounded-full px-4 text-label-md font-semibold sm:inline-flex"
+              href="/login"
+              className="text-on-surface-variant hover:text-on-surface hidden rounded-lg px-3 py-1.5 text-label-md font-semibold sm:inline-block"
             >
-              Get started
+              Sign in
+            </Link>
+            <Link
+              href="/dashboard"
+              className="btn-step focus-aura bg-primary text-on-primary inline-flex h-9 items-center rounded-full px-4 text-label-md font-semibold shadow-2xs"
+            >
+              Console
             </Link>
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              aria-expanded={open}
               aria-label={open ? "Close menu" : "Open menu"}
-              className="focus-aura flex h-9 w-9 items-center justify-center rounded-full text-on-surface hover:bg-surface-container md:hidden"
+              aria-expanded={open}
+              className="focus-aura text-on-surface inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-container lg:hidden"
             >
-              <span className="material-symbols-outlined text-[22px]">
+              <span className="material-symbols-outlined text-[20px]">
                 {open ? "close" : "menu"}
               </span>
             </button>
@@ -87,32 +94,32 @@ export function SiteNav() {
 
       {/* Mobile menu */}
       {open ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-background px-6 pt-24 md:hidden">
+        <div className="fixed inset-0 z-50 flex flex-col bg-background px-6 pt-24 lg:hidden">
           <nav aria-label="Mobile" className="flex flex-col gap-2">
-            {links.map((l, i) => (
+            {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="text-headline-md text-on-surface rounded-xl px-4 py-3 hover:bg-surface-container"
-                style={{ animationDelay: `${i * 60}ms` }}
+                className="text-headline-md text-on-surface rounded-xl px-4 py-3 font-semibold hover:bg-surface-container"
               >
                 {l.label}
               </Link>
             ))}
+            <hr className="my-3 border-outline-variant" />
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="text-headline-md text-on-surface-variant rounded-xl px-4 py-3 hover:bg-surface-container"
+              className="text-headline-sm text-on-surface-variant rounded-xl px-4 py-3"
             >
               Sign in
             </Link>
             <Link
-              href="/register"
+              href="/dashboard"
               onClick={() => setOpen(false)}
-              className="btn-step bg-primary mt-4 inline-flex h-12 items-center justify-center rounded-full text-label-lg font-semibold text-white dark:text-[#00201c]"
+              className="bg-primary text-on-primary mt-2 inline-flex h-12 items-center justify-center rounded-full text-label-lg font-semibold"
             >
-              Get started
+              Open Organizer Console
             </Link>
           </nav>
         </div>

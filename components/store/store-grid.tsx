@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { addToCart } from "@/components/store/cart";
 import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
@@ -40,18 +41,20 @@ const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
 type SortKey = "featured" | "price-asc" | "price-desc" | "stock-desc";
 
 /**
- * Interactive CampusHub 2.0 Merchandise Catalog Grid:
- * Category filtering, instant search, sort selector, SKU badges, and stock health meters.
+ * Interactive CampusHub 2.0 Merchandise Catalog Grid with links to /demo/products/[slug] PDPs.
  */
 export function StoreGrid({
   products,
   currency,
+  initialCategory = "all",
 }: {
   products: StoreProduct[];
   currency: string;
+  initialCategory?: string;
 }) {
   const [addedId, setAddedId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<SortKey>("featured");
 
@@ -139,7 +142,7 @@ export function StoreGrid({
                 <span
                   className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums ${
                     active
-                      ? "bg-white/20 text-on-primary"
+                      ? "bg-black/15 text-on-primary"
                       : "bg-surface-container-high text-on-surface-variant"
                   }`}
                 >
@@ -194,10 +197,13 @@ export function StoreGrid({
           return (
             <article
               key={p.id}
-              className="group rounded-2xl bg-surface-lowest border border-outline-variant/45 hover:border-secondary/45 shadow-xs hover:shadow-md transition-all flex flex-col overflow-hidden"
+              className="group rounded-2xl bg-surface-lowest border border-outline-variant/50 hover:border-secondary/50 shadow-xs hover:shadow-md transition-all flex flex-col overflow-hidden"
             >
-              {/* Image Container */}
-              <div className="relative h-52 w-full overflow-hidden bg-surface-low border-b border-outline-variant/30">
+              {/* Image Container linking to PDP */}
+              <Link
+                href={`/demo/products/${p.slug}`}
+                className="relative h-52 w-full overflow-hidden bg-surface-low border-b border-outline-variant/35 block"
+              >
                 <div
                   className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
                   style={{ backgroundImage: `url('${imageUrl}')` }}
@@ -214,7 +220,7 @@ export function StoreGrid({
                         : `${p.stock} in stock`}
                   </Badge>
                 </div>
-              </div>
+              </Link>
 
               {/* Content Body */}
               <div className="p-4 flex-1 flex flex-col justify-between gap-4">
@@ -223,13 +229,18 @@ export function StoreGrid({
                     <span className="font-mono text-[11px] text-on-surface-variant">
                       {p.sku ?? p.slug.toUpperCase()}
                     </span>
-                    <span className="text-[11px] text-secondary font-semibold">
-                      Official Licensed
-                    </span>
+                    <Link
+                      href={`/demo/products/${p.slug}`}
+                      className="text-[11px] text-secondary font-semibold hover:underline"
+                    >
+                      Details →
+                    </Link>
                   </div>
-                  <h3 className="text-headline-sm font-bold text-on-surface group-hover:text-primary transition-colors mt-1">
-                    {p.name}
-                  </h3>
+                  <Link href={`/demo/products/${p.slug}`}>
+                    <h3 className="text-headline-sm font-bold text-on-surface group-hover:text-secondary transition-colors mt-1">
+                      {p.name}
+                    </h3>
+                  </Link>
                   {p.description ? (
                     <p className="text-body-sm text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">
                       {p.description}
@@ -238,7 +249,7 @@ export function StoreGrid({
                 </div>
 
                 {/* Price & Action Button */}
-                <div className="pt-3 border-t border-outline-variant/35 flex items-center justify-between gap-2">
+                <div className="pt-3 border-t border-outline-variant/40 flex items-center justify-between gap-2">
                   <div className="tabular-nums">
                     <span className="text-[10.5px] uppercase tracking-wider text-on-surface-variant block">
                       Member Price
@@ -251,7 +262,7 @@ export function StoreGrid({
                     type="button"
                     disabled={isOut}
                     onClick={() => add(p)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:bg-primary-container text-on-primary text-label-md font-semibold transition-all shadow-2xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:bg-primary-container hover:text-white text-on-primary text-label-md font-semibold transition-all shadow-2xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {addedId === p.id ? "check" : "add_shopping_cart"}
@@ -261,7 +272,7 @@ export function StoreGrid({
                         ? "Added"
                         : isOut
                           ? "Sold Out"
-                          : "Add to Cart"}
+                          : "Add"}
                     </span>
                   </button>
                 </div>

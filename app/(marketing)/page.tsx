@@ -19,151 +19,375 @@ import { IconTile } from "@/components/ui/icon";
 import { SectionHeader } from "@/components/ui/primitives";
 
 const HERO_ICONS = [
-  { name: "PayPal", icon: "account_balance_wallet" },
+  { name: "PayPal Orders v2", icon: "account_balance_wallet" },
   { name: "Render Postgres", icon: "database" },
-  { name: "AI SDK", icon: "auto_awesome" },
-  { name: "AG Grid", icon: "table_chart" },
-  { name: "Bryntum", icon: "calendar_month" },
-  { name: "Next.js", icon: "code_blocks" },
+  { name: "Bryntum Scheduler 8.0", icon: "view_timeline" },
+  { name: "AG Grid Community 36", icon: "table_chart" },
+  { name: "Grounded AI SDK", icon: "auto_awesome" },
+  { name: "Next.js 16 App Router", icon: "code_blocks" },
+];
+
+const ARCHITECTURE_PILLARS = [
+  {
+    eyebrow: "01 · CONSUMER E-COMMERCE",
+    title: "Multi-Page Student Storefront & Ticketing",
+    badge: "Storefront 2.0",
+    tone: "teal" as const,
+    icon: "storefront",
+    description:
+      "Purpose-built e-commerce experience with dedicated pages for Campus Events, Pass Tiers, Official Merch Shop, Product Detail Pages (PDPs), Shopping Bag, and PayPal Guest Checkout.",
+    specs: [
+      "Dedicated /demo/events/[slug] & /demo/products/[slug] pages",
+      "Persistent guest shopping bag combining passes & apparel",
+      "Atomic stock & seat reservation via Postgres place_order RPC",
+    ],
+    primaryHref: "/demo",
+    primaryLabel: "Open Storefront Home",
+    secondaryHref: "/demo/shop",
+    secondaryLabel: "Merch Shop",
+  },
+  {
+    eyebrow: "02 · TEMPORAL SCHEDULING ENGINE",
+    title: "Bryntum Scheduler 8.0 Timeline & Calendar",
+    badge: "Bryntum 8.0",
+    tone: "primary" as const,
+    icon: "view_timeline",
+    description:
+      "Native CampusHub timeline and vertical calendar workspace for managing university lecture halls, labs, and society initiatives without spreadsheet conflicts.",
+    specs: [
+      "Group tracks dynamically by Campus Venue, Program Track, or Event",
+      "Switch between Day, Week, Multi-Week & Semester horizon presets",
+      "Drag-and-drop rescheduling, duration resize & native inspector drawer",
+    ],
+    primaryHref: "/dashboard/events",
+    primaryLabel: "Launch Event Scheduler",
+    secondaryHref: "/demo/events",
+    secondaryLabel: "Public Events",
+  },
+  {
+    eyebrow: "03 · ENTERPRISE DATA TABLES",
+    title: "AG Grid Community 36 Operational Ledgers",
+    badge: "AG Grid 36",
+    tone: "success" as const,
+    icon: "table_chart",
+    description:
+      "Standardized high-density data management tables across all 6 operational domains with instant column filtering, status filter pills, density controls, and CSV export.",
+    specs: [
+      "Events, Registrations, Products, Orders, Transactions & Members",
+      "Real-time quick-filter search & semantic status count chips",
+      "Tabular numerals, stock health meters & one-click CSV audit export",
+    ],
+    primaryHref: "/dashboard/orders",
+    primaryLabel: "Inspect Orders AG Grid",
+    secondaryHref: "/dashboard/products",
+    secondaryLabel: "SKU Catalog",
+  },
+  {
+    eyebrow: "04 · FINANCIAL ESCROW & AI",
+    title: "PayPal Orders v2 & Zero-PII Grounded AI",
+    badge: "Verified Escrow",
+    tone: "teal" as const,
+    icon: "account_balance_wallet",
+    description:
+      "End-to-end payment integrity paired with an autonomous commerce analyst that answers organizer questions strictly from live Postgres aggregates.",
+    specs: [
+      "Server-side PayPal Orders v2 capture & HMAC webhook verification",
+      "24-hour HMAC-signed CSV report downloads stored in Postgres",
+      "Zero-hallucination AI briefs & streaming chat grounded in live metrics",
+    ],
+    primaryHref: "/dashboard/ai-insights",
+    primaryLabel: "Open AI Workspace",
+    secondaryHref: "/dashboard/transactions",
+    secondaryLabel: "Webhook Ledger",
+  },
 ];
 
 const STORY_ACTS = [
   {
-    id: "launch",
-    eyebrow: "Launch",
-    title: "Go live in minutes, not weeks",
-    body: "Create the event, set tiered pricing, and publish to your storefront before the meeting ends.",
+    id: "act-launch",
+    eyebrow: "Act I · Venue Scheduling & Pass Launch",
+    title: "Schedule venues in Bryntum, publish tiers in seconds",
+    body: "Allocate Main Hall or CS Labs on the interactive Bryntum timeline, configure Student, Standard, and VIP pass tiers with perks, and go live on the storefront immediately.",
     bullets: [
-      "Tiered tickets with capacity control",
-      "Perk lists and per-order limits",
-      "One toggle from draft to published",
+      "Multi-venue conflict visibility across Day, Week, and Semester views",
+      "Drag-and-drop date adjustments persisted directly to Postgres",
+      "Instant QR token generation for every confirmed attendee registration",
     ],
-    icon: "rocket_launch",
+    icon: "confirmation_number",
   },
   {
-    id: "sell",
-    eyebrow: "Sell",
-    title: "Every sale, verified by PayPal",
-    body: "Guest checkout converts browsers at the booth and on their phones — stock stays honest because the server decides.",
+    id: "act-orders",
+    eyebrow: "Act II · Multi-Page Checkout & AG Grid Fulfillment",
+    title: "Every ringgit captured, verified, and reconciled",
+    body: "Students shop event passes and society merchandise in a single cart. PayPal Orders v2 captures funds while organizers track fulfillment and webhook status in AG Grid.",
     bullets: [
-      "Atomic stock — no oversell, ever",
-      "Capture verified server-side",
-      "Idempotent webhooks, refund tracking",
+      "Atomic place_order Postgres function prevents overselling on drops",
+      "Cryptographic PayPal webhook verification with idempotent deduplication",
+      "Slide-over order inspector and one-click CSV exports for bursary audits",
     ],
-    icon: "storefront",
+    icon: "receipt_long",
   },
   {
-    id: "insight",
-    eyebrow: "Understand",
-    title: "AI that only knows your numbers",
-    body: "Weekly summaries, anomaly scans, and recommendations computed from a live metrics pack — nothing invented.",
+    id: "act-ai",
+    eyebrow: "Act III · Grounded Commerce Intelligence",
+    title: "AI that cites your real ledger — never invented figures",
+    body: "Each AI summary, anomaly scan, and chat turn builds a fresh metrics pack from Postgres (daily revenue, tier sell-through, refunds, low stock) with zero student PII.",
     bullets: [
-      "Streaming “ask your data” chat",
-      "Sell-through and refund anomalies",
-      "Every answer cites real aggregates",
+      "Strict system contract forbids citing numbers outside the live pack",
+      "Proactively flags low-stock SKUs and top-converting ticket tiers",
+      "Auditable insight history persisted per organization",
     ],
     icon: "auto_awesome",
   },
 ];
 
 const FEATURES = [
-  { icon: "event", title: "Events & ticketing", body: "Publish in seconds. Tiered pricing, capacity control, QR check-in." },
-  { icon: "storefront", title: "Campus storefront", body: "Live inventory, guest checkout, session carts. No accounts needed." },
-  { icon: "account_balance_wallet", title: "PayPal payments", body: "Server-side capture, verified transactions, idempotent webhooks." },
-  { icon: "auto_awesome", title: "AI commerce intelligence", body: "Answers computed from your aggregates — never invented numbers." },
-  { icon: "group", title: "Team workspaces", body: "Owner, admin, staff roles with row-level security on every table." },
-  { icon: "description", title: "Reports & exports", body: "One-click CSVs of orders, transactions, registrations — signed URLs." },
+  {
+    icon: "view_timeline",
+    title: "Bryntum Scheduler 8.0",
+    body: "Custom-themed horizontal timelines and vertical calendar schedules with venue grouping, zoom presets, and drag-and-drop rescheduling.",
+  },
+  {
+    icon: "table_chart",
+    title: "AG Grid Community 36",
+    body: "Native CampusHub data tables for Events, Registrations, Products, Orders, Transactions, and Members with quick-filter search and CSV export.",
+  },
+  {
+    icon: "storefront",
+    title: "Multi-Page Storefront",
+    body: "Dedicated consumer routes for Events (/demo/events), Merch Shop (/demo/shop), Product Details, Shopping Bag (/demo/cart), and Checkout.",
+  },
+  {
+    icon: "account_balance_wallet",
+    title: "PayPal Orders v2 & Webhooks",
+    body: "Server-side order total calculation, COMPLETED capture verification, and cryptographic webhook signature validation.",
+  },
+  {
+    icon: "auto_awesome",
+    title: "Grounded AI & Astropods",
+    body: "One-click executive summaries, anomaly scans, streaming data chat, and a deployable Astropods analyst blueprint.",
+  },
+  {
+    icon: "shield_person",
+    title: "Multi-Org RBAC & File Vault",
+    body: "Application-enforced org_id scoping across Owner, Admin, and Staff roles, plus HMAC-signed 24h CSV report archives.",
+  },
 ];
 
 const STATS = [
-  { label: "Revenue tracked", value: 45230, money: true, icon: "payments" },
-  { label: "Members", value: 2847, money: false, icon: "group" },
-  { label: "Tickets sold", value: 1420, money: false, icon: "confirmation_number" },
-  { label: "Events per term", value: 6, money: false, icon: "event" },
+  { label: "Settled seed volume", value: 2924, money: true, icon: "payments" },
+  { label: "Event passes sold", value: 293, icon: "confirmation_number" },
+  { label: "Active merch SKUs", value: 12, icon: "inventory_2" },
+  { label: "Verified orders", value: 34, icon: "receipt_long" },
 ];
 
 const PRICING = [
   {
-    name: "Society",
+    name: "Student Society",
+    tagline: "For clubs, academic societies, and orientation committees.",
     price: "RM 0",
-    per: "/month",
-    tagline: "For small clubs getting started",
-    features: ["1 organization", "Up to 3 events", "20 storefront products", "PayPal checkout", "Community support"],
-    cta: "Start free",
+    per: " / semester + 2.9% + RM 0.50 gateway fee",
     highlight: false,
+    cta: "Start free workspace",
+    features: [
+      "Unlimited published events & pass tiers",
+      "Multi-page storefront & guest cart",
+      "AG Grid Community ledgers & CSV export",
+      "Up to 5 committee members (Owner/Admin/Staff)",
+    ],
   },
   {
-    name: "Campus",
-    price: "RM 99",
-    per: "/month",
-    tagline: "For societies that sell at every event",
-    features: ["Unlimited events", "Unlimited products", "Grounded AI insights", "Scheduling timeline", "CSV reports & exports", "Priority support"],
-    cta: "Start 14-day trial",
+    name: "Council & Hackathon Pro",
+    tagline: "For flagship hackathons, varsity councils, and high-volume merch drops.",
+    price: "RM 149",
+    per: " / semester + PayPal standard rates",
     highlight: true,
+    cta: "Launch Pro workspace",
+    features: [
+      "Everything in Student Society",
+      "Bryntum Scheduler multi-venue timeline & calendar views",
+      "Grounded AI Commerce Intelligence & streaming chat",
+      "Channel3 market discovery & unlimited committee seats",
+    ],
   },
   {
-    name: "Institution",
+    name: "University Bursary Enterprise",
+    tagline: "For student affairs deanships and multi-faculty governance.",
     price: "Custom",
-    per: "",
-    tagline: "For universities and multi-org campuses",
-    features: ["Multi-organization", "SSO & SCIM", "Dedicated infrastructure", "SLA & onboarding", "Custom integrations"],
-    cta: "Talk to us",
+    per: " · institutional SLA",
     highlight: false,
+    cta: "Onboard university",
+    features: [
+      "Dedicated Render Postgres instance & custom domain",
+      "Automated bursary settlement exports & webhook auditing",
+      "Astropods autonomous analyst deployment",
+      "Priority campus onboarding & engineering support",
+    ],
   },
 ];
-
 
 export default function LandingPage() {
   return (
     <div className="bg-background">
       <SiteNav />
 
-      {/* ACT I — centered airy hero over interactive dots + glow bar */}
+      {/* ACT I — Hero */}
       <CenterHero techIcons={HERO_ICONS} />
 
-      {/* Proof band */}
-      <section className="border-y border-outline-variant py-5" aria-label="Built with">
+      {/* Technology Proof Band */}
+      <section
+        className="border-y border-outline-variant/60 bg-surface-lowest py-4"
+        aria-label="Built with"
+      >
         <Marquee pauseOnHover className="[--duration:22s]">
-          {["PayPal", "Render Postgres", "Vercel AI SDK", "AG Grid", "Bryntum Scheduler", "Channel3", "Astropods", "Magic UI"].map(
-            (n) => (
-              <span key={n} className="text-on-surface-variant mx-8 flex items-center gap-2 whitespace-nowrap text-sm font-medium">
-                <span className="material-symbols-outlined text-[14px] text-primary">bolt</span>
-                {n}
+          {[
+            "PayPal Orders v2",
+            "Render Postgres",
+            "Bryntum Scheduler 8.0",
+            "AG Grid Community 36",
+            "Vercel AI SDK",
+            "Channel3 Commerce",
+            "Astropods Agent",
+            "Next.js 16 App Router",
+          ].map((n) => (
+            <span
+              key={n}
+              className="text-on-surface-variant mx-8 flex items-center gap-2 whitespace-nowrap text-sm font-semibold"
+            >
+              <span className="material-symbols-outlined text-[15px] text-secondary">
+                verified
               </span>
-            ),
-          )}
+              {n}
+            </span>
+          ))}
         </Marquee>
       </section>
 
-      {/* ACT II — the product, live */}
-      <section id="story" className="mx-auto max-w-6xl px-4 py-24 lg:px-8">
+      {/* ACT II — Complete Service Architecture Breakdown */}
+      <section
+        id="architecture"
+        className="mx-auto max-w-7xl px-4 py-20 lg:px-8 space-y-10"
+      >
+        <BlurFade>
+          <SectionHeader
+            icon="hub"
+            eyebrow="Service & Technology Architecture"
+            title="Purpose-Built Systems for Every Layer of Campus Commerce"
+            subtitle="Explore how CampusHub 2.0 separates consumer e-commerce, temporal event scheduling (Bryntum), tabular financial management (AG Grid), and grounded AI into one cohesive platform."
+          />
+        </BlurFade>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {ARCHITECTURE_PILLARS.map((pillar, idx) => (
+            <BlurFade key={pillar.title} delay={idx * 0.05}>
+              <article className="h-full rounded-2xl border border-outline-variant/55 bg-surface-lowest p-6 sm:p-7 shadow-xs hover:border-secondary/50 transition-all flex flex-col justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-label-sm font-mono font-bold uppercase tracking-wider text-secondary">
+                      {pillar.eyebrow}
+                    </span>
+                    <Badge tone={pillar.tone} icon={pillar.icon}>
+                      {pillar.badge}
+                    </Badge>
+                  </div>
+
+                  <div>
+                    <h3 className="text-headline-md font-bold text-on-surface">
+                      {pillar.title}
+                    </h3>
+                    <p className="text-body-md text-on-surface-variant mt-2 leading-relaxed">
+                      {pillar.description}
+                    </p>
+                  </div>
+
+                  <ul className="space-y-2 pt-3 border-t border-outline-variant/40">
+                    {pillar.specs.map((spec) => (
+                      <li
+                        key={spec}
+                        className="flex items-start gap-2.5 text-body-sm text-on-surface"
+                      >
+                        <span className="material-symbols-outlined text-[16px] text-secondary shrink-0 mt-0.5">
+                          check_circle
+                        </span>
+                        <span>{spec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-outline-variant/35">
+                  <Link
+                    href={pillar.primaryHref}
+                    className="inline-flex h-10 items-center gap-1.5 rounded-full bg-primary px-4 text-label-md font-semibold text-on-primary hover:opacity-90 transition-all"
+                  >
+                    <span>{pillar.primaryLabel}</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      arrow_forward
+                    </span>
+                  </Link>
+                  <Link
+                    href={pillar.secondaryHref}
+                    className="inline-flex h-10 items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-low px-4 text-label-md font-semibold text-on-surface hover:bg-surface-container transition-colors"
+                  >
+                    <span>{pillar.secondaryLabel}</span>
+                  </Link>
+                </div>
+              </article>
+            </BlurFade>
+          ))}
+        </div>
+      </section>
+
+      <SectionBeat />
+
+      {/* ACT III — Live Interactive Console Preview */}
+      <section id="story" className="mx-auto max-w-7xl px-4 py-20 lg:px-8">
         <BlurFade>
           <SectionHeader
             icon="space_dashboard"
-            title="One dashboard, every ringgit accounted for"
-            subtitle="Orders, tickets, and stock in one view — the actual product UI, not a screenshot."
+            eyebrow="Live Organizer Workspace"
+            title="One Dashboard, Every Ringgit Accounted For"
+            subtitle="Orders, event passes, settlement velocity, and SKU stock in one view — rendered with the actual CampusHub 2.0 components and Tech Society seed data."
+            actions={
+              <Link
+                href="/dashboard"
+                className="inline-flex h-10 items-center gap-1.5 rounded-full bg-primary px-5 text-label-md font-semibold text-on-primary hover:opacity-90 transition-all"
+              >
+                <span>Open Full Console</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  open_in_new
+                </span>
+              </Link>
+            }
           />
         </BlurFade>
         <BlurFade delay={0.1}>
-          <div className="mt-10 w-full rounded-3xl bg-surface-container-lowest shadow-[0_20px_60px_-15px_rgba(0,22,46,0.12)] overflow-hidden ring-1 ring-outline-variant/30">
-            {/* Mock Browser Chrome Top Bar (Stitch Landing 1:1) */}
-            <div className="h-11 bg-surface-container px-5 flex items-center justify-between border-b border-outline-variant/20">
+          <div className="mt-8 w-full rounded-3xl bg-surface-lowest shadow-xl overflow-hidden border border-outline-variant/60">
+            {/* Browser Chrome Top Bar */}
+            <div className="h-12 bg-surface-low px-5 flex items-center justify-between border-b border-outline-variant/50">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-error" />
-                <div className="w-3 h-3 rounded-full bg-amber-400" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="ml-3 font-label-sm text-label-sm text-on-surface-variant font-mono hidden sm:inline">
-                  campushub.edu/workspace/tech-society
+                <div className="w-3 h-3 rounded-full bg-warning" />
+                <div className="w-3 h-3 rounded-full bg-success" />
+                <span className="ml-3 text-label-sm text-on-surface-variant font-mono hidden sm:inline">
+                  campushub.edu/dashboard · Tech Society Workspace
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-[11px] font-medium">
-                  Live Production Pod #04
-                </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <Link
+                  href="/dashboard/events"
+                  className="px-2.5 py-1 rounded-md bg-surface-lowest border border-outline-variant/50 text-on-surface text-[11px] font-semibold hover:border-secondary"
+                >
+                  Bryntum Timeline →
+                </Link>
+                <Link
+                  href="/demo"
+                  className="px-2.5 py-1 rounded-md bg-secondary-container text-on-secondary-container text-[11px] font-semibold"
+                >
+                  Public Storefront →
+                </Link>
               </div>
             </div>
-            {/* Real Dashboard Overview Content */}
             <div className="p-4 sm:p-6 lg:p-8 bg-surface">
               <DashboardPreview />
             </div>
@@ -173,127 +397,163 @@ export default function LandingPage() {
 
       <SectionBeat />
 
-      {/* ACT III — scroll story */}
-      <section className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
+      {/* ACT IV — Scroll Story */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 lg:px-8">
         <BlurFade>
-          <p className="font-mono text-label-sm text-on-surface-variant uppercase tracking-[0.2em]">
-            The story of one event
+          <p className="font-mono text-label-sm text-secondary uppercase tracking-[0.2em] font-bold">
+            End-to-End Operational Flow
           </p>
           <RevealHeading
             text="From launch week to restock day."
             accentWord="restock"
-            className="text-display text-on-surface mt-3 max-w-2xl"
+            className="text-display text-on-surface mt-2 max-w-2xl"
           />
         </BlurFade>
-        <div className="mt-16">
+        <div className="mt-14">
           <StoryActs acts={STORY_ACTS} />
         </div>
       </section>
 
       <SectionBeat />
 
-      {/* ACT IV — bento + stat wall */}
-      <section id="features" className="mx-auto max-w-6xl px-4 pb-24 lg:px-8">
+      {/* ACT V — Feature Bento + Stat Wall */}
+      <section id="features" className="mx-auto max-w-6xl px-4 pb-20 lg:px-8">
         <BlurFade>
-          <RevealHeading text="Everything a society needs" className="text-display text-on-surface" />
-          <p className="text-on-surface-variant mt-3 max-w-lg text-lg">
-            One codebase, one login, one source of truth for events and
-            commerce.
+          <RevealHeading
+            text="Everything a society needs"
+            className="text-display text-on-surface"
+          />
+          <p className="text-on-surface-variant mt-2 max-w-xl text-body-lg">
+            One codebase, one login, one source of truth for campus events,
+            merchandise, and bursary compliance.
           </p>
         </BlurFade>
-        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f, i) => (
             <BlurFade key={f.title} delay={i * 0.04}>
-              <article className="card-lift h-full rounded-xl bg-surface-container-lowest shadow-sm p-6 shadow-card">
+              <article className="card-lift h-full rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 shadow-xs">
                 <IconTile icon={f.icon} tone="teal" />
-                <h3 className="text-on-surface mt-4 text-lg font-semibold">{f.title}</h3>
-                <p className="text-on-surface-variant mt-2 text-sm leading-relaxed">{f.body}</p>
+                <h3 className="text-on-surface mt-4 text-headline-sm font-bold">
+                  {f.title}
+                </h3>
+                <p className="text-on-surface-variant mt-2 text-body-md leading-relaxed">
+                  {f.body}
+                </p>
               </article>
             </BlurFade>
           ))}
         </div>
 
-        <div className="mt-16">
+        <div className="mt-14">
           <StatWall stats={STATS} />
         </div>
         <p className="text-on-surface-variant mt-3 text-center text-xs">
-          Figures from the seeded Tech Society demo workspace.
+          Figures computed from the seeded Tech Society Postgres workspace.
         </p>
       </section>
 
-      {/* ACT V — AI moment */}
-      <section className="relative overflow-hidden border-y border-outline-variant bg-surface-low py-24">
+      {/* ACT VI — Grounded AI Showcase */}
+      <section className="relative overflow-hidden border-y border-outline-variant/60 bg-surface-low py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 lg:grid-cols-2 lg:px-8">
           <div>
             <Badge tone="teal" icon="verified">
-              Grounded AI — no fabricated numbers
+              Grounded AI — Zero Fabricated Numbers
             </Badge>
             <RevealHeading
               text="Ask your data anything."
               accentWord="anything."
               className="text-display text-on-surface mt-4"
             />
-            <p className="text-on-surface-variant mt-4 text-lg leading-relaxed">
-              The AI reads a metrics pack computed live from your database —
-              revenue by day, sell-through per tier, refund rate, stock — and
-              is forbidden from using any number outside it.
+            <p className="text-on-surface-variant mt-4 text-body-lg leading-relaxed">
+              Every AI prompt builds a fresh metrics pack from your Postgres
+              database — daily settlement revenue, sell-through per ticket tier,
+              refund totals, and low-stock SKUs — and is strictly forbidden from
+              inventing figures outside that pack.
             </p>
-            <div className="mt-7">
+            <div className="mt-7 flex flex-wrap items-center gap-3">
               <TryAiButton />
+              <Link
+                href="/dashboard/ai-insights"
+                className="inline-flex h-11 items-center gap-1.5 rounded-full border border-outline-variant/70 bg-surface-lowest px-5 text-label-md font-semibold text-on-surface hover:bg-surface-container transition-colors"
+              >
+                <span>Open AI Workspace</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  arrow_forward
+                </span>
+              </Link>
             </div>
           </div>
           <div className="relative">
             <InsightConversation />
             <div className="mt-4 flex justify-end gap-2">
               <Badge tone="teal">glm-5.3-flash</Badge>
-              <Badge tone="neutral">verified aggregates only</Badge>
+              <Badge tone="neutral">verified Postgres aggregates</Badge>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ACT VI — pricing */}
-      <section id="pricing" className="mx-auto max-w-6xl px-4 py-24 lg:px-8">
+      {/* ACT VII — Transparent Pricing */}
+      <section id="pricing" className="mx-auto max-w-6xl px-4 py-20 lg:px-8">
         <BlurFade>
-          <RevealHeading text="Simple pricing" className="text-display text-on-surface text-center" />
-          <p className="text-on-surface-variant mt-3 text-center text-lg">
-            Start free. Upgrade when your society starts selling.
+          <RevealHeading
+            text="Transparent Campus Pricing"
+            className="text-display text-on-surface text-center"
+          />
+          <p className="text-on-surface-variant mt-2 text-center text-body-lg">
+            Start free for student clubs. Upgrade for multi-venue hackathons and
+            university-wide bursary governance.
           </p>
         </BlurFade>
-        <div className="mt-12 grid gap-4 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {PRICING.map((p, i) => (
             <BlurFade key={p.name} delay={i * 0.06}>
               <article
                 className={
-                  "card-lift relative flex h-full flex-col rounded-2xl border p-7 shadow-card " +
+                  "card-lift relative flex h-full flex-col rounded-2xl border p-7 shadow-xs " +
                   (p.highlight
-                    ? "border-primary bg-surface-lowest ring-1 ring-primary"
-                    : "border-outline-variant bg-surface-lowest")
+                    ? "border-secondary bg-surface-lowest ring-2 ring-secondary/30"
+                    : "border-outline-variant/60 bg-surface-lowest")
                 }
               >
                 {p.highlight ? (
                   <span className="absolute -top-3 left-7">
-                    <Badge tone="primary">Most popular</Badge>
+                    <Badge tone="teal" icon="verified">
+                      Most Popular
+                    </Badge>
                   </span>
                 ) : null}
-                <h3 className="text-headline-md text-on-surface">{p.name}</h3>
-                <p className="text-on-surface-variant mt-1 text-sm">{p.tagline}</p>
-                <p className="mt-5">
-                  <span className="text-display text-on-surface">{p.price}</span>
-                  <span className="text-on-surface-variant text-sm">{p.per}</span>
+                <h3 className="text-headline-md font-bold text-on-surface">
+                  {p.name}
+                </h3>
+                <p className="text-on-surface-variant mt-1 text-body-sm">
+                  {p.tagline}
+                </p>
+                <p className="mt-5 tabular-nums">
+                  <span className="text-display font-bold text-primary">
+                    {p.price}
+                  </span>
+                  <span className="text-on-surface-variant text-body-sm block mt-0.5">
+                    {p.per}
+                  </span>
                 </p>
                 <ul className="mt-6 flex-1 space-y-2.5">
                   {p.features.map((f) => (
-                    <li key={f} className="text-on-surface-variant flex items-start gap-2.5 text-sm">
-                      <span className="material-symbols-outlined mt-0.5 text-[16px] text-success">check</span>
-                      {f}
+                    <li
+                      key={f}
+                      className="text-on-surface flex items-start gap-2.5 text-body-sm"
+                    >
+                      <span className="material-symbols-outlined mt-0.5 text-[16px] text-secondary">
+                        check_circle
+                      </span>
+                      <span>{f}</span>
                     </li>
                   ))}
                 </ul>
                 <Link href="/register" className="mt-7">
                   <Button
                     variant={p.highlight ? "primary" : "outline"}
-                    className="btn-step h-11 w-full rounded-full text-label-lg"
+                    className="btn-step h-11 w-full rounded-full text-label-lg font-semibold"
                   >
                     {p.cta}
                   </Button>
@@ -305,12 +565,7 @@ export default function LandingPage() {
       </section>
 
       {/* FINALE */}
-      <section className="relative overflow-hidden py-28">
-        {/* Neutral base: same background token as the page — clean in both
-            themes. The aurora glows were removed: over the light-mode
-            primary-container wash the teal-on-navy mixes turned muddy. */}
-        {/* Interactive dot field (same component as the hero) with a soft
-            top-center glow sitting behind it */}
+      <section className="relative overflow-hidden py-24 border-t border-outline-variant/50">
         <div aria-hidden className="absolute inset-0">
           <HoverDotsLazy />
         </div>
@@ -330,20 +585,31 @@ export default function LandingPage() {
             accentWord="one"
             className="text-display text-on-surface"
           />
-          <p className="text-on-surface-variant mx-auto mt-4 max-w-xl text-lg leading-relaxed">
-            Connect a Postgres database, add PayPal sandbox keys, and sell at your next
-            event — with every number grounded in your own data.
+          <p className="text-on-surface-variant mx-auto mt-4 max-w-xl text-body-lg leading-relaxed">
+            Explore the multi-page student storefront or sign in to the
+            seeded Tech Society organizer workspace right now.
           </p>
-          <Magnetic className="mt-9">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
+            <Magnetic>
+              <Link
+                href="/register"
+                className="btn-step focus-aura bg-primary text-on-primary inline-flex h-12 items-center rounded-full px-8 text-label-lg font-semibold shadow-lg hover:opacity-90"
+              >
+                Create your workspace
+              </Link>
+            </Magnetic>
             <Link
-              href="/register"
-              className="btn-step focus-aura bg-primary inline-flex h-12 items-center rounded-full px-9 text-label-lg font-semibold text-white shadow-xl shadow-primary/25 dark:text-[#00201c]"
+              href="/demo"
+              className="inline-flex h-12 items-center gap-2 rounded-full border border-outline-variant/70 bg-surface-lowest px-7 text-label-lg font-semibold text-on-surface hover:bg-surface-low transition-colors"
             >
-              Create your workspace
+              <span>Browse Demo Storefront</span>
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_forward
+              </span>
             </Link>
-          </Magnetic>
-          <p className="text-on-surface-variant mt-5 text-sm">
-            Free Society tier · no credit card · demo data included
+          </div>
+          <p className="text-on-surface-variant mt-5 text-body-sm">
+            Free Student Society tier · Seeded demo workspace included
           </p>
         </div>
       </section>

@@ -43,8 +43,22 @@ export function addToCart(line: CartLine): void {
       (l.product_id && l.product_id === line.product_id) ||
       (l.tier_id && l.tier_id === line.tier_id),
   );
-  if (idx >= 0) cart[idx].qty += line.qty;
-  else cart.push(line);
+  if (idx >= 0) {
+    cart[idx].qty = Math.min(20, cart[idx].qty + line.qty);
+  } else {
+    cart.push({ ...line, qty: Math.min(20, Math.max(1, line.qty)) });
+  }
+  writeCart(cart);
+}
+
+export function updateCartQty(index: number, nextQty: number): void {
+  const cart = readCart();
+  if (index < 0 || index >= cart.length) return;
+  if (nextQty <= 0) {
+    cart.splice(index, 1);
+  } else {
+    cart[index].qty = Math.min(20, nextQty);
+  }
   writeCart(cart);
 }
 

@@ -697,7 +697,7 @@ export function EventScheduler({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-outline-variant/40">
         <div className="flex items-start sm:items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-xs">
-            <span className="material-symbols-outlined text-[22px] text-secondary-fixed">
+            <span className="material-symbols-outlined text-[22px]">
               calendar_view_week
             </span>
           </div>
