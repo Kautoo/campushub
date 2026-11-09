@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { AppShell, type ShellNotification } from "@/components/layout/app-shell";
+import type { CurrencyCode } from "@/components/ui/currency-context";
 import { dashboardNav } from "@/lib/nav";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
@@ -22,6 +24,9 @@ export default async function DashboardLayout({
 
   const session = await getSessionContext();
   if (!session) redirect("/login");
+  const cookieStore = await cookies();
+  const initialCurrency =
+    (cookieStore.get("ch-currency")?.value as CurrencyCode) ?? "MYR";
   const [orgList, unreadCount, recentNotifs] = await Promise.all([
     orgs.list(session.orgIds),
     notifications.countUnread(session.orgIds),
@@ -61,6 +66,7 @@ export default async function DashboardLayout({
       unreadCount={unreadCount}
       notifications={shellNotifications}
       nav={dashboardNav}
+      initialCurrency={initialCurrency}
     >
       {children}
     </AppShell>

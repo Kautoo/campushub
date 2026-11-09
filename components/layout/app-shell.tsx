@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { CurrencyProvider, UniversalCurrencySelector } from "@/components/ui/currency-context";
+import { CurrencyProvider, UniversalCurrencySelector, type CurrencyCode } from "@/components/ui/currency-context";
 import { Icon } from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -68,6 +68,7 @@ export function AppShell({
   unreadCount = 0,
   notifications = [],
   nav,
+  initialCurrency = "MYR",
   children,
 }: {
   orgName: string;
@@ -77,6 +78,7 @@ export function AppShell({
   unreadCount?: number;
   notifications?: ShellNotification[];
   nav: NavSection[];
+  initialCurrency?: CurrencyCode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -154,7 +156,7 @@ export function AppShell({
   const currentPageLabel = ROUTE_TITLES[pathname] ?? "Workspace";
 
   return (
-    <CurrencyProvider>
+    <CurrencyProvider initialCurrency={initialCurrency}>
       <div className="min-h-screen bg-background">
       {/* Top Workspace Header */}
       <header

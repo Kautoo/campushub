@@ -13,13 +13,15 @@ export function StorefrontBanner({
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
           <span className="text-on-surface font-semibold">
-            {isCustomOrg ? `Live Storefront: ${orgName}` : "CampusHub Multi-Tenant Showroom"}
+            {isCustomOrg
+              ? `Live Storefront: ${orgName}`
+              : "CampusHub 2.0 Official University Marketplace"}
           </span>
           <span className="text-outline-variant hidden sm:inline">•</span>
           <span className="text-on-surface-variant hidden sm:inline">
             {isCustomOrg
-              ? "Showing real-time events & products for this organization"
-              : "Showing featured Tech Society campus initiatives"}
+              ? "Showing real-time events & merchandise for this society"
+              : "Verified campus events, digital pass ticketing & student club merchandise"}
           </span>
         </div>
 
@@ -29,7 +31,7 @@ export function StorefrontBanner({
               href="/demo"
               className="text-secondary font-semibold hover:underline flex items-center gap-1"
             >
-              <span>Back to Tech Society Demo</span>
+              <span>Back to Main Marketplace</span>
               <span className="material-symbols-outlined text-[13px]">
                 arrow_forward
               </span>
@@ -39,7 +41,7 @@ export function StorefrontBanner({
               href="/demo/societies"
               className="text-secondary font-semibold hover:underline flex items-center gap-1"
             >
-              <span>Explore All Societies &amp; Clubs</span>
+              <span>Browse All Student Clubs &amp; Societies</span>
               <span className="material-symbols-outlined text-[13px]">
                 groups
               </span>

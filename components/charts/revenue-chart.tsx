@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Area,
   AreaChart,
@@ -10,68 +11,85 @@ import {
   YAxis,
 } from "recharts";
 import { formatMoney, formatMoneyCompact } from "@/lib/money";
+import {
+  useCurrency,
+  CURRENCY_CONFIG,
+  type CurrencyCode,
+} from "@/components/ui/currency-context";
 
 export type RevenuePoint = { day: string; cents: number };
 
 /**
  * Kinetic-gradient area chart of daily settlement revenue.
  * Sized and proportioned to fill dashboard analytics cards cleanly without dead space.
+ * Reactively scales Y-axis and tooltips with the active currency context.
  */
 export function RevenueChart({
   data,
-  currency = "MYR",
+  currency,
   className = "h-[280px] sm:h-[310px] w-full",
 }: {
   data: RevenuePoint[];
   currency?: string;
   className?: string;
 }) {
+  const { currency: contextCurrency } = useCurrency();
+  const activeCurrency = ((currency || contextCurrency) as CurrencyCode) ?? "MYR";
+  const meta = CURRENCY_CONFIG[activeCurrency] ?? CURRENCY_CONFIG.MYR;
+  const rate = meta.rateFromMyr;
+
+  // Reactively convert revenue data according to currency exchange rate
+  const convertedData = useMemo(() => {
+    return data.map((pt) => ({
+      day: pt.day,
+      cents: Math.round(pt.cents * rate),
+    }));
+  }, [data, rate]);
+
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={data}
+          data={convertedData}
           margin={{ top: 12, right: 16, bottom: 4, left: 4 }}
         >
           <defs>
             <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="0%"
-                stopColor="var(--st-gradient-a)"
-                stopOpacity={0.42}
+                stopColor="var(--st-secondary)"
+                stopOpacity={0.28}
               />
               <stop
-                offset="65%"
-                stopColor="var(--st-gradient-a)"
-                stopOpacity={0.12}
+                offset="75%"
+                stopColor="var(--st-secondary-container)"
+                stopOpacity={0.08}
               />
               <stop
                 offset="100%"
-                stopColor="var(--st-gradient-a)"
-                stopOpacity={0.01}
+                stopColor="var(--st-surface-lowest)"
+                stopOpacity={0}
               />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
             stroke="var(--st-outline-variant)"
-            strokeOpacity={0.55}
+            opacity={0.35}
             vertical={false}
           />
           <XAxis
             dataKey="day"
             tick={{ fontSize: 11, fill: "var(--st-on-surface-variant)" }}
             tickLine={false}
-            axisLine={{ stroke: "var(--st-outline-variant)", strokeOpacity: 0.6 }}
-            tickMargin={8}
-            minTickGap={20}
+            axisLine={{ stroke: "var(--st-outline-variant)", opacity: 0.5 }}
           />
           <YAxis
-            width={62}
+            width={64}
             tick={{ fontSize: 11, fill: "var(--st-on-surface-variant)" }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v: number) => formatMoneyCompact(v, currency)}
+            tickFormatter={(v: number) => formatMoneyCompact(v, activeCurrency)}
           />
           <Tooltip
             cursor={{
@@ -95,7 +113,7 @@ export function RevenueChart({
               marginBottom: 4,
             }}
             formatter={(value) => [
-              formatMoney(Number(value), currency),
+              formatMoney(Number(value), activeCurrency),
               "Settled Revenue",
             ]}
           />

@@ -6,6 +6,7 @@ import { DataTable, type DataTableFilterPill } from "@/components/grid/data-tabl
 import { Badge, type ChipTone } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
 import { formatMoney } from "@/lib/money";
+import { MoneyDisplay } from "@/components/ui/currency-context";
 import {
   RegistrationActions,
   type RegistrationStatus,
@@ -116,7 +117,7 @@ export function RegistrationsTable({ rows }: { rows: RegistrationRow[] }) {
         valueGetter: (p) => p.data?.amount_cents ?? 0,
         cellRenderer: (p: { value: number }) => (
           <span className="tabular-nums font-bold text-primary">
-            {p.value === 0 ? "Free Pass" : formatMoney(Number(p.value))}
+            {p.value === 0 ? "Free Pass" : <MoneyDisplay cents={Number(p.value)} />}
           </span>
         ),
       },

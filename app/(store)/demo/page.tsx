@@ -66,11 +66,11 @@ export default async function DemoStorefront({
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-low text-on-surface border border-outline-variant/60 w-fit">
                 <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
                 <span className="text-label-sm font-bold tracking-wider uppercase text-secondary">
-                  {org.name} Official Storefront
+                  {org.isCustomOrg ? `${org.name} Official Storefront` : "CampusHub 2.0 Marketplace"}
                 </span>
                 <span className="text-outline-variant">•</span>
                 <span className="text-label-sm text-on-surface-variant">
-                  Student Marketplace
+                  {org.isCustomOrg ? "Student Society Shop" : "Official University Events & Merch"}
                 </span>
               </div>
 
@@ -211,6 +211,8 @@ export default async function DemoStorefront({
                         location_on
                       </span>
                       <span>{flagship?.venue ?? "Main Hall, Block C"}</span>
+                      <span>•</span>
+                      <span>Hosted by {org.name}</span>
                     </div>
                     <h2 className="text-headline-lg font-bold text-white mt-1 leading-tight">
                       {flagship?.title ?? "Innovation Week 2026"}

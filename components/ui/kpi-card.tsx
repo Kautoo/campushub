@@ -1,6 +1,9 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { DeltaBadge } from "./badge";
 import { NumberTicker } from "@/components/magicui";
+import { useCurrency, CURRENCY_CONFIG } from "@/components/ui/currency-context";
 
 /**
  * CampusHub 2.0 Executive KPI Card (aligned with DESIGN.md):
@@ -8,6 +11,7 @@ import { NumberTicker } from "@/components/magicui";
  * - Top: label-md + semantic icon tile
  * - Middle: 28px bold KPI figure with NumberTicker
  * - Footer: DeltaBadge or contextual sublabel + mini sparkline
+ * - Reactively connects to useCurrency() for instantaneous live conversion
  */
 export function KpiCard({
   label,
@@ -28,10 +32,15 @@ export function KpiCard({
   sublabel?: string;
   icon: string;
   tone?: "primary" | "teal" | "neutral" | "success";
-  /** "money" renders cents as RM; "number" renders with thousands separators. */
+  /** "money" renders cents in the active currency; "number" renders with thousands separators. */
   format?: "money" | "number";
   className?: string;
 }) {
+  const { currency } = useCurrency();
+  const meta = CURRENCY_CONFIG[currency] ?? CURRENCY_CONFIG.MYR;
+  const symbol = meta.symbol;
+  const rate = meta.rateFromMyr;
+
   const sparkColor =
     tone === "primary"
       ? "text-primary"
@@ -49,12 +58,27 @@ export function KpiCard({
           : "bg-secondary-container/50 text-on-secondary-container";
 
   const sparkPaths: Record<string, string> = {
-    teal: "M0,20 Q15,18 28,14 T52,15 T74,8 T100,3",
-    primary: "M0,19 Q20,22 40,12 T70,16 T100,6",
-    success: "M0,22 Q25,18 45,10 T75,12 T100,4",
-    neutral: "M0,16 Q20,18 45,14 T70,15 T100,10",
+    teal: "M0 18 Q 20 12, 40 15 T 80 8 T 120 13 T 160 5 T 200 2",
+    primary: "M0 20 Q 25 16, 50 14 T 100 11 T 150 7 T 200 3",
+    success: "M0 19 Q 20 14, 50 15 T 90 9 T 140 6 T 200 2",
+    neutral: "M0 16 Q 30 15, 60 17 T 120 14 T 170 12 T 200 11",
   };
   const path = sparkPaths[tone] ?? sparkPaths.teal;
+
+  const numericValue =
+    format === "money" ? (value * rate) / 100 : value;
+
+  // Reactively replace any static currency prefixes in sublabel
+  const renderedSublabel = sublabel
+    ? sublabel.replace(/RM\s*([\d,]+(?:\.\d+)?)/g, (_, amt) => {
+        const raw = parseFloat(amt.replace(/,/g, ""));
+        const conv = raw * rate;
+        return `${symbol} ${conv.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      })
+    : sublabel;
 
   return (
     <div
@@ -80,9 +104,9 @@ export function KpiCard({
       <div className="mt-3.5 flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between tabular-nums">
           <span className="data-kpi text-primary tracking-tight">
-            {format === "money" ? "RM " : ""}
+            {format === "money" ? `${symbol} ` : ""}
             <NumberTicker
-              value={format === "money" ? value / 100 : value}
+              value={numericValue}
               decimalPlaces={format === "money" ? 2 : 0}
             />
           </span>
@@ -93,12 +117,12 @@ export function KpiCard({
             <>
               <DeltaBadge value={delta} />
               <span className="text-label-sm text-on-surface-variant">
-                {sublabel ?? "vs prior period"}
+                {renderedSublabel ?? "vs prior period"}
               </span>
             </>
-          ) : sublabel ? (
+          ) : renderedSublabel ? (
             <span className="text-body-sm text-on-surface-variant truncate">
-              {sublabel}
+              {renderedSublabel}
             </span>
           ) : (
             <>
@@ -121,20 +145,12 @@ export function KpiCard({
         <svg
           className={cn("w-full h-7", sparkColor)}
           fill="none"
-          viewBox="0 0 100 24"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 200 24"
+          preserveAspectRatio="none"
         >
-          <path
-            d={path}
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="2.2"
-          />
-          <path
-            d={`${path} L100,24 L0,24 Z`}
-            fill="currentColor"
-            fillOpacity="0.08"
-          />
+          <path d={path} />
         </svg>
       </div>
     </div>
@@ -146,13 +162,21 @@ export function StatStrip({
   items,
   className,
 }: {
-  items: React.ComponentProps<typeof KpiCard>[];
+  items: Array<{
+    label: string;
+    value: number;
+    delta?: number;
+    sublabel?: string;
+    icon: string;
+    tone?: "primary" | "teal" | "neutral" | "success";
+    format?: "money" | "number";
+  }>;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
+        "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
         className,
       )}
     >

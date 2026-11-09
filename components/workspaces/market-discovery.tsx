@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatMoney } from "@/lib/money";
+import { MoneyDisplay } from "@/components/ui/currency-context";
 import { Badge } from "@/components/ui/badge";
 
 type Result = {
@@ -147,9 +148,11 @@ export function MarketDiscovery() {
                   </div>
                   <div className="text-right shrink-0 tabular-nums">
                     <span className="text-headline-sm font-bold text-primary block">
-                      {r.price_cents !== null
-                        ? formatMoney(r.price_cents)
-                        : "Market Quote"}
+                      {r.price_cents !== null ? (
+                        <MoneyDisplay cents={r.price_cents} />
+                      ) : (
+                        "Market Quote"
+                      )}
                     </span>
                   </div>
                 </div>

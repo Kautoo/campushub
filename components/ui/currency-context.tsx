@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import { formatMoney, formatMoneyCompact } from "@/lib/money";
 
 export type CurrencyCode = "MYR" | "USD" | "SGD" | "EUR" | "GBP";
@@ -26,16 +27,20 @@ const STORAGE_KEY = "ch-active-currency";
 
 type CurrencyContextValue = {
   currency: CurrencyCode;
-  setCurrency: (next: CurrencyCode) => void;
+  setCurrency: (c: CurrencyCode) => void;
   format: (myrCents: number) => string;
   formatCompact: (myrCents: number) => string;
+  rate: number;
+  symbol: string;
 };
 
 const CurrencyContext = createContext<CurrencyContextValue>({
   currency: "MYR",
   setCurrency: () => {},
-  format: (cents) => formatMoney(cents, "MYR"),
-  formatCompact: (cents) => formatMoneyCompact(cents, "MYR"),
+  format: (c) => formatMoney(c, "MYR"),
+  formatCompact: (c) => formatMoneyCompact(c, "MYR"),
+  rate: 1,
+  symbol: "RM",
 });
 
 export function CurrencyProvider({
@@ -48,19 +53,42 @@ export function CurrencyProvider({
   const [currency, setCurrencyState] = useState<CurrencyCode>(initialCurrency);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as CurrencyCode | null;
-    if (saved && saved in CURRENCY_CONFIG) {
-      const raf = requestAnimationFrame(() => setCurrencyState(saved));
-      return () => cancelAnimationFrame(raf);
+    // Read from localStorage on client mount
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as CurrencyCode | null;
+      if (saved && saved in CURRENCY_CONFIG) {
+        setCurrencyState(saved);
+      }
+    } catch {
+      // localStorage may fail in restricted iframes/browsers
     }
+
+    const handleExternalChange = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY) as CurrencyCode | null;
+        if (saved && saved in CURRENCY_CONFIG) {
+          setCurrencyState(saved);
+        }
+      } catch {}
+    };
+
+    window.addEventListener("ch-currency-changed", handleExternalChange);
+    window.addEventListener("storage", handleExternalChange);
+    return () => {
+      window.removeEventListener("ch-currency-changed", handleExternalChange);
+      window.removeEventListener("storage", handleExternalChange);
+    };
   }, []);
 
   const setCurrency = (next: CurrencyCode) => {
     setCurrencyState(next);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, next);
-      document.cookie = `ch-currency=${next}; path=/; max-age=31536000`;
-      window.dispatchEvent(new Event("ch-currency-changed"));
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+        document.cookie = `ch-currency=${next}; path=/; max-age=31536000; SameSite=Lax`;
+        window.dispatchEvent(new Event("ch-currency-changed"));
+        window.dispatchEvent(new Event("ch-cart-changed"));
+      } catch {}
     }
   };
 
@@ -69,6 +97,8 @@ export function CurrencyProvider({
     return {
       currency,
       setCurrency,
+      rate: meta.rateFromMyr,
+      symbol: meta.symbol,
       format: (myrCents: number) => {
         const converted = Math.round(myrCents * meta.rateFromMyr);
         return formatMoney(converted, currency);
@@ -91,6 +121,27 @@ export function useCurrency() {
   return useContext(CurrencyContext);
 }
 
+/**
+ * Universal reactive money formatter component.
+ * Converts MYR base integer cents into the user's active currency on the fly.
+ */
+export function MoneyDisplay({
+  cents,
+  compact = false,
+  className,
+}: {
+  cents: number;
+  compact?: boolean;
+  className?: string;
+}) {
+  const { format, formatCompact } = useCurrency();
+  return (
+    <span className={className}>
+      {compact ? formatCompact(cents) : format(cents)}
+    </span>
+  );
+}
+
 /** Reactive currency selector for Dashboard header and Storefront. */
 export function UniversalCurrencySelector({
   className,
@@ -98,12 +149,19 @@ export function UniversalCurrencySelector({
   className?: string;
 }) {
   const { currency, setCurrency } = useCurrency();
+  const router = useRouter();
 
   return (
     <div className="relative inline-flex items-center">
       <select
         value={currency}
-        onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+        onChange={(e) => {
+          const next = e.target.value as CurrencyCode;
+          setCurrency(next);
+          try {
+            router.refresh();
+          } catch {}
+        }}
         aria-label="Select active currency"
         className={
           "focus-aura h-9 appearance-none rounded-lg border border-outline-variant/60 bg-surface-low/80 pl-2.5 pr-7 text-label-sm font-bold text-on-surface outline-none hover:bg-surface-container transition-colors cursor-pointer tabular-nums " +
@@ -120,5 +178,18 @@ export function UniversalCurrencySelector({
         expand_more
       </span>
     </div>
+  );
+}
+
+/** Reactive settlement badge displaying the active currency. */
+export function CurrencySettlementBadge() {
+  const { currency } = useCurrency();
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/50 text-on-secondary-container text-label-sm font-semibold border border-secondary/25">
+      <span className="material-symbols-outlined text-[15px] text-secondary">
+        trending_up
+      </span>
+      <span>{currency} Settlement</span>
+    </span>
   );
 }

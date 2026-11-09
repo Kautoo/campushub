@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { StatStrip } from "@/components/ui/kpi-card";
 import { Badge } from "@/components/ui/badge";
+import { MoneyDisplay, CurrencySettlementBadge } from "@/components/ui/currency-context";
 import RevenueChart, { type RevenuePoint } from "@/components/charts/revenue-chart-lazy";
 import { formatMoney } from "@/lib/money";
 import { sinceIso, lastDayKeys } from "@/lib/metrics";
@@ -223,9 +224,7 @@ export default async function DashboardOverview({
                 </h2>
               </div>
               <div className="flex items-center gap-2">
-                <Badge tone="teal" icon="trending_up">
-                  MYR Settlement
-                </Badge>
+                <CurrencySettlementBadge />
               </div>
             </div>
 
@@ -236,7 +235,7 @@ export default async function DashboardOverview({
                   Window Volume
                 </span>
                 <span className="text-headline-sm font-bold text-primary mt-0.5 block">
-                  {formatMoney(periodRevenueCents)}
+                  <MoneyDisplay cents={periodRevenueCents} />
                 </span>
               </div>
               <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
@@ -244,7 +243,7 @@ export default async function DashboardOverview({
                   Daily Average
                 </span>
                 <span className="text-headline-sm font-bold text-on-surface mt-0.5 block">
-                  {formatMoney(dailyAvgCents)}
+                  <MoneyDisplay cents={dailyAvgCents} />
                 </span>
               </div>
               <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
@@ -252,7 +251,7 @@ export default async function DashboardOverview({
                   Peak Day ({peakDayPoint.day})
                 </span>
                 <span className="text-headline-sm font-bold text-secondary mt-0.5 block">
-                  {formatMoney(peakDayPoint.cents)}
+                  <MoneyDisplay cents={peakDayPoint.cents} />
                 </span>
               </div>
               <div className="rounded-xl bg-surface-low/80 px-3.5 py-2.5 border border-outline-variant/40">
@@ -459,10 +458,11 @@ export default async function DashboardOverview({
 
                     <div className="text-right tabular-nums shrink-0">
                       <span className="text-headline-sm font-bold text-primary block">
-                        {formatMoney(p.price_cents)}
+                        <MoneyDisplay cents={p.price_cents} />
                       </span>
-                      <span className="text-[11px] text-on-surface-variant">
-                        Val: {formatMoney(p.stock * p.price_cents)}
+                      <span className="text-[11px] text-on-surface-variant flex items-center justify-end gap-1">
+                        <span>Val:</span>
+                        <MoneyDisplay cents={p.stock * p.price_cents} />
                       </span>
                     </div>
                   </div>
@@ -675,7 +675,7 @@ export default async function DashboardOverview({
                     </td>
 
                     <td className="py-3.5 px-4 text-right tabular-nums font-bold text-primary">
-                      {formatMoney(o.total_cents)}
+                      <MoneyDisplay cents={o.total_cents} />
                     </td>
 
                     <td className="py-3.5 px-4">

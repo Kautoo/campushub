@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/icon";
 import { formatMoney } from "@/lib/money";
+import { MoneyDisplay } from "@/components/ui/currency-context";
 import {
   ProductModal,
   type ProductModalRow,
@@ -120,7 +121,7 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
         maxWidth: 145,
         cellRenderer: (p: { value: number }) => (
           <span className="tabular-nums font-bold text-primary">
-            {formatMoney(Number(p.value))}
+            <MoneyDisplay cents={Number(p.value)} />
           </span>
         ),
       },
