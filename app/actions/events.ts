@@ -40,6 +40,7 @@ export async function createEvent(
       title: parsed.data.title,
       slug: parsed.data.slug,
       description: nullable(parsed.data.description),
+      cover_url: nullable(parsed.data.cover_url),
       venue: nullable(parsed.data.venue),
       category: nullable(parsed.data.category),
       start_at: nullable(parsed.data.start_at),
@@ -50,8 +51,8 @@ export async function createEvent(
   } catch (err) {
     return { error: (err as Error).message };
   }
-  revalidatePath("/dashboard/events");
-  revalidatePath("/dashboard");
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: `Event “${parsed.data.title}” created.` };
 }
 
@@ -77,6 +78,7 @@ export async function updateEvent(
       title: parsed.data.title,
       slug: parsed.data.slug,
       description: nullable(parsed.data.description),
+      cover_url: nullable(parsed.data.cover_url),
       venue: nullable(parsed.data.venue),
       category: nullable(parsed.data.category),
       start_at: nullable(parsed.data.start_at),
@@ -88,8 +90,8 @@ export async function updateEvent(
   } catch (err) {
     return { error: (err as Error).message };
   }
-  revalidatePath("/dashboard/events");
-  revalidatePath("/dashboard");
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: `Event “${parsed.data.title}” saved.` };
 }
 
@@ -111,8 +113,7 @@ export async function setEventStatus(
 
   const updated = await events.updateStatus(id, session.orgIds, parsed.data);
   if (!updated) return { error: "Event not found." };
-
-  revalidatePath("/dashboard/events");
-  revalidatePath("/dashboard");
-  return { ok: parsed.data === "published" ? "Event published." : "Event unpublished." };
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
+  return { ok: parsed.data === "published" ? "Event published to storefront." : "Event moved to draft." };
 }

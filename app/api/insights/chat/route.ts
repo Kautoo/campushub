@@ -1,26 +1,16 @@
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
-import {
-  aiConfigured,
-  aiModel,
-  aiModelId,
-  GROUNDED_SYSTEM_PROMPT,
-} from "@/lib/ai";
+import { runAstropodsAgent, aiModelId } from "@/lib/ai";
 import { buildMetricsPack } from "@/lib/metrics";
-import { streamText } from "ai";
 import { aiInsights } from "@/lib/db/repo";
-
 
 const bodySchema = { message: "string (min 1)" };
 
 /**
- * Streaming "Ask your data" chat. Each turn re-grounds the model with a
- * freshly built metrics pack. Streams plain text chunks.
+ * Streaming "Ask your data" chat powered exclusively by the Astropods Analyst Agent.
+ * Each turn grounds the agent with a freshly built metrics pack.
  */
 export async function POST(request: Request) {
-  if (!aiConfigured()) {
-    return Response.json({ error: "ai_not_configured" }, { status: 503 });
-  }
   const db = getDbSafe();
   if (!db) {
     return Response.json({ error: "unavailable" }, { status: 503 });
@@ -47,20 +37,37 @@ export async function POST(request: Request) {
   const pack = await buildMetricsPack(orgId, 30);
   if (!pack) return Response.json({ error: "pack_failed" }, { status: 500 });
 
-  // Persist the question with the grounding window for audit
+  const reply = await runAstropodsAgent(message, pack as never);
+
+  // Persist the question and answer with the grounding window for audit
   await aiInsights.insert({
     org_id: orgId,
     kind: "chat",
     prompt: message,
+    response: reply,
     model: aiModelId(),
     data_window: { since: pack.window.since },
   });
 
-  const result = streamText({
-    model: aiModel(),
-    system: GROUNDED_SYSTEM_PROMPT,
-    prompt: `Metrics pack (integer cents, MYR):\n${JSON.stringify(pack)}\n\nOrganizer question: ${message}`,
+  // Stream text response to simulate streaming chunks
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const words = reply.split(" ");
+      for (let i = 0; i < words.length; i++) {
+        const chunk = (i === 0 ? "" : " ") + words[i];
+        controller.enqueue(encoder.encode(chunk));
+        const { promise, resolve } = Promise.withResolvers<void>();
+        setTimeout(resolve, 12);
+        await promise;
+      }
+      controller.close();
+    },
   });
-
-  return result.toTextStreamResponse();
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Transfer-Encoding": "chunked",
+    },
+  });
 }

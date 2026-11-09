@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatMoney } from "@/lib/money";
+import { Badge } from "@/components/ui/badge";
 
 type Result = {
   title: string;
@@ -10,17 +11,25 @@ type Result = {
   source: string;
 };
 
+const SAMPLE_QUERIES = [
+  { label: "Hoodies", q: "hoodie" },
+  { label: "Campus Tees", q: "tee" },
+  { label: "PBT Keycaps", q: "keycap" },
+  { label: "Water Bottles", q: "bottle" },
+];
+
 /**
- * Channel3 Market Intelligence Radar — Styled 1:1 with Stitch MagicUI & AI Widget System.
+ * Channel3 Market Intelligence Radar:
+ * Benchmarks campus society merchandise against external collegiate retail pricing.
  */
 export function MarketDiscovery() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("hoodie");
   const [results, setResults] = useState<Result[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function search() {
-    const q = query.trim();
+  async function search(searchQ?: string) {
+    const q = (searchQ ?? query).trim();
     if (!q || busy) return;
     setBusy(true);
     setError(null);
@@ -31,138 +40,117 @@ export function MarketDiscovery() {
         body: JSON.stringify({ query: q }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "channel3_error");
+      if (!res.ok) throw new Error(json.error ?? "Search unavailable");
       setResults(json.results as Result[]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "search_failed");
+      setError(e instanceof Error ? e.message : "Search unavailable");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="rounded-xl bg-surface-container-lowest shadow-sm p-space-lg ring-1 ring-outline-variant/30 flex flex-col justify-between">
+    <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs flex flex-col justify-between space-y-4">
       <div>
-        {/* Header matching Stitch AI Widget Card */}
-        <div className="flex items-center justify-between pb-space-md border-b border-outline-variant/20 mb-space-md">
-          <div className="flex items-center gap-space-sm">
-            <div className="w-10 h-10 rounded-xl bg-secondary-container/40 text-on-secondary-container flex items-center justify-center shrink-0 shadow-xs">
-              <span className="material-symbols-outlined text-[20px]">
-                radar
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-outline-variant/40">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+              <span className="material-symbols-outlined text-[18px]">
+                travel_explore
               </span>
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-headline-sm text-headline-sm font-bold text-primary">
-                  Channel3 Market Radar
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-secondary-container/30 text-on-secondary-container font-label-sm text-[10px] font-semibold">
-                  Live Engine
-                </span>
-              </div>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
-                Live collegiate merchant sourcing &amp; price benchmarking
-              </span>
+            <div>
+              <h3 className="text-headline-sm font-bold text-on-surface leading-tight">
+                Channel3 Market Intelligence Radar
+              </h3>
+              <p className="text-[11px] text-on-surface-variant">
+                Benchmark club merchandise against collegiate retail pricing
+              </p>
             </div>
           </div>
+          <Badge tone="teal">Active</Badge>
         </div>
 
-        {/* Search Input Bar with Stitch styling */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">
-              search
-            </span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void search();
+        {/* Quick Sample Queries */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
+            Quick benchmarks:
+          </span>
+          {SAMPLE_QUERIES.map((s) => (
+            <button
+              key={s.q}
+              type="button"
+              onClick={() => {
+                setQuery(s.q);
+                void search(s.q);
               }}
-              placeholder="Benchmark item (e.g. collegiate hoodie MYR, sticker pack)"
-              className="focus-aura h-11 w-full rounded-xl border border-outline-variant/40 bg-surface-container-low pl-10 pr-4 font-body-md text-body-md text-on-surface outline-none placeholder:text-on-surface-variant/70 transition-all"
-            />
-          </div>
+              className="px-2.5 py-1 rounded-full bg-surface-low border border-outline-variant/50 text-[11px] font-semibold text-on-surface hover:bg-surface-container hover:text-primary transition-colors"
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input Bar */}
+        <div className="flex gap-2 pt-3">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                void search();
+              }
+            }}
+            placeholder="Search competitor merch or product..."
+            aria-label="Search commercial merchandise"
+            className="focus-aura h-10 flex-1 rounded-xl border border-outline-variant/70 bg-surface-low px-3.5 text-body-sm text-on-surface outline-none placeholder:text-on-surface-variant focus:bg-surface-lowest"
+          />
           <button
             type="button"
+            disabled={busy || !query.trim()}
             onClick={() => void search()}
-            disabled={busy}
-            className="flex items-center gap-1.5 px-space-md py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-all shadow-xs hover:shadow-sm active:scale-95 disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-primary px-4 text-label-md font-semibold text-on-primary hover:opacity-90 disabled:opacity-50 transition-all"
           >
-            <span className="material-symbols-outlined text-[18px]">
-              {busy ? "progress_activity" : "travel_explore"}
+            <span className="material-symbols-outlined text-[16px]">
+              search
             </span>
-            <span>{busy ? "Scanning…" : "Scan Market"}</span>
+            <span>{busy ? "Scanning…" : "Scan"}</span>
           </button>
         </div>
 
         {error ? (
-          <div className="mt-3 flex items-center gap-2 p-space-sm rounded-xl bg-error-container text-on-error-container font-body-sm text-body-sm">
-            <span className="material-symbols-outlined text-[16px]">error</span>
-            <span>{error}</span>
-          </div>
+          <p className="text-body-sm text-warning pt-2">{error}</p>
         ) : null}
 
-        {/* Results Stream matching Stitch Data Displays */}
+        {/* Results Stream */}
         {results ? (
           results.length === 0 ? (
-            <div className="mt-4 p-space-lg rounded-xl bg-surface-container-low text-center">
-              <span className="material-symbols-outlined text-[28px] text-on-surface-variant">
-                search_off
-              </span>
-              <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-                No external campus listings found for this benchmark query.
-              </p>
+            <div className="mt-4 p-4 rounded-xl bg-surface-low text-center text-body-sm text-on-surface-variant">
+              No competitor benchmarks found for &quot;{query}&quot;.
             </div>
           ) : (
-            <div className="mt-4 flex flex-col gap-2.5 max-h-72 overflow-y-auto pr-1">
+            <div className="mt-4 flex flex-col gap-2 max-h-72 overflow-y-auto">
               {results.map((r, i) => (
                 <div
                   key={`${r.url}-${i}`}
-                  className="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low/80 hover:bg-surface-container-high/70 transition-all ring-1 ring-outline-variant/20"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-outline-variant/40 bg-surface-low/60 hover:bg-surface-low transition-colors"
                 >
-                  <div className="flex items-center gap-space-sm min-w-0 pr-2">
-                    <span className="w-8 h-8 rounded-lg bg-surface-container-lowest text-secondary flex items-center justify-center shrink-0 shadow-xs">
-                      <span className="material-symbols-outlined text-[18px]">
-                        shopping_bag
-                      </span>
+                  <div className="min-w-0">
+                    <p className="text-body-sm font-semibold text-on-surface truncate">
+                      {r.title}
+                    </p>
+                    <span className="text-[10.5px] font-mono text-secondary">
+                      {r.source}
                     </span>
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-label-md text-label-md font-semibold text-on-surface truncate">
-                        {r.title}
-                      </span>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="px-2 py-0.2 rounded-full bg-surface-container font-label-sm text-[10px] text-on-surface-variant font-medium">
-                          {r.source}
-                        </span>
-                        <span className="font-body-sm text-[11px] text-secondary font-semibold">
-                          Verified Listing
-                        </span>
-                      </div>
-                    </div>
                   </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    {r.price_cents !== null ? (
-                      <span className="font-headline-sm text-headline-sm font-bold text-primary">
-                        {formatMoney(r.price_cents)}
-                      </span>
-                    ) : (
-                      <span className="font-label-sm text-label-sm text-on-surface-variant">
-                        Quote on Request
-                      </span>
-                    )}
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors shadow-xs"
-                      title="Open Merchant Link"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">
-                        open_in_new
-                      </span>
-                    </a>
+                  <div className="text-right shrink-0 tabular-nums">
+                    <span className="text-headline-sm font-bold text-primary block">
+                      {r.price_cents !== null
+                        ? formatMoney(r.price_cents)
+                        : "Market Quote"}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -171,9 +159,11 @@ export function MarketDiscovery() {
         ) : null}
       </div>
 
-      <div className="mt-space-md pt-space-xs border-t border-outline-variant/20 flex items-center justify-between text-on-surface-variant font-label-sm text-[11px]">
-        <span>Powered by Channel3 Commerce Mesh</span>
-        <span>Real-time Scrapes</span>
+      <div className="pt-3 border-t border-outline-variant/35 flex items-center justify-between text-[11px] text-on-surface-variant">
+        <span>Channel3 Commercial Product Index</span>
+        <span className="font-semibold text-secondary">
+          Collegiate Benchmarking
+        </span>
       </div>
     </div>
   );

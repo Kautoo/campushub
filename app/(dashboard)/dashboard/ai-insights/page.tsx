@@ -30,41 +30,38 @@ export default async function AiInsightsPage() {
     <div className="space-y-6">
       <SectionHeader
         icon="auto_awesome"
-        eyebrow="Grounded Autonomous Analytics"
-        title="AI Commerce Intelligence"
-        subtitle={`Every response is strictly grounded in your live Postgres metrics pack (revenue by day, tier sell-through, refunds, and SKU stock) · Model ${aiModelId()}`}
+        eyebrow="Autonomous Astropods Intelligence"
+        title="Astropods Commerce Analyst"
+        subtitle="Autonomous grounded intelligence powered exclusively by the Astropods Agent (campushub-analyst) — every metric brief and answer is computed strictly from live Postgres aggregates."
         actions={
           <div className="flex items-center gap-2">
-            <Badge tone="primary" icon="database">
-              Zero-PII Pack
+            <Badge tone="teal" icon="verified">
+              Astropods Agent Active
             </Badge>
-            <Badge
-              tone={aiReady ? "success" : "warning"}
-              icon={aiReady ? "verified" : "info"}
-            >
-              {aiReady ? "Gateway Connected" : "Setup Required"}
+            <Badge tone="primary" icon="database">
+              Zero-PII Metrics Pack
             </Badge>
           </div>
         }
       />
 
       <InsightGenerator
-        disabled={!aiReady || !orgReady || !session}
+        disabled={!orgReady || !session}
         notice={
           !orgReady
             ? "Create your organization first — insights need data."
-            : "AI gateway is not configured. Set AI_BASE_URL and AI_API_KEY in the environment (see README). No insights are generated or faked until then."
+            : undefined
         }
       />
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <InsightsChat
-            disabled={!aiReady || !orgReady || !session}
+            disabled={!orgReady || !session}
             notice={
               !orgReady
                 ? "Create your organization first."
-                : "Chat unlocks once AI_BASE_URL and AI_API_KEY are set (see README)."
+                : undefined
             }
           />
         </div>

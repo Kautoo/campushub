@@ -20,11 +20,17 @@ function slugify(name: string): string {
 }
 
 function rowFromParsed(parsed: z.infer<typeof productSchema>) {
+  const imageList: string[] = [];
+  if (parsed.image_url) {
+    imageList.push(parsed.image_url);
+  } else if (parsed.images && parsed.images.length > 0) {
+    imageList.push(...parsed.images);
+  }
   return {
     name: parsed.name,
     slug: parsed.slug,
     description: parsed.description ? parsed.description : null,
-    images: [] as string[],
+    images: imageList,
     category: parsed.category ? parsed.category : null,
     price_cents: parsed.price_cents,
     stock: parsed.stock,
@@ -79,8 +85,8 @@ export async function createProduct(
     });
   }
 
-  revalidatePath("/dashboard/products");
-  revalidatePath("/dashboard");
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: `Product “${parsed.data.name}” created.` };
 }
 
@@ -126,8 +132,8 @@ export async function updateProduct(
     });
   }
 
-  revalidatePath("/dashboard/products");
-  revalidatePath("/dashboard");
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
   return { ok: `Product “${parsed.data.name}” saved.` };
 }
 
@@ -152,8 +158,8 @@ export async function setProductStatus(
   const updated = await products.updateStatus(parsed.data.id, session.orgIds, parsed.data.status);
   if (!updated) return { error: "Product not found." };
 
-  revalidatePath("/dashboard/products");
-  revalidatePath("/dashboard");
+  revalidatePath("/demo", "layout");
+  revalidatePath("/dashboard", "layout");
   return {
     ok: parsed.data.status === "archived"
       ? "Product archived."

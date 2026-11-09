@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ColDef } from "ag-grid-community";
 import type { ProductRow as RepoProductRow } from "@/lib/db/repo";
@@ -185,8 +186,8 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
         sortable: false,
         filter: false,
         resizable: false,
-        minWidth: 210,
-        maxWidth: 230,
+        minWidth: 245,
+        maxWidth: 270,
         cellRenderer: (p: { data?: ProductRow }) => {
           const row = p.data;
           if (!row) return null;
@@ -207,6 +208,18 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
                   draft
                 </span>
               )}
+              {row.status === "active" ? (
+                <a
+                  href={`/demo/products/${row.slug}`}
+                  target="_blank"
+                  title="View live on storefront"
+                  className="inline-flex items-center gap-1 rounded-lg border border-outline-variant/60 bg-surface-lowest px-2 py-1 text-label-sm font-semibold text-secondary hover:bg-surface-low transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[14px]">
+                    open_in_new
+                  </span>
+                </a>
+              ) : null}
             </span>
           );
         },
@@ -226,15 +239,31 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
             Manage retail pricing, stock thresholds, and storefront visibility across official society gear.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openNew}
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-lg font-semibold text-on-primary shadow-xs transition-all hover:bg-primary-container"
-        >
-          <Icon name="add" size={16} />
-          New product
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/demo/shop"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-lowest px-4 py-2 text-label-md font-semibold text-on-surface hover:bg-surface-low transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px] text-secondary">
+              visibility
+            </span>
+            <span>Preview Storefront</span>
+            <span className="material-symbols-outlined text-[13px] text-on-surface-variant">
+              open_in_new
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={openNew}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-semibold text-on-primary shadow-xs transition-all hover:opacity-90"
+          >
+            <Icon name="add" size={16} />
+            New product
+          </button>
+        </div>
       </div>
+
       {rows.length === 0 ? (
         <EmptyState
           icon="inventory_2"

@@ -1070,10 +1070,11 @@ export function EventScheduler({
               selectedEvent ? "lg:col-span-8 xl:col-span-9" : "lg:col-span-12"
             }
           >
-            <div className="rounded-2xl border border-outline-variant/50 overflow-hidden shadow-xs bg-surface-lowest">
+            <div className="rounded-2xl border border-outline-variant/50 overflow-hidden shadow-xs bg-surface-lowest p-1">
               <div
                 ref={containerRef}
-                className="campushub-bryntum bryntum-stitch-theme min-h-[500px] w-full"
+                style={{ height: orientation === "vertical" ? 720 : 640, width: "100%" }}
+                className="campushub-bryntum bryntum-stitch-theme w-full"
               />
             </div>
           </div>

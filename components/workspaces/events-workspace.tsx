@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import type { ColDef } from "ag-grid-community";
@@ -223,8 +224,8 @@ export function EventsWorkspace({
         sortable: false,
         filter: false,
         resizable: false,
-        minWidth: 215,
-        maxWidth: 235,
+        minWidth: 245,
+        maxWidth: 270,
         cellRenderer: (p: { data?: EventRow }) => {
           if (!p.data) return null;
           const row = p.data;
@@ -252,6 +253,18 @@ export function EventsWorkspace({
                 </span>
                 {published ? "Unpublish" : "Publish"}
               </button>
+              {published ? (
+                <a
+                  href={`/demo/events/${row.slug}`}
+                  target="_blank"
+                  title="View live on storefront"
+                  className="inline-flex items-center gap-1 rounded-lg border border-outline-variant/60 bg-surface-lowest px-2 py-1 text-label-sm font-semibold text-secondary hover:bg-surface-low transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[14px]">
+                    open_in_new
+                  </span>
+                </a>
+              ) : null}
             </div>
           );
         },
@@ -307,15 +320,29 @@ export function EventsWorkspace({
               : "Interactive multi-track venue scheduling, calendar presets, and drag-and-drop timeline."}
           </span>
         </div>
-
-        <Button
-          variant="primary"
-          onPress={() => openCreate()}
-          className="h-10 rounded-full px-5 text-label-lg font-semibold"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          New event
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/demo/events"
+            target="_blank"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-lowest px-4 text-label-md font-semibold text-on-surface hover:bg-surface-low transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px] text-secondary">
+              visibility
+            </span>
+            <span>Preview Storefront</span>
+            <span className="material-symbols-outlined text-[13px] text-on-surface-variant">
+              open_in_new
+            </span>
+          </Link>
+          <Button
+            variant="primary"
+            onPress={() => openCreate()}
+            className="h-10 rounded-full px-5 text-label-lg font-semibold"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            New event
+          </Button>
+        </div>
       </div>
 
       {rows.length === 0 ? (

@@ -28,6 +28,7 @@ export const eventSchema = z.object({
     .max(120)
     .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, dashes only"),
   description: z.string().trim().max(4000).optional().or(z.literal("")),
+  cover_url: z.string().trim().max(1000).optional().or(z.literal("")),
   venue: z.string().trim().max(200).optional().or(z.literal("")),
   category: z.string().trim().max(60).optional().or(z.literal("")),
   start_at: z.string().optional().or(z.literal("")),
@@ -35,7 +36,6 @@ export const eventSchema = z.object({
   capacity: z.coerce.number().int().min(0).max(100000),
   status: z.enum(["draft", "published", "cancelled", "completed"]),
 });
-
 export const productSchema = z.object({
   name: z.string().trim().min(1).max(200),
   slug: z
@@ -46,13 +46,14 @@ export const productSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, dashes only"),
   description: z.string().trim().max(4000).optional().or(z.literal("")),
   category: z.string().trim().max(60).optional().or(z.literal("")),
+  image_url: z.string().trim().max(1000).optional().or(z.literal("")),
+  images: z.array(z.string().trim().max(1000)).optional(),
   price_cents: z.coerce.number().int().min(0).max(100_000_00),
   stock: z.coerce.number().int().min(0).max(1_000_000),
   low_stock_threshold: z.coerce.number().int().min(0).max(10000),
   sku: z.string().trim().max(60).optional().or(z.literal("")),
   status: z.enum(["active", "draft", "archived"]),
 });
-
 export const tierSchema = z.object({
   event_id: z.string().uuid(),
   name: z.string().trim().min(1).max(120),

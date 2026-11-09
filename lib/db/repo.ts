@@ -418,6 +418,7 @@ export const events = {
     title: string;
     slug: string;
     description: string | null;
+    cover_url?: string | null;
     venue: string | null;
     category: string | null;
     start_at: string | null;
@@ -427,11 +428,11 @@ export const events = {
   }): Promise<EventRow | null> {
     const rows = await query<EventRow>(
       `insert into public.events
-        (org_id, created_by, title, slug, description, venue, category, start_at, end_at, capacity, status)
-       values ($1::uuid, $2::uuid, $3, $4, $5, $6, $7, $8::timestamptz, $9::timestamptz, $10, $11)
+        (org_id, created_by, title, slug, description, cover_url, venue, category, start_at, end_at, capacity, status)
+       values ($1::uuid, $2::uuid, $3, $4, $5, $6, $7, $8, $9::timestamptz, $10::timestamptz, $11, $12)
        returning *`,
       [fields.org_id, fields.created_by, fields.title, fields.slug, fields.description,
-       fields.venue, fields.category, fields.start_at, fields.end_at, fields.capacity, fields.status],
+       fields.cover_url ?? null, fields.venue, fields.category, fields.start_at, fields.end_at, fields.capacity, fields.status],
     );
     return rows[0] ?? null;
   },
@@ -440,6 +441,7 @@ export const events = {
     title: string;
     slug: string;
     description: string | null;
+    cover_url?: string | null;
     venue: string | null;
     category: string | null;
     start_at: string | null;
@@ -449,17 +451,16 @@ export const events = {
   }): Promise<EventRow | null> {
     const rows = await query<EventRow>(
       `update public.events set
-         title = $1, slug = $2, description = $3, venue = $4, category = $5,
-         start_at = $6::timestamptz, end_at = $7::timestamptz, capacity = $8, status = $9,
+         title = $1, slug = $2, description = $3, cover_url = $4, venue = $5, category = $6,
+         start_at = $7::timestamptz, end_at = $8::timestamptz, capacity = $9, status = $10,
          updated_at = now()
-       where id = $10::uuid and org_id = ANY($11::uuid[])
+       where id = $11::uuid and org_id = ANY($12::uuid[])
        returning *`,
-      [fields.title, fields.slug, fields.description, fields.venue, fields.category,
+      [fields.title, fields.slug, fields.description, fields.cover_url ?? null, fields.venue, fields.category,
        fields.start_at, fields.end_at, fields.capacity, fields.status, id, orgIds],
     );
     return rows[0] ?? null;
   },
-
   async updateStatus(id: string, orgIds: string[], status: string): Promise<EventRow | null> {
     const rows = await query<EventRow>(
       `update public.events set status = $1, updated_at = now()

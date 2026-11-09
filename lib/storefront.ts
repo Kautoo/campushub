@@ -175,6 +175,7 @@ export async function getStorefrontData(): Promise<StorefrontData | null> {
         start_at: string | null;
         end_at: string | null;
         capacity: number;
+        cover_url: string | null;
         tier_id: string | null;
         tier_name: string | null;
         tier_price_cents: number | null;
@@ -182,10 +183,9 @@ export async function getStorefrontData(): Promise<StorefrontData | null> {
         tier_sold: number | null;
         tier_perks: string[] | null;
       }>(
-        `select e.id, e.title, e.slug, e.description, e.venue, e.category, e.start_at, e.end_at, e.capacity,
+        `select e.id, e.title, e.slug, e.description, e.cover_url, e.venue, e.category, e.start_at, e.end_at, e.capacity,
                 tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
                 tt.quantity as tier_quantity, tt.sold as tier_sold, tt.perks as tier_perks
-         from public.events e
          left join public.ticket_tiers tt on tt.event_id = e.id
          where e.status = 'published'
          order by e.start_at asc, tt.price_cents asc`,
@@ -215,6 +215,7 @@ export async function getStorefrontData(): Promise<StorefrontData | null> {
         end_at: row.end_at,
         capacity: row.capacity ?? 0,
         imageUrl:
+          row.cover_url ||
           STITCH_EVENT_IMAGES[row.slug] ||
           STITCH_EVENT_IMAGES["innovation-week-2026"],
         tiers: [],

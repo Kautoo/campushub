@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { aiConfigured, aiModel, aiModelId, GROUNDED_SYSTEM_PROMPT } from "@/lib/ai";
+import { runAstropodsAgent, aiModelId } from "@/lib/ai";
 import { buildMetricsPack } from "@/lib/metrics";
-import { generateText } from "ai";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { aiInsights } from "@/lib/db/repo";
-
 
 const bodySchema = z.object({
   kind: z.enum(["summary", "anomaly", "recommendation"]).default("summary"),
@@ -15,18 +13,15 @@ const bodySchema = z.object({
 
 const PROMPTS: Record<string, string> = {
   summary:
-    "Write a weekly commerce summary for this organizer based ONLY on the metrics pack below.",
+    "Write an executive commerce summary for this organizer based strictly on the live metrics pack.",
   anomaly:
-    "Identify anomalies and risks (refunds, sell-through outliers, stock, revenue dips) based ONLY on the metrics pack below. If none are visible, say so plainly.",
+    "Identify anomalies and risks (refunds, sell-through outliers, stock, revenue dips) based strictly on the metrics pack.",
   recommendation:
-    "Give 3 concrete, data-grounded recommendations (pricing, bundling, restock, promotion) based ONLY on the metrics pack below. Cite the exact numbers you rely on.",
+    "Give 3 concrete, data-grounded recommendations (pricing, bundling, restock, promotion) based strictly on the metrics pack.",
 };
 
-/** Generate a grounded insight and persist it to ai_insights. */
+/** Generate an Astropods grounded insight and persist it to ai_insights. */
 export async function POST(request: Request) {
-  if (!aiConfigured()) {
-    return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
-  }
   const db = getDbSafe();
   if (!db) {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
@@ -49,11 +44,7 @@ export async function POST(request: Request) {
   if (!pack) return NextResponse.json({ error: "pack_failed" }, { status: 500 });
 
   try {
-    const { text } = await generateText({
-      model: aiModel(),
-      system: GROUNDED_SYSTEM_PROMPT,
-      prompt: `${PROMPTS[kind]}\n\nMetrics pack (integer cents, MYR):\n${JSON.stringify(pack)}`,
-    });
+    const text = await runAstropodsAgent(PROMPTS[kind], pack as never);
 
     await aiInsights.insert({
       org_id: orgId,
@@ -66,8 +57,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ response: text });
   } catch (err) {
-    console.error("insight generation failed", err);
-    return NextResponse.json({ error: "ai_error" }, { status: 502 });
+    console.error("Astropods insight generation failed", err);
+    return NextResponse.json({ error: "astropods_error" }, { status: 502 });
   }
 }
-
