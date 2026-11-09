@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
+import { AppShell, type ShellNotification } from "@/components/layout/app-shell";
 import { dashboardNav } from "@/lib/nav";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
@@ -17,16 +17,15 @@ export default async function DashboardLayout({
 }) {
   const db = getDbSafe();
   if (!db) {
-    // Database unconfigured: render the setup notice instead of redirecting
-    // to /login (the proxy would bounce back here without a session).
     return <SetupNotice what="the dashboard" />;
   }
 
   const session = await getSessionContext();
   if (!session) redirect("/login");
-  const [orgList, unreadCount] = await Promise.all([
+  const [orgList, unreadCount, recentNotifs] = await Promise.all([
     orgs.list(session.orgIds),
     notifications.countUnread(session.orgIds),
+    notifications.list(session.orgIds, 8),
   ]);
 
   if (orgList.length === 0) {
@@ -43,11 +42,24 @@ export default async function DashboardLayout({
     .slice(0, 2)
     .toUpperCase();
 
+  const shellNotifications: ShellNotification[] = recentNotifs.map((n) => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    body: n.body,
+    link: n.link,
+    read_at: n.read_at,
+    created_at: n.created_at,
+  }));
+
   return (
     <AppShell
       orgName={orgList[0].name}
       userInitials={initials}
+      userEmail={session.user.email ?? "owner@campushub.test"}
+      userName={session.user.name ?? "Campus Organizer"}
       unreadCount={unreadCount}
+      notifications={shellNotifications}
       nav={dashboardNav}
     >
       {children}

@@ -6,6 +6,8 @@ import { TierBuyButton } from "@/components/store/tier-buy-button";
 import { Badge } from "@/components/ui/badge";
 import { getStorefrontData } from "@/lib/storefront";
 
+export const instant = false;
+
 export default async function EventDetailPage({
   params,
 }: {

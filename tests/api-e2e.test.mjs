@@ -98,6 +98,26 @@ test("GET /demo/checkout — 200", async () => {
   assert.equal(res.status, 200);
 });
 
+test("GET /demo/events — multi-page events catalog 200", async () => {
+  const { res } = await fetchPage("/demo/events");
+  assert.equal(res.status, 200);
+});
+
+test("GET /demo/shop — multi-page merch shop 200", async () => {
+  const { res } = await fetchPage("/demo/shop");
+  assert.equal(res.status, 200);
+});
+
+test("GET /demo/societies — multi-page societies directory 200", async () => {
+  const { res } = await fetchPage("/demo/societies");
+  assert.equal(res.status, 200);
+});
+
+test("GET /demo/cart — shopping bag 200", async () => {
+  const { res } = await fetchPage("/demo/cart");
+  assert.equal(res.status, 200);
+});
+
 // ---------- dashboard (setup-notice degradation path) ----------
 
 test("GET /dashboard — 200 (setup notice, not a crash)", async () => {

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import { hasDatabaseEnv, getPool } from "@/lib/db";
 
@@ -29,6 +29,7 @@ async function getDemoOrgId(): Promise<string | null> {
 }
 
 export async function GET() {
+  await connection();
   if (!hasDatabaseEnv()) {
     return NextResponse.json({ error: "store_unavailable" }, { status: 503 });
   }

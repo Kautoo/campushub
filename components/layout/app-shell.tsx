@@ -6,9 +6,25 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Icon } from "@/components/ui/icon";
+import { Badge } from "@/components/ui/badge";
+import {
+  markNotificationRead,
+  markAllNotificationsRead,
+} from "@/app/actions/notifications";
+import { signOut } from "@/app/actions/auth";
 
 export type NavItem = { href: string; label: string; icon: string };
 export type NavSection = { title: string; items: NavItem[] };
+
+export type ShellNotification = {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read_at: string | null;
+  created_at: string;
+};
 
 const ROUTE_TITLES: Record<string, string> = {
   "/dashboard": "Executive Overview",
@@ -25,40 +41,97 @@ const ROUTE_TITLES: Record<string, string> = {
   "/dashboard/help": "Documentation & Runbook",
 };
 
+const NOTIF_ICONS: Record<string, string> = {
+  order: "receipt_long",
+  stock: "inventory_2",
+  event: "event",
+  registration: "how_to_reg",
+  ai: "auto_awesome",
+  system: "info",
+};
+
+function formatNotifDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-MY", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export function AppShell({
   orgName,
   userInitials,
+  userEmail = "owner@campushub.test",
+  userName = "Campus Organizer",
   unreadCount = 0,
+  notifications = [],
   nav,
   children,
 }: {
   orgName: string;
   userInitials: string;
+  userEmail?: string;
+  userName?: string;
   unreadCount?: number;
+  notifications?: ShellNotification[];
   nav: NavSection[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [orgMenuOpen, setOrgMenuOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [query, setQuery] = useState("");
   const searchInput = useRef<HTMLInputElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearchOpen((v) => !v);
+        setNotifOpen(false);
+        setAccountOpen(false);
+        setOrgMenuOpen(false);
       } else if (e.key === "Escape") {
         setSearchOpen(false);
+        setNotifOpen(false);
+        setAccountOpen(false);
+        setOrgMenuOpen(false);
+        setMobileDrawerOpen(false);
+      }
+    }
+    function onClickOutside(e: MouseEvent) {
+      if (
+        headerRef.current &&
+        !headerRef.current.contains(e.target as Node)
+      ) {
+        setNotifOpen(false);
+        setAccountOpen(false);
+        setOrgMenuOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("mousedown", onClickOutside);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("mousedown", onClickOutside);
+    };
   }, []);
 
   function closeSearch() {
     setSearchOpen(false);
     setQuery("");
+  }
+
+  function closeAllPopovers() {
+    setNotifOpen(false);
+    setAccountOpen(false);
+    setOrgMenuOpen(false);
+    setMobileDrawerOpen(false);
   }
 
   useEffect(() => {
@@ -82,22 +155,124 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-background">
       {/* Top Workspace Header */}
-      <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface-lowest/90 backdrop-blur-xl z-40 border-b border-outline-variant/45">
-        <div className="flex h-16 w-full items-center justify-between gap-4 px-4 lg:px-8">
-          {/* Breadcrumb Context */}
-          <div className="flex items-center gap-2 min-w-0">
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center gap-2 px-2.5 py-1 bg-surface-low rounded-lg border border-outline-variant/40 text-on-surface hover:bg-surface-container transition-colors shrink-0"
+      <header
+        ref={headerRef}
+        className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface-lowest/95 backdrop-blur-xl z-40 border-b border-outline-variant/55"
+      >
+        <div className="flex h-16 w-full items-center justify-between gap-3 px-4 lg:px-8">
+          {/* Left: Mobile Menu Button + Interactive Org Switcher + Breadcrumb */}
+          <div className="flex items-center gap-2 min-w-0 relative">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileDrawerOpen((v) => !v);
+                setNotifOpen(false);
+                setAccountOpen(false);
+                setOrgMenuOpen(false);
+              }}
+              aria-label="Open workspace navigation drawer"
+              aria-expanded={mobileDrawerOpen}
+              className="focus-aura inline-flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/50 bg-surface-low text-on-surface hover:bg-surface-container lg:hidden"
             >
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="text-label-md font-bold truncate max-w-[140px]">
-                {orgName}
+              <span className="material-symbols-outlined text-[20px]">
+                menu
               </span>
-              <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
-                unfold_more
-              </span>
-            </Link>
+            </button>
+
+            {/* Organization Switcher Trigger */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setOrgMenuOpen((v) => !v);
+                  setNotifOpen(false);
+                  setAccountOpen(false);
+                }}
+                aria-expanded={orgMenuOpen}
+                aria-haspopup="menu"
+                className="focus-aura flex items-center gap-2 px-2.5 py-1.5 bg-surface-low rounded-lg border border-outline-variant/50 text-on-surface hover:bg-surface-container transition-colors shrink-0"
+              >
+                <span className="w-2 h-2 rounded-full bg-secondary" />
+                <span className="text-label-md font-bold truncate max-w-[140px]">
+                  {orgName}
+                </span>
+                <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
+                  unfold_more
+                </span>
+              </button>
+
+              {/* Organization Switcher Popover Menu */}
+              {orgMenuOpen ? (
+                <div
+                  role="menu"
+                  aria-label="Organization workspace menu"
+                  className="absolute left-0 top-12 z-50 w-72 rounded-2xl border border-outline-variant/70 bg-surface-lowest p-3 shadow-2xl space-y-2.5"
+                >
+                  <div className="flex items-center gap-3 rounded-xl bg-surface-low p-3 border border-outline-variant/40">
+                    <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center text-label-lg font-bold shrink-0">
+                      {orgName.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-body-md font-bold text-on-surface truncate">
+                        {orgName}
+                      </p>
+                      <p className="text-[11px] text-secondary font-semibold">
+                        Verified Society · MYR Escrow
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        settings
+                      </span>
+                      <span>Organization Profile &amp; Gateway</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/members"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        groups
+                      </span>
+                      <span>Committee &amp; Role Permissions</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/events"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        view_timeline
+                      </span>
+                      <span>Bryntum Venue Timeline</span>
+                    </Link>
+                    <Link
+                      href="/demo"
+                      onClick={closeAllPopovers}
+                      className="flex items-center justify-between gap-2.5 rounded-xl border-t border-outline-variant/40 pt-2 mt-1 px-3 py-2 text-body-sm font-semibold text-primary hover:bg-surface-low transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[17px] text-secondary">
+                          storefront
+                        </span>
+                        Public Storefront
+                      </span>
+                      <span className="material-symbols-outlined text-[15px]">
+                        open_in_new
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             <span className="text-outline-variant text-body-sm hidden sm:inline">
               /
             </span>
@@ -107,12 +282,15 @@ export function AppShell({
           </div>
 
           {/* Right Command Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
             {/* Command Search Trigger */}
             <button
               type="button"
-              onClick={() => setSearchOpen(true)}
-              className="focus-aura hidden h-9 w-60 items-center gap-2 rounded-lg border border-outline-variant/60 bg-surface-low/80 px-3 text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors md:flex"
+              onClick={() => {
+                setSearchOpen(true);
+                closeAllPopovers();
+              }}
+              className="focus-aura hidden h-9 w-56 xl:w-64 items-center gap-2 rounded-lg border border-outline-variant/60 bg-surface-low/80 px-3 text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors md:flex"
             >
               <span className="material-symbols-outlined text-[17px]">
                 search
@@ -126,7 +304,7 @@ export function AppShell({
             {/* Quick Link to Public Storefront */}
             <Link
               href="/demo"
-              className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant/60 bg-surface-lowest px-3 text-label-md font-semibold text-primary hover:bg-surface-low transition-colors"
+              className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant/60 bg-surface-lowest px-3 text-label-md font-semibold text-on-surface hover:bg-surface-low transition-colors"
             >
               <span className="material-symbols-outlined text-[16px] text-secondary">
                 storefront
@@ -137,35 +315,285 @@ export function AppShell({
               </span>
             </Link>
 
-            <Link
-              href="/dashboard/notifications"
-              aria-label={`Notifications (${unreadCount} unread)`}
-              className="focus-aura relative inline-flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/40 bg-surface-lowest text-on-surface-variant hover:bg-surface-low hover:text-on-surface transition-colors"
-            >
-              <span className="material-symbols-outlined text-[19px]">
-                notifications
-              </span>
-              {unreadCount > 0 ? (
-                <span className="bg-error absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white tabular-nums">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+            {/* Interactive Notification Bell Button + Popover Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setNotifOpen((v) => !v);
+                  setAccountOpen(false);
+                  setOrgMenuOpen(false);
+                }}
+                aria-label={`Notifications (${unreadCount} unread)`}
+                aria-expanded={notifOpen}
+                aria-haspopup="dialog"
+                className={cn(
+                  "focus-aura relative inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors",
+                  notifOpen
+                    ? "border-secondary bg-secondary-container/40 text-on-surface"
+                    : "border-outline-variant/50 bg-surface-lowest text-on-surface-variant hover:bg-surface-low hover:text-on-surface",
+                )}
+              >
+                <span className="material-symbols-outlined text-[19px]">
+                  notifications
                 </span>
+                {unreadCount > 0 ? (
+                  <span className="bg-error absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white tabular-nums">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                ) : null}
+              </button>
+
+              {/* Notifications Dropdown Popup Menu */}
+              {notifOpen ? (
+                <div
+                  role="dialog"
+                  aria-label="Notifications menu"
+                  className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-2xl border border-outline-variant/70 bg-surface-lowest shadow-2xl overflow-hidden"
+                >
+                  {/* Popup Header */}
+                  <div className="flex items-center justify-between gap-2 border-b border-outline-variant/50 bg-surface-low/70 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-headline-sm font-bold text-on-surface">
+                        Notifications
+                      </span>
+                      <Badge tone={unreadCount > 0 ? "error" : "neutral"}>
+                        {unreadCount} unread
+                      </Badge>
+                    </div>
+                    {unreadCount > 0 ? (
+                      <form action={markAllNotificationsRead}>
+                        <button
+                          type="submit"
+                          className="text-label-sm font-semibold text-secondary hover:underline inline-flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            done_all
+                          </span>
+                          <span>Mark all read</span>
+                        </button>
+                      </form>
+                    ) : null}
+                  </div>
+
+                  {/* Notification Items List */}
+                  <div className="max-h-80 overflow-y-auto divide-y divide-outline-variant/40">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center space-y-1">
+                        <span className="material-symbols-outlined text-[26px] text-on-surface-variant">
+                          notifications_none
+                        </span>
+                        <p className="text-body-sm font-semibold text-on-surface">
+                          No notifications yet
+                        </p>
+                        <p className="text-xs text-on-surface-variant">
+                          Order, stock, and registration alerts appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      notifications.map((n) => {
+                        const unread = n.read_at === null;
+                        return (
+                          <div
+                            key={n.id}
+                            className={cn(
+                              "px-4 py-3 flex items-start justify-between gap-3 transition-colors",
+                              unread
+                                ? "bg-secondary-container/15 hover:bg-secondary-container/25"
+                                : "hover:bg-surface-low/60 opacity-80",
+                            )}
+                          >
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div
+                                className={cn(
+                                  "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                                  unread
+                                    ? "bg-secondary-container text-on-secondary-container"
+                                    : "bg-surface-container text-on-surface-variant",
+                                )}
+                              >
+                                <span className="material-symbols-outlined text-[17px]">
+                                  {NOTIF_ICONS[n.type] ?? NOTIF_ICONS.system}
+                                </span>
+                              </div>
+                              <div className="min-w-0 space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-body-sm font-semibold text-on-surface truncate">
+                                    {n.title}
+                                  </p>
+                                  {unread ? (
+                                    <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
+                                  ) : null}
+                                </div>
+                                {n.body ? (
+                                  <p className="text-xs text-on-surface-variant line-clamp-2">
+                                    {n.body}
+                                  </p>
+                                ) : null}
+                                <div className="flex items-center gap-2.5 pt-0.5">
+                                  <span className="text-[10.5px] text-on-surface-variant tabular-nums">
+                                    {formatNotifDate(n.created_at)}
+                                  </span>
+                                  {n.link ? (
+                                    <Link
+                                      href={n.link}
+                                      onClick={closeAllPopovers}
+                                      className="text-[11px] font-semibold text-secondary hover:underline"
+                                    >
+                                      Open workspace →
+                                    </Link>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+
+                            {unread ? (
+                              <form
+                                action={markNotificationRead.bind(null, n.id)}
+                              >
+                                <button
+                                  type="submit"
+                                  title="Mark as read"
+                                  className="h-7 w-7 rounded-md flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface shrink-0"
+                                >
+                                  <span className="material-symbols-outlined text-[15px]">
+                                    check
+                                  </span>
+                                </button>
+                              </form>
+                            ) : null}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Popup Footer CTA to Full Notifications Page */}
+                  <div className="border-t border-outline-variant/50 bg-surface-low/60 p-2.5">
+                    <Link
+                      href="/dashboard/notifications"
+                      onClick={closeAllPopovers}
+                      className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2 px-4 text-label-md font-semibold text-on-primary hover:opacity-90 transition-all"
+                    >
+                      <span>Go to Notifications Page</span>
+                      <span className="material-symbols-outlined text-[16px]">
+                        arrow_forward
+                      </span>
+                    </Link>
+                  </div>
+                </div>
               ) : null}
-            </Link>
+            </div>
 
             <ThemeToggle />
 
-            <span
-              aria-label="Account"
-              className="bg-primary flex h-9 w-9 items-center justify-center rounded-lg text-label-md font-bold text-on-primary shadow-2xs"
-            >
-              {userInitials || "?"}
-            </span>
+            {/* Interactive Account Avatar Button + Popover Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountOpen((v) => !v);
+                  setNotifOpen(false);
+                  setOrgMenuOpen(false);
+                }}
+                aria-label="Account menu"
+                aria-expanded={accountOpen}
+                aria-haspopup="menu"
+                className="focus-aura bg-primary flex h-9 w-9 items-center justify-center rounded-lg text-label-md font-bold text-on-primary shadow-2xs hover:opacity-90 transition-opacity"
+              >
+                {userInitials || "?"}
+              </button>
+
+              {accountOpen ? (
+                <div
+                  role="menu"
+                  aria-label="Account menu"
+                  className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-outline-variant/70 bg-surface-lowest p-3 shadow-2xl space-y-2.5"
+                >
+                  <div className="rounded-xl bg-surface-low p-3 border border-outline-variant/40">
+                    <p className="text-body-md font-bold text-on-surface truncate">
+                      {userName}
+                    </p>
+                    <p className="text-xs text-on-surface-variant truncate">
+                      {userEmail}
+                    </p>
+                    <div className="mt-2">
+                      <Badge tone="teal" icon="verified_user">
+                        {orgName}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        settings
+                      </span>
+                      <span>Organization Settings</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/members"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        groups
+                      </span>
+                      <span>Committee &amp; Roles</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/notifications"
+                      onClick={closeAllPopovers}
+                      className="flex items-center justify-between gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <span className="material-symbols-outlined text-[17px] text-secondary">
+                          notifications
+                        </span>
+                        <span>Notifications</span>
+                      </span>
+                      {unreadCount > 0 ? (
+                        <Badge tone="error">{unreadCount}</Badge>
+                      ) : null}
+                    </Link>
+                    <Link
+                      href="/dashboard/help"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        help
+                      </span>
+                      <span>Documentation &amp; Runbook</span>
+                    </Link>
+                  </div>
+
+                  <div className="pt-2 border-t border-outline-variant/40">
+                    <form action={signOut}>
+                      <button
+                        type="submit"
+                        className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-semibold text-error hover:bg-error-container/50 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[17px]">
+                          logout
+                        </span>
+                        <span>Sign out of workspace</span>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Left Fixed Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-screen w-72 bg-surface-lowest z-50 flex-col justify-between border-r border-outline-variant/45 lg:flex">
+      {/* Left Fixed Sidebar (Desktop lg+) */}
+      <aside className="fixed left-0 top-0 hidden h-screen w-72 bg-surface-lowest z-50 flex-col justify-between border-r border-outline-variant/55 lg:flex">
         <div className="flex flex-col flex-1 overflow-y-auto px-4 pt-5">
           {/* Brand Lockup */}
           <div className="flex items-center justify-between px-2 mb-6">
@@ -176,7 +604,7 @@ export function AppShell({
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-headline-sm font-bold text-primary leading-tight tracking-tight">
+                <span className="text-headline-sm font-bold text-on-surface leading-tight tracking-tight">
                   CampusHub
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
@@ -184,9 +612,7 @@ export function AppShell({
                 </span>
               </div>
             </Link>
-            <span className="rounded-full bg-tertiary-fixed/35 px-2 py-0.5 text-[10px] font-bold text-on-tertiary-container">
-              v2.0
-            </span>
+            <Badge tone="teal">v2.0</Badge>
           </div>
 
           {/* Navigation Groups */}
@@ -228,7 +654,7 @@ export function AppShell({
                             className={cn(
                               "rounded-full px-1.5 py-0.2 text-[10px] font-bold tabular-nums",
                               active
-                                ? "bg-secondary-fixed text-on-secondary-fixed"
+                                ? "bg-black/20 text-on-primary"
                                 : "bg-error-container text-error",
                             )}
                           >
@@ -244,11 +670,11 @@ export function AppShell({
           </div>
         </div>
 
-        {/* Bottom Organization Card */}
-        <div className="p-4 border-t border-outline-variant/40 space-y-2">
+        {/* Bottom Organization Card + Sign Out */}
+        <div className="p-4 border-t border-outline-variant/45 space-y-2">
           <Link
             href="/dashboard/settings"
-            className="flex items-center justify-between p-2.5 bg-surface-low rounded-xl border border-outline-variant/40 hover:bg-surface-container transition-colors"
+            className="flex items-center justify-between p-2.5 bg-surface-low rounded-xl border border-outline-variant/45 hover:bg-surface-container transition-colors"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-primary-container text-white flex items-center justify-center text-label-md font-bold shrink-0">
@@ -269,6 +695,93 @@ export function AppShell({
           </Link>
         </div>
       </aside>
+
+      {/* Mobile Slide-Over Sidebar Drawer */}
+      {mobileDrawerOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex lg:hidden bg-black/45 backdrop-blur-xs"
+          onClick={() => setMobileDrawerOpen(false)}
+          role="presentation"
+        >
+          <aside
+            className="w-72 max-w-[85vw] h-full bg-surface-lowest border-r border-outline-variant/60 p-4 flex flex-col justify-between overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Mobile workspace navigation"
+          >
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="flex items-center gap-2.5"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">
+                      school
+                    </span>
+                  </div>
+                  <span className="text-headline-sm font-bold text-on-surface">
+                    CampusHub 2.0
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  aria-label="Close drawer"
+                  className="rounded-lg p-1.5 text-on-surface-variant hover:bg-surface-low"
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    close
+                  </span>
+                </button>
+              </div>
+
+              {nav.map((section) => (
+                <div key={section.title} className="space-y-1">
+                  <span className="px-2 text-[10.5px] uppercase tracking-widest text-on-surface-variant font-bold block">
+                    {section.title}
+                  </span>
+                  {section.items.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileDrawerOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-xl",
+                          active
+                            ? "bg-primary text-on-primary font-semibold"
+                            : "text-on-surface-variant hover:bg-surface-low",
+                        )}
+                      >
+                        <span className="material-symbols-outlined text-[19px]">
+                          {item.icon}
+                        </span>
+                        <span className="text-label-lg">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-outline-variant/45">
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-label-md font-semibold text-error hover:bg-error-container/40"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    logout
+                  </span>
+                  <span>Sign Out</span>
+                </button>
+              </form>
+            </div>
+          </aside>
+        </div>
+      ) : null}
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-outline-variant bg-surface-lowest py-2 lg:hidden">

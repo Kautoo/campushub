@@ -19,6 +19,7 @@ export async function markNotificationRead(
 
   await notifications.markRead(id, session.orgIds);
   revalidatePath("/dashboard/notifications");
+  revalidatePath("/dashboard", "layout");
 }
 
 /** Mark every unread notification for the user's orgs read. */
@@ -29,4 +30,5 @@ export async function markAllNotificationsRead(): Promise<void> {
 
   await notifications.markAllRead(session.orgIds);
   revalidatePath("/dashboard/notifications");
+  revalidatePath("/dashboard", "layout");
 }

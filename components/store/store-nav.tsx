@@ -1,29 +1,50 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/demo", label: "Overview", exact: true, icon: "storefront" },
-  { href: "/demo/events", label: "Events & Passes", exact: false, icon: "confirmation_number" },
-  { href: "/demo/shop", label: "Merch Shop", exact: false, icon: "shopping_bag" },
-  { href: "/demo/societies", label: "Societies", exact: false, icon: "groups" },
-  { href: "/demo/cart", label: "Shopping Bag", exact: false, icon: "shopping_cart" },
+  {
+    href: "/demo/events",
+    label: "Events & Passes",
+    exact: false,
+    icon: "confirmation_number",
+  },
+  {
+    href: "/demo/shop",
+    label: "Merch Shop",
+    exact: false,
+    icon: "shopping_bag",
+  },
+  {
+    href: "/demo/societies",
+    label: "Societies",
+    exact: false,
+    icon: "groups",
+  },
+  {
+    href: "/demo/cart",
+    label: "Shopping Bag",
+    exact: false,
+    icon: "shopping_cart",
+  },
 ] as const;
 
-export function StoreNav() {
-  const pathname = usePathname();
-
+function StoreNavLinks({ pathname }: { pathname: string | null }) {
   return (
     <nav
       aria-label="Storefront navigation"
       className="flex items-center gap-1 overflow-x-auto no-scrollbar"
     >
       {NAV_ITEMS.map((item) => {
-        const active = item.exact
-          ? pathname === item.href
-          : pathname === item.href || pathname.startsWith(item.href + "/");
+        const active = pathname
+          ? item.exact
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(item.href + "/")
+          : false;
         return (
           <Link
             key={item.href}
@@ -44,5 +65,18 @@ export function StoreNav() {
         );
       })}
     </nav>
+  );
+}
+
+function StoreNavActive() {
+  const pathname = usePathname();
+  return <StoreNavLinks pathname={pathname} />;
+}
+
+export function StoreNav() {
+  return (
+    <Suspense fallback={<StoreNavLinks pathname={null} />}>
+      <StoreNavActive />
+    </Suspense>
   );
 }

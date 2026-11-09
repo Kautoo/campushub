@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { getStorefrontData, resolveProductImage } from "@/lib/storefront";
 
+export const instant = false;
+
 export default async function ProductDetailPage({
   params,
 }: {
