@@ -17,6 +17,7 @@ export const metadata = {
   title: "Storefront & Campus Marketplace — CampusHub 2.0",
 };
 
+export const instant = false;
 export default async function DemoStorefront({
   searchParams,
 }: {

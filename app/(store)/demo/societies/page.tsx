@@ -11,6 +11,7 @@ export const metadata = {
   title: "Campus Clubs & Societies Directory — CampusHub Storefront",
 };
 
+export const instant = false;
 export default async function DemoSocietiesPage() {
   const liveOrgs = await listAllStorefrontSocieties();
 

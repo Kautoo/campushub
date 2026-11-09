@@ -10,6 +10,7 @@ export const metadata = {
   title: "Official Merch Shop — CampusHub Storefront",
 };
 
+export const instant = false;
 export default async function DemoMerchShopPage({
   searchParams,
 }: {

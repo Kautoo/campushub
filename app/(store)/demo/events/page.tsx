@@ -10,6 +10,7 @@ export const metadata = {
   title: "Campus Events & Digital Passes — CampusHub Storefront",
 };
 
+export const instant = false;
 export default async function DemoEventsCatalogPage({
   searchParams,
 }: {

@@ -5,6 +5,7 @@ import { StorefrontBanner } from "@/components/store/storefront-banner";
 import { getSessionContext } from "@/lib/auth/session";
 import { getStorefrontData } from "@/lib/storefront";
 
+export const instant = false;
 export default async function StoreLayout({
   children,
 }: {
