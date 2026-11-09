@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { hasDatabaseEnv } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
+import { hasDatabaseEnv } from "@/lib/db";
 import { StoreGrid } from "@/components/store/store-grid";
+import { Channel3StoreSearch } from "@/components/store/channel3-store-search";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
 import { StorePrice } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
@@ -560,6 +561,11 @@ export default async function DemoStorefront({
               arrow_forward
             </span>
           </Link>
+        </div>
+
+        {/* Channel3-Connected Market Radar */}
+        <div className="mb-6">
+          <Channel3StoreSearch />
         </div>
 
         <StoreGrid products={products} />

@@ -71,7 +71,7 @@ export const inviteSchema = z.object({
 export const orgSettingsSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().max(500).optional().or(z.literal("")),
-  currency: z.enum(["MYR", "USD", "SGD"]),
+  currency: z.enum(["MYR", "USD", "SGD", "EUR", "GBP"]),
   gateways: z
     .object({ paypal: z.boolean() })
     .partial()

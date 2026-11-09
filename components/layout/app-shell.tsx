@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { CurrencyProvider, UniversalCurrencySelector } from "@/components/ui/currency-context";
 import { Icon } from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -153,7 +154,8 @@ export function AppShell({
   const currentPageLabel = ROUTE_TITLES[pathname] ?? "Workspace";
 
   return (
-    <div className="min-h-screen bg-background">
+    <CurrencyProvider>
+      <div className="min-h-screen bg-background">
       {/* Top Workspace Header */}
       <header
         ref={headerRef}
@@ -485,8 +487,9 @@ export function AppShell({
               ) : null}
             </div>
 
-            <ThemeToggle />
+            <UniversalCurrencySelector />
 
+            <ThemeToggle />
             {/* Interactive Account Avatar Button + Popover Menu */}
             <div className="relative">
               <button
@@ -890,6 +893,7 @@ export function AppShell({
           </div>
         </div>
       ) : null}
-    </div>
+      </div>
+    </CurrencyProvider>
   );
 }

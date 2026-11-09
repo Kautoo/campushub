@@ -511,23 +511,21 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Supported Gateways & Security */}
-            <div className="pt-3 border-t border-outline-variant/40 space-y-3">
+            {/* Exclusive PayPal Settlement Notice */}
+            <div className="pt-3 border-t border-outline-variant/40 space-y-2.5">
               <div
-                className="flex flex-wrap items-center justify-center gap-2"
-                aria-label="Supported payment methods"
+                className="flex items-center justify-center gap-2"
+                aria-label="Exclusive Payment Provider"
               >
-                {["PayPal", "FPX Banking", "Visa", "Mastercard"].map((g) => (
-                  <span
-                    key={g}
-                    className="rounded-lg border border-outline-variant/50 bg-surface-low px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-on-surface-variant"
-                  >
-                    {g}
+                <span className="inline-flex items-center gap-1.5 rounded-xl border border-secondary/40 bg-secondary-container/25 px-3.5 py-1.5 text-label-sm font-bold text-on-surface">
+                  <span className="material-symbols-outlined text-[17px] text-[#0070ba]">
+                    account_balance_wallet
                   </span>
-                ))}
+                  <span>PayPal Orders v2 Exclusive Payment</span>
+                </span>
               </div>
-              <p className="text-[11px] text-center text-on-surface-variant">
-                100% Buyer Protection · Instant QR Pass Delivery
+              <p className="text-[11px] text-center text-on-surface-variant leading-snug">
+                All transactions are settled exclusively through PayPal with 100% buyer escrow protection.
               </p>
             </div>
           </aside>

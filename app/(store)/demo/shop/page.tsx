@@ -2,6 +2,7 @@ import Link from "next/link";
 import { hasDatabaseEnv } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { StoreGrid } from "@/components/store/store-grid";
+import { Channel3StoreSearch } from "@/components/store/channel3-store-search";
 import { Badge } from "@/components/ui/badge";
 import { StorefrontBanner } from "@/components/store/storefront-banner";
 import { getStorefrontData } from "@/lib/storefront";
@@ -78,6 +79,9 @@ export default async function DemoMerchShopPage({
           </div>
         </div>
       </div>
+
+      {/* Channel3-Connected Commercial Product & Market Price Search */}
+      <Channel3StoreSearch />
 
       {/* Interactive Catalog Grid */}
       <StoreGrid products={products} />

@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { href: "/demo", label: "Storefront", exact: true },
   { href: "/demo/events", label: "Events & Passes", exact: false },
   { href: "/demo/shop", label: "Merch Shop", exact: false },
-  { href: "/demo/societies", label: "Societies", exact: false },
+  { href: "/demo/societies", label: "Clubs & Societies", exact: false },
 ] as const;
 
 function StoreNavLinks({

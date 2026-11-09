@@ -8,13 +8,12 @@ import {
 } from "@/lib/storefront";
 
 export const metadata = {
-  title: "Accredited Campus Societies — CampusHub Storefront",
+  title: "Campus Clubs & Societies Directory — CampusHub Storefront",
 };
 
 export default async function DemoSocietiesPage() {
   const liveOrgs = await listAllStorefrontSocieties();
 
-  // Combine live Postgres organizations with campus highlights metadata
   const societyList: StorefrontSocietyItem[] =
     liveOrgs.length > 0
       ? liveOrgs
@@ -35,7 +34,7 @@ export default async function DemoSocietiesPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      {/* Consumer Header */}
+      {/* Breadcrumb + Header */}
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs space-y-4">
         <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
           <Link href="/demo" className="hover:text-primary transition-colors">
@@ -43,7 +42,7 @@ export default async function DemoSocietiesPage() {
           </Link>
           <span>/</span>
           <span className="text-on-surface font-semibold">
-            Campus Societies
+            Clubs &amp; Societies
           </span>
         </nav>
 
@@ -53,12 +52,12 @@ export default async function DemoSocietiesPage() {
               University Student Union Accredited
             </Badge>
             <h1 className="text-display font-bold text-on-surface tracking-tight">
-              Accredited Student Societies &amp; Club Organizers
+              Campus Clubs &amp; Societies (Organizers &amp; Sellers)
             </h1>
             <p className="text-body-lg text-on-surface-variant leading-relaxed">
-              Discover official university clubs and faculty societies. Click
-              any club to visit their live multi-tenant storefront, explore their
-              event passes, and order official merchandise.
+              Every accredited student organization on CampusHub operates its
+              own box office and merchandise store. Choose a society below to
+              browse their events and official club gear.
             </p>
           </div>
           <Link
@@ -68,12 +67,85 @@ export default async function DemoSocietiesPage() {
             <span className="material-symbols-outlined text-[18px]">
               confirmation_number
             </span>
-            <span>Browse All Society Events</span>
+            <span>Browse All Campus Passes</span>
           </Link>
         </div>
       </div>
 
-      {/* Societies Grid */}
+      {/* EXPLANATORY GUIDE: WHAT IS A CAMPUS SOCIETY? */}
+      <section className="rounded-2xl border border-secondary/35 bg-gradient-to-br from-surface-lowest via-secondary-container/10 to-surface-low p-6 sm:p-8 shadow-xs space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px] text-secondary">
+            help_outline
+          </span>
+          <h2 className="text-headline-sm font-bold text-on-surface">
+            How Societies Function on CampusHub
+          </h2>
+          <Badge tone="teal">Platform Architecture</Badge>
+        </div>
+        <p className="text-body-md text-on-surface-variant max-w-3xl leading-relaxed">
+          In university campus life, a <strong>Society</strong> is an accredited
+          student-run organization (like Tech Society or the Design Guild).
+          On CampusHub, each society acts as both an event organizer and an
+          official merchandise seller:
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+          <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-4 space-y-1.5 shadow-2xs">
+            <div className="w-8 h-8 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">
+              1
+            </div>
+            <h3 className="text-label-lg font-bold text-on-surface">
+              Official Event Host
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Societies schedule venues, host campus hackathons and workshops,
+              and issue instant digital QR entry passes.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-4 space-y-1.5 shadow-2xs">
+            <div className="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center font-bold">
+              2
+            </div>
+            <h3 className="text-label-lg font-bold text-on-surface">
+              Merchandise Seller
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Societies design, stock, and sell faculty-licensed apparel and gear
+              to fund student projects and competitions.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-4 space-y-1.5 shadow-2xs">
+            <div className="w-8 h-8 rounded-lg bg-success-container text-success flex items-center justify-center font-bold">
+              3
+            </div>
+            <h3 className="text-label-lg font-bold text-on-surface">
+              100% PayPal Protected
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              All transactions settle directly into the society&apos;s verified
+              university escrow account with PayPal security.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-outline-variant/50 bg-surface-lowest p-4 space-y-1.5 shadow-2xs">
+            <div className="w-8 h-8 rounded-lg bg-warning-container text-warning flex items-center justify-center font-bold">
+              4
+            </div>
+            <h3 className="text-label-lg font-bold text-on-surface">
+              Dedicated Storefronts
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Clicking any club below filters the store to show exclusively that
+              society&apos;s events and official products.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Accredited Societies Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {societyList.map((soc: StorefrontSocietyItem) => {
           const meta = metaBySlug.get(soc.slug);
@@ -96,15 +168,20 @@ export default async function DemoSocietiesPage() {
                       {icon}
                     </span>
                   </div>
-                  <Badge tone={badgeTone} icon="verified">
-                    {badgeLabel}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge tone={badgeTone} icon="verified">
+                      {badgeLabel}
+                    </Badge>
+                    <span className="text-[10px] text-on-surface-variant font-mono">
+                      Seller ID: {soc.slug}
+                    </span>
+                  </div>
                 </div>
 
                 <div>
-                  <h2 className="text-headline-md font-bold text-on-surface">
+                  <h3 className="text-headline-md font-bold text-on-surface">
                     {soc.name}
-                  </h2>
+                  </h3>
                   <p className="text-label-md text-secondary font-semibold mt-0.5">
                     {faculty}
                   </p>
@@ -138,7 +215,7 @@ export default async function DemoSocietiesPage() {
                       {soc.eventCount}
                     </span>
                     <span className="text-[10.5px] text-on-surface-variant">
-                      Published Events
+                      Active Events
                     </span>
                   </div>
                   <div className="rounded-lg bg-surface-low p-2">
@@ -146,7 +223,7 @@ export default async function DemoSocietiesPage() {
                       {soc.productCount}
                     </span>
                     <span className="text-[10.5px] text-on-surface-variant">
-                      Active SKUs
+                      Catalog SKUs
                     </span>
                   </div>
                 </div>
@@ -156,7 +233,7 @@ export default async function DemoSocietiesPage() {
                     href={`/demo?org=${soc.slug}`}
                     className="inline-flex h-10 items-center justify-center rounded-xl bg-primary text-on-primary text-label-sm font-semibold hover:opacity-90 transition-colors col-span-2 shadow-2xs"
                   >
-                    <span>Visit Club Storefront</span>
+                    <span>Visit Society Storefront</span>
                     <span className="material-symbols-outlined text-[16px] ml-1">
                       arrow_forward
                     </span>

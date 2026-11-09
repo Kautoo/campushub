@@ -21,7 +21,7 @@ export const STORE_CURRENCIES: Record<
   GBP: { code: "GBP", symbol: "£", label: "GBP (£)", rateFromMyr: 0.18 },
 };
 
-const STORAGE_KEY = "ch-store-currency";
+const STORAGE_KEY = "ch-active-currency";
 
 type CurrencyContextValue = {
   currency: StoreCurrencyCode;
@@ -58,6 +58,8 @@ export function StoreCurrencyProvider({
     setCurrencyState(next);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, next);
+      document.cookie = `ch-currency=${next}; path=/; max-age=31536000`;
+      window.dispatchEvent(new Event("ch-currency-changed"));
     }
   };
 
