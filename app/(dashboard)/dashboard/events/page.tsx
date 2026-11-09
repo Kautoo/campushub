@@ -1,12 +1,16 @@
 import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader } from "@/components/ui/primitives";
-import { EventsWorkspace, type EventRow } from "@/components/workspaces/events-workspace";
+import { StatStrip } from "@/components/ui/kpi-card";
+import {
+  EventsWorkspace,
+  type EventRow,
+} from "@/components/workspaces/events-workspace";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { events } from "@/lib/db/repo";
 
-export const metadata = { title: "Events — CampusHub 2.0" };
+export const metadata = { title: "Events & Venue Scheduler — CampusHub 2.0" };
 
 export default async function EventsPage() {
   const db = getDbSafe();
@@ -31,13 +35,57 @@ export default async function EventsPage() {
     total_sold: e.ticket_tiers.reduce((s, t) => s + t.sold, 0),
   }));
 
+  const publishedCount = rows.filter((e) => e.status === "published").length;
+  const totalSold = rows.reduce((s, e) => s + e.total_sold, 0);
+  const totalCapacity = rows.reduce((s, e) => s + (e.capacity || 0), 0);
+  const fillRate =
+    totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0;
+  const activeVenues = new Set(
+    rows.map((e) => e.venue?.trim() || "Campus Quad"),
+  ).size;
+
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="confirmation_number"
-        title="Event Management"
-        subtitle="Create, monitor, and manage campus hackathons, workshops, and student society ticketing rosters."
+        eyebrow="Event Scheduling & Ticketing"
+        title="Events & Venue Timeline Management"
+        subtitle="Manage tabular event rosters with AG Grid Community or switch to Bryntum Scheduler for interactive multi-venue calendar timelines and drag-and-drop rescheduling."
       />
+
+      <StatStrip
+        items={[
+          {
+            label: "Total Initiatives",
+            value: rows.length,
+            icon: "event",
+            tone: "primary",
+            sublabel: `${publishedCount} published on storefront`,
+          },
+          {
+            label: "Passes Issued",
+            value: totalSold,
+            icon: "confirmation_number",
+            tone: "teal",
+            sublabel: `Across ${joined.reduce((s, e) => s + e.ticket_tiers.length, 0)} ticket tiers`,
+          },
+          {
+            label: "Total Seat Capacity",
+            value: totalCapacity,
+            icon: "groups",
+            tone: "success",
+            sublabel: `${fillRate}% aggregate capacity utilization`,
+          },
+          {
+            label: "Scheduled Venues",
+            value: activeVenues,
+            icon: "location_on",
+            tone: "neutral",
+            sublabel: "Tracked on Bryntum timeline",
+          },
+        ]}
+      />
+
       <EventsWorkspace
         rows={rows}
         licensed={Boolean(process.env.BRYNTUM_LICENSE_KEY)}

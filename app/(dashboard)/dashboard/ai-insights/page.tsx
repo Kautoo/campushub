@@ -12,7 +12,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { aiInsights } from "@/lib/db/repo";
 
-export const metadata = { title: "AI Insights — CampusHub 2.0" };
+export const metadata = { title: "AI Commerce Intelligence — CampusHub 2.0" };
 
 export default async function AiInsightsPage() {
   const db = getDbSafe();
@@ -27,15 +27,24 @@ export default async function AiInsightsPage() {
   const orgReady = session.orgIds.length > 0;
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="auto_awesome"
+        eyebrow="Grounded Autonomous Analytics"
         title="AI Commerce Intelligence"
-        subtitle={`Turn transaction flow into actionable insights · model ${aiModelId()}`}
+        subtitle={`Every response is strictly grounded in your live Postgres metrics pack (revenue by day, tier sell-through, refunds, and SKU stock) · Model ${aiModelId()}`}
         actions={
-          <Badge tone={aiReady ? "success" : "warning"}>
-            {aiReady ? "gateway connected" : "not configured"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge tone="primary" icon="database">
+              Zero-PII Pack
+            </Badge>
+            <Badge
+              tone={aiReady ? "success" : "warning"}
+              icon={aiReady ? "verified" : "info"}
+            >
+              {aiReady ? "Gateway Connected" : "Setup Required"}
+            </Badge>
+          </div>
         }
       />
 
@@ -48,58 +57,88 @@ export default async function AiInsightsPage() {
         }
       />
 
-      <div className="grid gap-space-lg lg:grid-cols-2">
-        <InsightsChat
-          disabled={!aiReady || !orgReady || !session}
-          notice={
-            !orgReady
-              ? "Create your organization first."
-              : "Chat unlocks once AI_BASE_URL and AI_API_KEY are set (see README)."
-          }
-        />
-        <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <InsightsChat
+            disabled={!aiReady || !orgReady || !session}
+            notice={
+              !orgReady
+                ? "Create your organization first."
+                : "Chat unlocks once AI_BASE_URL and AI_API_KEY are set (see README)."
+            }
+          />
+        </div>
+        <div className="lg:col-span-5 space-y-6">
           <AnimatedBeamDemo />
           {hasChannel3() ? (
             <MarketDiscovery />
           ) : (
-            <div className="rounded-xl bg-surface-container-low p-space-lg">
-              <p className="text-label-md text-on-surface-variant">Market discovery</p>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                Channel3 integration is hidden until CHANNEL3_API_KEY is set
-                (see README).
+            <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-5 shadow-xs">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-secondary">
+                  travel_explore
+                </span>
+                <p className="text-headline-sm font-bold text-on-surface">
+                  Channel3 Market Discovery
+                </p>
+              </div>
+              <p className="text-body-sm text-on-surface-variant mt-1.5 leading-relaxed">
+                External collegiate merchandise benchmarking unlocks when{" "}
+                <code className="font-mono text-xs bg-surface-low px-1.5 py-0.5 rounded">
+                  CHANNEL3_API_KEY
+                </code>{" "}
+                is configured in your environment.
               </p>
             </div>
           )}
         </div>
       </div>
 
-      <section>
-        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3">Recent insights</h3>
-        {(recent).length === 0 ? (
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            Nothing yet — generate a summary or ask a question above.
+      <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
+        <div className="flex items-center justify-between pb-4 border-b border-outline-variant/40 mb-4">
+          <div>
+            <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
+              Persistence Log
+            </span>
+            <h3 className="text-headline-sm font-bold text-on-surface mt-0.5">
+              Recent Grounded Insights Audit Trail
+            </h3>
+          </div>
+          <Badge tone="neutral">{recent.length} stored</Badge>
+        </div>
+
+        {recent.length === 0 ? (
+          <p className="text-body-md text-on-surface-variant py-4">
+            No persisted insights yet — generate a summary card or ask a question above to record an audit entry.
           </p>
         ) : (
           <ul className="space-y-3">
             {recent.map((i) => (
               <li
                 key={i.id}
-                className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm"
+                className="rounded-xl border border-outline-variant/40 bg-surface-low/60 p-4"
               >
-                <div className="flex items-center gap-2">
-                  <Badge tone={i.kind === "chat" ? "neutral" : "teal"}>
-                    {i.kind}
-                  </Badge>
-                  <span className="text-label-sm text-on-surface-variant">
-                    {new Date(i.created_at).toLocaleString("en-MY")} · {i.model}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge tone={i.kind === "chat" ? "neutral" : "teal"}>
+                      {i.kind}
+                    </Badge>
+                    {i.model ? (
+                      <span className="font-mono text-[11px] text-on-surface-variant">
+                        {i.model}
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="text-label-sm text-on-surface-variant tabular-nums">
+                    {new Date(i.created_at).toLocaleString("en-MY")}
                   </span>
                 </div>
                 {i.prompt ? (
-                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 line-clamp-1">
-                    Q: {i.prompt}
+                  <p className="text-body-sm font-semibold text-primary mt-2">
+                    Prompt: {i.prompt}
                   </p>
                 ) : null}
-                <p className="text-body-md text-on-surface mt-1 line-clamp-4 whitespace-pre-wrap">
+                <p className="text-body-md text-on-surface mt-1.5 whitespace-pre-wrap leading-relaxed">
                   {i.response}
                 </p>
               </li>

@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
-import { markNotificationRead, markAllNotificationsRead } from "@/app/actions/notifications";
+import { Badge } from "@/components/ui/badge";
+import {
+  markNotificationRead,
+  markAllNotificationsRead,
+} from "@/app/actions/notifications";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { notifications } from "@/lib/db/repo";
 
-export const metadata = { title: "Notifications — CampusHub 2.0" };
+export const metadata = { title: "Notifications & Alerts — CampusHub 2.0" };
 
-/** Material icon per notification type (Stitch spec). */
 const typeIcons: Record<string, string> = {
   order: "receipt_long",
   stock: "inventory_2",
@@ -44,59 +47,64 @@ function NotificationItem({ n }: { n: NotificationRow }) {
   const unread = n.read_at === null;
   return (
     <li
-      className={`relative flex items-start gap-3 py-2 transition ${
-        unread ? "opacity-100" : "opacity-60"
+      className={`flex items-start justify-between gap-4 rounded-xl border p-4 transition-all ${
+        unread
+          ? "border-secondary/40 bg-surface-lowest shadow-xs"
+          : "border-outline-variant/35 bg-surface-low/50 opacity-80"
       }`}
     >
-      <span
-        aria-hidden
-        className={`absolute -left-[26px] top-4 flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-surface ${
-          unread ? "bg-secondary" : "bg-outline-variant"
-        }`}
-      >
-        {unread ? (
-          <span className="h-1.5 w-1.5 rounded-full bg-on-secondary-fixed" />
-        ) : null}
-      </span>
-      <span
-        className={`material-symbols-outlined mt-0.5 text-[22px] ${
-          unread ? "text-secondary" : "text-on-surface-variant"
-        }`}
-      >
-        {typeIcons[n.type] ?? typeIcons.system}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="font-headline-sm text-headline-sm text-on-surface truncate">{n.title}</p>
-          {unread ? (
-            <span className="h-2 w-2 shrink-0 rounded-full bg-secondary" />
-          ) : null}
+      <div className="flex items-start gap-3.5 min-w-0">
+        <div
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            unread
+              ? "bg-secondary-container/55 text-on-secondary-container"
+              : "bg-surface-container text-on-surface-variant"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {typeIcons[n.type] ?? typeIcons.system}
+          </span>
         </div>
-        {n.body ? (
-          <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">{n.body}</p>
-        ) : null}
-        <div className="flex items-center gap-3 mt-1">
-          <span className="text-label-md text-on-surface-variant">{timeAgo(n.created_at)}</span>
-          {n.link ? (
-            <a
-              href={n.link}
-              className="text-label-md font-semibold text-secondary hover:underline"
-            >
-              View
-            </a>
+        <div className="min-w-0 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-headline-sm font-bold text-on-surface">
+              {n.title}
+            </p>
+            <Badge tone={unread ? "teal" : "neutral"}>{n.type}</Badge>
+          </div>
+          {n.body ? (
+            <p className="text-body-md text-on-surface-variant">{n.body}</p>
           ) : null}
+          <div className="flex items-center gap-3 pt-0.5">
+            <span className="text-label-sm text-on-surface-variant tabular-nums">
+              {timeAgo(n.created_at)}
+            </span>
+            {n.link ? (
+              <a
+                href={n.link}
+                className="inline-flex items-center gap-1 text-label-md font-semibold text-secondary hover:underline"
+              >
+                <span>Open workspace</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  arrow_forward
+                </span>
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
+
       {unread ? (
         <form action={markNotificationRead.bind(null, n.id)}>
           <button
             type="submit"
             title="Mark as read"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
+            className="inline-flex h-8 items-center gap-1 rounded-lg border border-outline-variant/60 bg-surface-lowest px-2.5 text-label-sm font-semibold text-on-surface-variant transition hover:bg-surface-low hover:text-on-surface shrink-0"
           >
-            <span className="material-symbols-outlined text-[18px]">
-              done_all
+            <span className="material-symbols-outlined text-[16px]">
+              done
             </span>
+            <span>Read</span>
           </button>
         </form>
       ) : null}
@@ -111,37 +119,32 @@ export default async function NotificationsPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const all = (await notifications.list(session.orgIds, 100)) as NotificationRow[];
+  const all = (await notifications.list(
+    session.orgIds,
+    100,
+  )) as NotificationRow[];
   const unread = all.filter((n) => n.read_at === null);
   const read = all.filter((n) => n.read_at !== null);
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="notifications"
+        eyebrow="Operational Telemetry Stream"
         title="Notifications & Activity Center"
-        subtitle="Monitor operational alerts, ticket check-in bursts, PayPal transaction settlements, catalog stock velocity, and audit activity."
+        subtitle="Real-time alerts for PayPal order captures, low-stock threshold breaches, ticket registration surges, and AI commerce briefs."
         actions={
           <>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-label-md font-semibold ${
-                unread.length > 0
-                  ? "bg-error-container text-error"
-                  : "bg-surface-container text-on-surface-variant"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[14px]">
-                mark_email_unread
-              </span>
+            <Badge tone={unread.length > 0 ? "error" : "neutral"} icon="notifications">
               {unread.length} unread
-            </span>
+            </Badge>
             {unread.length > 0 ? (
               <form action={markAllNotificationsRead}>
                 <button
                   type="submit"
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-label-lg font-semibold text-white transition hover:opacity-90 dark:text-on-primary-container"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-label-md font-semibold text-on-primary transition hover:bg-primary-container"
                 >
-                  <span className="material-symbols-outlined text-[18px]">
+                  <span className="material-symbols-outlined text-[17px]">
                     done_all
                   </span>
                   Mark all read
@@ -159,13 +162,13 @@ export default async function NotificationsPage() {
           body="Order, stock, and event alerts will appear here as they happen."
         />
       ) : (
-        <div className="space-y-space-lg">
+        <div className="space-y-6">
           {unread.length > 0 ? (
-            <section>
-              <h3 className="font-label-lg text-label-lg font-semibold text-on-surface-variant mb-2">
-                Unread
+            <section className="space-y-3">
+              <h3 className="text-label-md uppercase tracking-wider font-bold text-secondary">
+                Unread Alerts ({unread.length})
               </h3>
-              <ul className="relative space-y-1 border-l border-outline-variant pl-6">
+              <ul className="space-y-2.5">
                 {unread.map((n) => (
                   <NotificationItem key={n.id} n={n} />
                 ))}
@@ -173,11 +176,11 @@ export default async function NotificationsPage() {
             </section>
           ) : null}
           {read.length > 0 ? (
-            <section>
-              <h3 className="font-label-lg text-label-lg font-semibold text-on-surface-variant mb-2">
-                Earlier
+            <section className="space-y-3">
+              <h3 className="text-label-md uppercase tracking-wider font-bold text-on-surface-variant">
+                Archived Activity ({read.length})
               </h3>
-              <ul className="relative space-y-1 border-l border-outline-variant pl-6">
+              <ul className="space-y-2.5">
                 {read.map((n) => (
                   <NotificationItem key={n.id} n={n} />
                 ))}

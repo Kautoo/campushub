@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
 import type { TransactionRow } from "@/lib/db/repo";
-import { DataTable } from "@/components/grid/data-table";
+import { DataTable, type DataTableFilterPill } from "@/components/grid/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 
@@ -16,81 +16,115 @@ const statusTone: Record<string, "success" | "warning" | "error" | "neutral"> = 
   reversed: "error",
 };
 
-/** Transactions grid: provider/type/amount/verification badges. */
+const TXN_FILTER_PILLS: DataTableFilterPill[] = [
+  { value: "all", label: "All Entries" },
+  { value: "completed", label: "Completed" },
+  { value: "pending", label: "Pending" },
+  { value: "failed", label: "Failed" },
+];
+
+/** Transactions AG Grid: provider, capture reference, amount, and webhook verification badges. */
 export function TxnGrid({ rows }: { rows: TxnRow[] }) {
   const columnDefs = useMemo<ColDef<TxnRow>[]>(
     () => [
       {
+        field: "provider_ref",
+        headerName: "Gateway Reference",
+        minWidth: 175,
+        flex: 1.3,
+        cellRenderer: (p: { data?: TxnRow }) => {
+          const ref = p.data?.provider_ref ?? "—";
+          return (
+            <span className="rounded-md bg-surface-container px-2 py-0.5 font-mono text-[12px] font-medium text-on-surface">
+              {ref}
+            </span>
+          );
+        },
+        tooltipValueGetter: (p) => p.value ?? "",
+      },
+      {
         field: "provider",
-        headerName: "Provider",
-        minWidth: 110,
-        maxWidth: 140,
+        headerName: "Gateway",
+        minWidth: 120,
+        maxWidth: 145,
         cellRenderer: (p: { value: string }) => (
-          <Badge tone="primary">{p.value === "paypal" ? "PayPal" : p.value}</Badge>
+          <Badge tone="primary" icon="account_balance_wallet">
+            {p.value === "paypal" ? "PayPal v2" : p.value}
+          </Badge>
         ),
       },
       {
         field: "type",
-        headerName: "Type",
-        minWidth: 100,
-        maxWidth: 130,
+        headerName: "Ledger Type",
+        minWidth: 115,
+        maxWidth: 140,
         cellRenderer: (p: { value: string }) => (
-          <Badge tone={p.value === "refund" ? "warning" : "teal"}>
+          <Badge
+            tone={p.value === "refund" ? "warning" : "teal"}
+            icon={p.value === "refund" ? "currency_exchange" : "south_west"}
+          >
             {p.value}
           </Badge>
         ),
       },
       {
         field: "amount_cents",
-        headerName: "Amount",
+        headerName: "Settlement Amount",
         type: "rightAligned",
-        minWidth: 120,
-        valueFormatter: (p) =>
-          formatMoney(Number(p.value), p.data?.currency ?? "MYR"),
+        minWidth: 145,
+        maxWidth: 170,
+        cellRenderer: (p: { data?: TxnRow }) => {
+          if (!p.data) return null;
+          const isRefund = p.data.type === "refund";
+          return (
+            <span
+              className={`tabular-nums font-bold ${
+                isRefund ? "text-warning" : "text-primary"
+              }`}
+            >
+              {isRefund ? "−" : "+"}
+              {formatMoney(Number(p.data.amount_cents), p.data.currency ?? "MYR")}
+            </span>
+          );
+        },
       },
       {
         field: "currency",
-        headerName: "Currency",
-        minWidth: 90,
-        maxWidth: 110,
+        headerName: "CCY",
+        minWidth: 85,
+        maxWidth: 100,
+        cellClass: "font-mono text-[12px] text-on-surface-variant",
       },
       {
         field: "status",
         headerName: "Status",
-        minWidth: 120,
+        minWidth: 125,
+        maxWidth: 145,
         cellRenderer: (p: { value: string }) => (
           <Badge tone={statusTone[p.value] ?? "neutral"}>{p.value}</Badge>
         ),
       },
       {
         field: "verified",
-        headerName: "Verified",
-        minWidth: 120,
-        maxWidth: 140,
+        headerName: "Webhook HMAC",
+        minWidth: 140,
+        maxWidth: 165,
         cellRenderer: (p: { value: boolean }) =>
           p.value ? (
             <Badge tone="teal" icon="verified">
-              verified
+              HMAC Verified
             </Badge>
           ) : (
-            <Badge tone="neutral">unverified</Badge>
+            <Badge tone="neutral" icon="schedule">
+              Awaiting Hook
+            </Badge>
           ),
       },
       {
-        field: "provider_ref",
-        headerName: "Reference",
-        minWidth: 170,
-        cellClass: "font-mono text-[12px]",
-        valueFormatter: (p) => {
-          const v = p.value ?? "—";
-          return v.length > 18 ? `${v.slice(0, 18)}…` : v;
-        },
-        tooltipValueGetter: (p) => p.value ?? "",
-      },
-      {
         field: "created_at",
-        headerName: "Date",
-        minWidth: 130,
+        headerName: "Captured At",
+        minWidth: 140,
+        maxWidth: 160,
         valueFormatter: (p) =>
           new Date(p.value).toLocaleDateString("en-MY", {
             day: "2-digit",
@@ -102,5 +136,17 @@ export function TxnGrid({ rows }: { rows: TxnRow[] }) {
     [],
   );
 
-  return <DataTable columnDefs={columnDefs} rowData={rows} height={480} />;
+  return (
+    <div className="p-5">
+      <DataTable
+        columnDefs={columnDefs}
+        rowData={rows}
+        height={520}
+        searchPlaceholder="Search capture reference, gateway, status, or amount…"
+        filterField="status"
+        filterPills={TXN_FILTER_PILLS}
+        exportFileName="campushub-transactions.csv"
+      />
+    </div>
+  );
 }

@@ -1,20 +1,26 @@
+import Link from "next/link";
 import { hasDatabaseEnv, getPool } from "@/lib/db";
 import { SetupNotice } from "@/components/layout/setup-notice";
-import { CartPill } from "@/components/store/cart-pill";
 import { StoreGrid, type StoreProduct } from "@/components/store/store-grid";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
+import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { cacheLife, cacheTag } from "next/cache";
 
-export const metadata = { title: "Storefront & Marketplace — CampusHub 2.0" };
+export const metadata = {
+  title: "Storefront & Campus Marketplace — CampusHub 2.0",
+};
 
 type EventRow = {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
   venue: string | null;
   category: string | null;
   start_at: string | null;
+  end_at: string | null;
+  capacity: number;
   imageUrl?: string;
   tiers: {
     id: string;
@@ -22,16 +28,16 @@ type EventRow = {
     price_cents: number;
     quantity: number;
     sold: number;
+    perks: string[] | null;
   }[];
 };
 
 type StorefrontData = {
-  org: { id: string; name: string; currency: string };
+  org: { id: string; name: string; description: string | null; currency: string };
   products: StoreProduct[];
   events: EventRow[];
 };
 
-// Stitch event photography mapping for high visual fidelity
 const STITCH_EVENT_IMAGES: Record<string, string> = {
   "innovation-week-2026":
     "https://lh3.googleusercontent.com/aida-public/AB6AXuCkGKgKw6VSLV0diILC4W0PfrGA6B9tq3jZvcSkvYE9S-VMbx9vHq9gLKNJFuehPV1U14V8WZ88g0iA-NYbFxes0na0xc1rWe48QTJbfLihpw0Uig8fud1sKPutN7SWTPsgSBON6fsK7fJPkVv8CHMssuaagJUbhC5WMd_qjetlBZ5sZACYCxY6gcvav64SCCvwYRwz5WwLtJZpezsCBAACb_vysbBhFVM8GQepBVJF",
@@ -45,15 +51,6 @@ const STITCH_EVENT_IMAGES: Record<string, string> = {
     "https://lh3.googleusercontent.com/aida-public/AB6AXuBfg4nSH4ImbNw_beLGvmzVsh5puf-o_2gDfLVVimRL3fzDc2tLc_kX1Fyoe8LeqYN0ySRi8PCcIotw5FhDHtNUt3sFGBG1oVAiJ17xr2jzPwsDnJlBHTup78L3WeO6czQ92PGk-HNWvfD2M0G29DJW6W7Eq0lC3cvvbPkj9wEPO1A2eSZGH7xFW3m32d7dPvRxZ_evOWAuJ4obMJPmVwhsisEumYwJu0f_Rf8Q5UPO",
 };
 
-const CATEGORIES = [
-  { label: "All Categories", icon: "apps" },
-  { label: "Hackathons & Tech", icon: "terminal" },
-  { label: "Club Merch", icon: "shopping_bag" },
-  { label: "Arts & Culture", icon: "palette" },
-  { label: "Workshops", icon: "school" },
-  { label: "Sports & Esports", icon: "sports_esports" },
-];
-
 /**
  * Public storefront data — cached and tagged "storefront".
  */
@@ -66,33 +63,45 @@ async function getStorefrontData(): Promise<StorefrontData | null> {
   let orgRes, productsRes, eventsRes;
   try {
     [orgRes, productsRes, eventsRes] = await Promise.all([
-      pool.query<{ id: string; name: string; currency: string }>(
-        `select id, name, currency from public.organizations
+      pool.query<{
+        id: string;
+        name: string;
+        description: string | null;
+        currency: string;
+      }>(
+        `select id, name, description, currency from public.organizations
          order by created_at asc limit 1`,
       ),
       pool.query<StoreProduct>(
-        `select id, name, slug, description, images, category, price_cents, stock
+        `select id, name, slug, description, images, category, price_cents, stock, sku, low_stock_threshold
          from public.products
          where status = 'active'
          order by price_cents asc`,
       ),
-      pool.query<
-        EventRow & {
-          slug: string;
-          tier_id: string | null;
-          tier_name: string | null;
-          tier_price_cents: number | null;
-          tier_quantity: number | null;
-          tier_sold: number | null;
-        }
-      >(
-        `select e.id, e.title, e.slug, e.description, e.venue, e.category, e.start_at,
+      pool.query<{
+        id: string;
+        title: string;
+        slug: string;
+        description: string | null;
+        venue: string | null;
+        category: string | null;
+        start_at: string | null;
+        end_at: string | null;
+        capacity: number;
+        tier_id: string | null;
+        tier_name: string | null;
+        tier_price_cents: number | null;
+        tier_quantity: number | null;
+        tier_sold: number | null;
+        tier_perks: string[] | null;
+      }>(
+        `select e.id, e.title, e.slug, e.description, e.venue, e.category, e.start_at, e.end_at, e.capacity,
                 tt.id as tier_id, tt.name as tier_name, tt.price_cents as tier_price_cents,
-                tt.quantity as tier_quantity, tt.sold as tier_sold
+                tt.quantity as tier_quantity, tt.sold as tier_sold, tt.perks as tier_perks
          from public.events e
          left join public.ticket_tiers tt on tt.event_id = e.id
          where e.status = 'published'
-         order by e.start_at asc`,
+         order by e.start_at asc, tt.price_cents asc`,
       ),
     ]);
   } catch (err) {
@@ -111,10 +120,13 @@ async function getStorefrontData(): Promise<StorefrontData | null> {
       e = {
         id: row.id,
         title: row.title,
+        slug: row.slug,
         description: row.description,
         venue: row.venue,
         category: row.category,
         start_at: row.start_at,
+        end_at: row.end_at,
+        capacity: row.capacity ?? 0,
         imageUrl:
           STITCH_EVENT_IMAGES[row.slug] ||
           STITCH_EVENT_IMAGES["innovation-week-2026"],
@@ -130,12 +142,18 @@ async function getStorefrontData(): Promise<StorefrontData | null> {
         price_cents: row.tier_price_cents ?? 0,
         quantity: row.tier_quantity ?? 0,
         sold: row.tier_sold ?? 0,
+        perks: row.tier_perks ?? null,
       });
     }
   }
 
   return {
-    org: { id: org.id, name: org.name, currency: org.currency },
+    org: {
+      id: org.id,
+      name: org.name,
+      description: org.description,
+      currency: org.currency,
+    },
     products: productsRes.rows,
     events,
   };
@@ -149,101 +167,144 @@ export default async function DemoStorefront() {
 
   const { org, products, events } = data;
   const flagship = events[0];
+  const flagshipSold =
+    flagship?.tiers.reduce((s, t) => s + t.sold, 0) ?? 220;
+  const flagshipCap = flagship?.capacity || 500;
+  const flagshipPct = Math.min(
+    100,
+    Math.round((flagshipSold / flagshipCap) * 100),
+  );
+
+  const totalEventPassesSold = events.reduce(
+    (s, e) => s + e.tiers.reduce((ts, t) => ts + t.sold, 0),
+    0,
+  );
+  const totalMerchStock = products.reduce((s, p) => s + p.stock, 0);
 
   return (
     <main className="w-full bg-surface min-h-screen">
       {/* ============================================================
-          1. HERO & FEATURED EVENT SHOWCASE (1:1 with Stitch Section 1)
+          1. HERO & FLAGSHIP EVENT SPOTLIGHT
           ============================================================ */}
-      <div className="relative w-full overflow-hidden border-b border-outline-variant/30">
-        {/* Ambient Top Glow Layer */}
+      <div className="relative w-full overflow-hidden border-b border-outline-variant/40 bg-surface-lowest">
         <div
           aria-hidden
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-96 bg-gradient-to-r from-secondary/15 via-secondary-container/20 to-primary-fixed-dim/20 blur-3xl pointer-events-none rounded-full"
+          className="absolute -top-36 left-1/2 -translate-x-1/2 w-[920px] h-96 bg-gradient-to-r from-secondary/12 via-secondary-container/20 to-primary-fixed/25 blur-3xl pointer-events-none rounded-full"
         />
 
-        <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-xl lg:py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center">
-            {/* Left: Value Proposition */}
-            <div className="lg:col-span-6 flex flex-col gap-space-md z-10">
-              <div className="flex items-center justify-between gap-4">
-                <div className="inline-flex items-center gap-space-xs px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface shadow-sm ring-1 ring-outline-variant/30 w-fit">
-                  <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                  <span className="font-label-sm text-label-sm font-semibold tracking-wide uppercase text-secondary">
-                    CampusHub 2.0
-                  </span>
-                  <span className="text-outline-variant">•</span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant">
-                    Higher Ed Commerce Ecosystem
-                  </span>
-                </div>
-                <CartPill />
+        <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Left 7 Cols: Value Proposition & Live Storefront Metrics */}
+            <div className="lg:col-span-7 flex flex-col gap-5 z-10">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-low text-on-surface border border-outline-variant/50 w-fit">
+                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                <span className="text-label-sm font-bold tracking-wider uppercase text-secondary">
+                  {org.name} Official Storefront
+                </span>
+                <span className="text-outline-variant">•</span>
+                <span className="text-label-sm text-on-surface-variant">
+                  Verified Campus Commerce
+                </span>
               </div>
 
-              <h1 className="font-headline-lg text-headline-lg lg:text-[44px] lg:leading-[52px] tracking-tight text-primary font-bold">
-                Discover, Shop and Join{" "}
-                <br className="hidden sm:inline" />
+              <h1 className="text-display-lg text-primary font-bold tracking-tight">
+                Official Campus Events,{" "}
                 <span className="bg-gradient-to-r from-secondary to-on-tertiary-container bg-clip-text text-transparent">
-                  Campus Life
+                  Digital Passes &amp; Club Gear
                 </span>
               </h1>
 
-              <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl leading-relaxed">
-                Your all-in-one verified platform for official campus events,
-                student club merchandise, society memberships, and
-                faculty-approved workshops.
+              <p className="text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                Purchase verified student society tickets with instant QR gate
+                entry and official faculty-approved merchandise. Every checkout
+                reserves inventory atomically in Postgres and settles via
+                PayPal Orders v2.
               </p>
 
-              {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-space-md pt-space-xs">
+              {/* Primary CTAs */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 <a
                   href="#events-section"
-                  className="px-6 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-space-xs group"
+                  className="px-6 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary text-label-lg font-semibold shadow-sm transition-all flex items-center gap-2 group"
                 >
-                  <span>Explore Events</span>
-                  <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
+                  <span>Browse Event Passes ({events.length})</span>
+                  <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
                     arrow_forward
                   </span>
                 </a>
                 <a
                   href="#merch-section"
-                  className="px-6 py-3 rounded-full bg-surface-container-lowest hover:bg-surface-container text-primary font-label-lg text-label-lg font-semibold ring-1 ring-outline-variant/40 shadow-sm transition-all flex items-center gap-space-xs"
+                  className="px-6 py-3 rounded-full bg-surface-lowest hover:bg-surface-low text-primary text-label-lg font-semibold border border-outline-variant/70 transition-all flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-[18px] text-secondary">
-                    storefront
+                    shopping_bag
                   </span>
-                  <span>Browse Marketplace</span>
+                  <span>Shop Official Merch ({products.length} SKUs)</span>
                 </a>
+                <Link
+                  href="/dashboard"
+                  className="px-5 py-3 rounded-full bg-secondary-container/40 hover:bg-secondary-container/65 text-on-secondary-container text-label-lg font-semibold transition-all flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    space_dashboard
+                  </span>
+                  <span>Inspect SaaS Console</span>
+                </Link>
               </div>
 
-              {/* Micro Metric Pill */}
-              <div className="flex items-center gap-space-sm pt-space-sm">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm ring-1 ring-outline-variant/20">
-                  <span className="text-base">🔥</span>
-                  <span className="font-semibold text-primary">
-                    {events.length} active events
+              {/* 4-Column Storefront Telemetry Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 tabular-nums">
+                <div className="rounded-xl border border-outline-variant/45 bg-surface-low/60 p-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
+                    Live Events
                   </span>
-                  <span className="text-outline-variant">•</span>
-                  <span>{products.length} club items</span>
+                  <span className="text-headline-md font-bold text-primary mt-0.5 block">
+                    {events.length}
+                  </span>
+                  <span className="text-[11px] text-secondary font-medium">
+                    Bryntum scheduled
+                  </span>
                 </div>
-                <div className="flex -space-x-2 overflow-hidden items-center pl-1">
-                  <div className="w-6 h-6 rounded-full bg-primary-fixed-dim text-primary flex items-center justify-center font-label-sm text-[10px] ring-2 ring-surface">
-                    TS
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-container flex items-center justify-center font-label-sm text-[10px] ring-2 ring-surface">
-                    CS
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-tertiary-fixed text-on-tertiary-container flex items-center justify-center font-label-sm text-[10px] ring-2 ring-surface">
-                    EE
-                  </div>
+                <div className="rounded-xl border border-outline-variant/45 bg-surface-low/60 p-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
+                    Passes Claimed
+                  </span>
+                  <span className="text-headline-md font-bold text-primary mt-0.5 block">
+                    {totalEventPassesSold.toLocaleString()}
+                  </span>
+                  <span className="text-[11px] text-secondary font-medium">
+                    Instant QR tokens
+                  </span>
+                </div>
+                <div className="rounded-xl border border-outline-variant/45 bg-surface-low/60 p-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
+                    Catalog SKUs
+                  </span>
+                  <span className="text-headline-md font-bold text-primary mt-0.5 block">
+                    {products.length}
+                  </span>
+                  <span className="text-[11px] text-on-surface-variant">
+                    {totalMerchStock.toLocaleString()} units ready
+                  </span>
+                </div>
+                <div className="rounded-xl border border-outline-variant/45 bg-surface-low/60 p-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
+                    Settlement
+                  </span>
+                  <span className="text-headline-md font-bold text-success mt-0.5 block">
+                    100%
+                  </span>
+                  <span className="text-[11px] text-on-surface-variant">
+                    PayPal v2 verified
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Flagship Card (1:1 with Stitch Innovation Week Card) */}
-            <div className="lg:col-span-6">
-              <div className="relative w-full rounded-2xl overflow-hidden bg-surface-container-lowest shadow-xl ring-1 ring-outline-variant/30 group">
-                <div className="relative h-[380px] sm:h-[420px] w-full overflow-hidden">
+            {/* Right 5 Cols: Flagship Event Spotlight Card */}
+            <div className="lg:col-span-5">
+              <div className="relative w-full rounded-2xl overflow-hidden bg-surface-lowest shadow-xl border border-outline-variant/50 group">
+                <div className="relative h-64 w-full overflow-hidden">
                   <div
                     className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700 ease-out"
                     style={{
@@ -253,62 +314,80 @@ export default async function DemoStorefront() {
                       }')`,
                     }}
                   />
-                  {/* Dark Scrim Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/45 to-transparent" />
 
-                  {/* Top Overlay Badges */}
                   <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
-                    <span className="px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-bold flex items-center gap-1.5 shadow-sm">
-                      <span className="material-symbols-outlined text-[16px] text-secondary">
+                    <span className="px-3 py-1 rounded-full bg-surface-lowest/95 text-primary text-label-sm font-bold flex items-center gap-1.5 shadow-xs">
+                      <span className="material-symbols-outlined text-[15px] text-secondary">
                         verified
                       </span>
-                      Flagship Event
+                      Flagship Initiative
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-secondary/90 backdrop-blur-md text-on-secondary font-label-sm text-label-sm font-semibold flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">
-                        bolt
-                      </span>
-                      Early Bird Active
+                    <span className="px-3 py-1 rounded-full bg-secondary text-on-secondary text-label-sm font-semibold">
+                      {flagship?.category ?? "Conference"}
                     </span>
                   </div>
 
-                  {/* Card Bottom Details */}
-                  <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col gap-space-sm text-on-primary">
-                    <div className="flex items-center gap-2 font-label-sm text-label-sm text-secondary-fixed font-semibold tracking-wide uppercase">
-                      <span className="material-symbols-outlined text-[16px]">
-                        calendar_month
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <div className="flex items-center gap-2 text-label-sm text-secondary-fixed font-semibold uppercase tracking-wider">
+                      <span className="material-symbols-outlined text-[15px]">
+                        location_on
                       </span>
-                      MAR 10 - MAR 14, 2026
-                      <span>•</span>
-                      <span>{flagship?.venue ?? "Great Hall & Quad"}</span>
+                      <span>{flagship?.venue ?? "Main Hall, Block C"}</span>
                     </div>
+                    <h2 className="text-headline-lg font-bold text-white mt-1 leading-tight">
+                      {flagship?.title ?? "Innovation Week 2026"}
+                    </h2>
+                  </div>
+                </div>
 
-                    <h3 className="font-headline-lg text-headline-lg font-bold text-on-primary leading-snug">
-                      {flagship?.title ?? "Campus Innovation Week 2026"}
-                    </h3>
+                <div className="p-5 space-y-4">
+                  <p className="text-body-md text-on-surface-variant leading-relaxed">
+                    {flagship?.description ??
+                      "Five-day showcase of student startups, hackathons, and keynote talks from industry leaders."}
+                  </p>
 
-                    <p className="font-body-sm text-body-sm text-on-primary-container line-clamp-2">
-                      {flagship?.description ??
-                        "5 days of hackathons, student venture pitches, keynote industry panels, and society recruitment exhibitions."}
-                    </p>
-
-                    <div className="pt-space-xs flex items-center justify-between gap-space-md border-t border-on-primary/10">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-2 w-2 rounded-full bg-tertiary-fixed animate-ping" />
-                        <span className="font-label-sm text-label-sm text-on-primary font-medium">
-                          +420 Registered • Limited Seats
-                        </span>
-                      </div>
-                      <a
-                        href="#events-section"
-                        className="px-5 py-2 rounded-full bg-secondary hover:bg-secondary/90 text-on-secondary font-label-md text-label-md font-semibold transition-all shadow-md flex items-center gap-1 shrink-0"
-                      >
-                        <span>Register Pass</span>
-                        <span className="material-symbols-outlined text-[16px]">
-                          arrow_forward
-                        </span>
-                      </a>
+                  {/* Live Capacity Progress Bar */}
+                  <div className="rounded-xl bg-surface-low p-3.5 border border-outline-variant/40 tabular-nums">
+                    <div className="flex items-center justify-between text-label-md mb-1.5">
+                      <span className="text-on-surface-variant font-medium">
+                        Pass Allocation Progress
+                      </span>
+                      <span className="font-bold text-primary">
+                        {flagshipSold} / {flagshipCap} claimed ({flagshipPct}%)
+                      </span>
                     </div>
+                    <div className="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-secondary"
+                        style={{ width: `${flagshipPct}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="tabular-nums">
+                      <span className="text-label-sm text-on-surface-variant block">
+                        Passes starting from
+                      </span>
+                      <span className="text-headline-md font-bold text-primary">
+                        {flagship?.tiers?.[0]
+                          ? formatMoney(
+                              flagship.tiers[0].price_cents,
+                              org.currency,
+                            )
+                          : "RM 49.00"}
+                      </span>
+                    </div>
+                    <a
+                      href="#events-section"
+                      className="px-5 py-2.5 rounded-full bg-primary hover:bg-primary-container text-on-primary text-label-md font-semibold transition-all flex items-center gap-1.5"
+                    >
+                      <span>Select Tier &amp; Register</span>
+                      <span className="material-symbols-outlined text-[16px]">
+                        arrow_downward
+                      </span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -318,93 +397,61 @@ export default async function DemoStorefront() {
       </div>
 
       {/* ============================================================
-          2. DIRECTORY / CATEGORY CHIPS (1:1 with Stitch Section 2)
-          ============================================================ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-lg w-full">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-space-sm mb-space-md">
-          <div>
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">
-              Directory
-            </span>
-            <h2 className="font-headline-lg text-headline-lg font-bold text-primary">
-              Browse by Category
-            </h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Quickly filter between verified campus tickets, apparel,
-              supplies, and society activities.
-            </p>
-          </div>
-        </div>
-
-        {/* Category Pill Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-          {CATEGORIES.map((cat, i) => (
-            <button
-              key={cat.label}
-              type="button"
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-label-md text-label-md whitespace-nowrap transition-all shadow-xs ${
-                i === 0
-                  ? "bg-primary text-on-primary font-semibold shadow-sm"
-                  : "bg-surface-container-low hover:bg-surface-container text-on-surface"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                {cat.icon}
-              </span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ============================================================
-          3. UPCOMING CAMPUS EVENTS (1:1 with Stitch Section 3)
+          2. UPCOMING CAMPUS EVENTS & DETAILED TICKET TIERS
           ============================================================ */}
       <section
         id="events-section"
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-xl w-full"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full"
       >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-sm mb-space-lg">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">
-                Ticketing &amp; Gateway
-              </span>
-            </div>
-            <h2 className="font-headline-lg text-headline-lg font-bold text-primary">
-              Upcoming Campus Events
-            </h2>
-          </div>
-          <div className="flex items-center gap-space-md">
-            <span className="font-label-lg text-label-lg font-semibold text-secondary flex items-center gap-0.5">
-              <span>{events.length} Active Events</span>
+            <span className="text-label-sm uppercase tracking-widest text-secondary font-bold block">
+              Verified Campus Ticketing
             </span>
+            <h2 className="text-headline-lg font-bold text-on-surface mt-1">
+              Upcoming Campus Events &amp; Pass Tiers
+            </h2>
+            <p className="text-body-md text-on-surface-variant mt-1 max-w-2xl">
+              Compare pass tiers, included perks, and real-time seat
+              availability. Add passes directly to your cart for instant QR
+              issuance upon PayPal checkout.
+            </p>
           </div>
+          <Link
+            href="/dashboard/events"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-outline-variant/60 bg-surface-lowest px-4 py-2 text-label-md font-semibold text-primary hover:bg-surface-low transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-[17px] text-secondary">
+              view_timeline
+            </span>
+            <span>View on Bryntum Venue Timeline</span>
+          </Link>
         </div>
 
-        {/* Event Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+        {/* 2-Column Detailed Event Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {events.map((e) => {
-            const cheapest = e.tiers
-              ?.filter((t) => t.quantity - t.sold > 0)
-              .sort((a, b) => a.price_cents - b.price_cents)[0];
+            const totalSold = e.tiers.reduce((s, t) => s + t.sold, 0);
+            const cap = e.capacity || 100;
+            const fillPct = Math.min(100, Math.round((totalSold / cap) * 100));
             const startFormatted = e.start_at
               ? new Date(e.start_at).toLocaleDateString("en-MY", {
-                  month: "short",
+                  weekday: "short",
                   day: "numeric",
+                  month: "short",
+                  year: "numeric",
                 })
               : "Upcoming";
 
             return (
-              <div
+              <article
                 key={e.id}
-                className="group rounded-2xl bg-surface-container-lowest ring-1 ring-outline-variant/30 hover:ring-secondary/40 shadow-sm hover:shadow-lg transition-all flex flex-col overflow-hidden"
+                className="rounded-2xl bg-surface-lowest border border-outline-variant/50 hover:border-secondary/45 shadow-xs hover:shadow-md transition-all flex flex-col overflow-hidden"
               >
-                {/* Event Photo */}
-                <div className="relative h-44 w-full overflow-hidden bg-surface-container-low">
+                {/* Event Banner Header */}
+                <div className="relative h-48 w-full overflow-hidden bg-surface-low">
                   <div
-                    className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full bg-cover bg-center"
                     style={{
                       backgroundImage: `url('${
                         e.imageUrl ||
@@ -412,57 +459,66 @@ export default async function DemoStorefront() {
                       }')`,
                     }}
                   />
-                  <div className="absolute top-3 left-3 flex gap-1.5">
-                    <span className="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold shadow-xs">
-                      {e.category ?? "Event"}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-on-primary font-label-sm text-label-sm font-medium drop-shadow-md">
-                    <span className="flex items-center gap-1 bg-primary/75 px-2 py-0.5 rounded backdrop-blur-xs">
-                      <span className="material-symbols-outlined text-[14px]">
-                        calendar_today
-                      </span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/35 to-transparent" />
+
+                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2">
+                    <Badge tone="teal">{e.category ?? "Event"}</Badge>
+                    <span className="rounded-full bg-surface-lowest/90 backdrop-blur px-3 py-1 text-label-sm font-bold text-primary tabular-nums">
                       {startFormatted}
                     </span>
                   </div>
-                </div>
 
-                {/* Event Content */}
-                <div className="p-space-md flex-1 flex flex-col justify-between gap-space-sm">
-                  <div>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant font-medium flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px] text-secondary">
-                        verified_user
+                  <div className="absolute bottom-3.5 left-4 right-4 text-white">
+                    <div className="flex items-center gap-2 text-label-sm text-secondary-fixed font-semibold">
+                      <span className="material-symbols-outlined text-[15px]">
+                        location_on
                       </span>
-                      {org.name}
-                    </span>
-                    <h3 className="font-headline-sm text-headline-sm font-bold text-primary mt-1 line-clamp-1 group-hover:text-secondary transition-colors">
+                      <span>{e.venue ?? "Campus Quad"}</span>
+                      <span>•</span>
+                      <span>{org.name}</span>
+                    </div>
+                    <h3 className="text-headline-md font-bold text-white mt-0.5">
                       {e.title}
                     </h3>
-                    {e.venue ? (
-                      <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px] text-outline">
-                          location_on
-                        </span>
-                        <span>{e.venue}</span>
+                  </div>
+                </div>
+
+                {/* Event Details & Ticket Tiers */}
+                <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                  <div className="space-y-3">
+                    {e.description ? (
+                      <p className="text-body-md text-on-surface-variant leading-relaxed">
+                        {e.description}
                       </p>
                     ) : null}
-                  </div>
 
-                  {/* Price & Buy Buttons */}
-                  <div className="pt-space-xs border-t border-outline-variant/30 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-label-sm text-label-sm text-on-surface-variant">
-                        from
+                    {/* Capacity Bar */}
+                    <div className="flex items-center justify-between gap-3 text-label-sm tabular-nums pt-1">
+                      <span className="text-on-surface-variant">
+                        Registration Capacity:{" "}
+                        <strong className="text-on-surface">
+                          {totalSold} / {cap} seats filled
+                        </strong>
                       </span>
-                      <span className="font-headline-sm text-headline-sm font-bold text-primary">
-                        {cheapest
-                          ? formatMoney(cheapest.price_cents, org.currency)
-                          : "Free Entry"}
+                      <span className="font-bold text-secondary">
+                        {fillPct}% full
                       </span>
                     </div>
-                    {e.tiers?.length ? (
-                      <div className="flex flex-col gap-1.5">
+                    <div className="w-full h-1.5 rounded-full bg-surface-container-high overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-secondary"
+                        style={{ width: `${fillPct}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Ticket Tiers List */}
+                  <div className="space-y-2 pt-2 border-t border-outline-variant/40">
+                    <span className="text-label-sm uppercase tracking-wider font-bold text-on-surface-variant block">
+                      Available Pass Tiers ({e.tiers.length})
+                    </span>
+                    {e.tiers.length > 0 ? (
+                      <div className="flex flex-col gap-2">
                         {e.tiers
                           .filter((t) => t.quantity - t.sold > 0)
                           .map((t) => (
@@ -474,170 +530,333 @@ export default async function DemoStorefront() {
                                 price_cents: t.price_cents,
                                 qty: 1,
                               }}
+                              perks={t.perks}
+                              remaining={t.quantity - t.sold}
+                              currency={org.currency}
                             />
                           ))}
                       </div>
-                    ) : null}
+                    ) : (
+                      <p className="text-body-sm text-on-surface-variant">
+                        General admission open on-site.
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       </section>
 
       {/* ============================================================
-          4. OFFICIAL MERCHANDISE (1:1 with Stitch Section 4)
+          3. OFFICIAL MERCHANDISE MARKETPLACE (INTERACTIVE FILTER & SORT)
           ============================================================ */}
       <section
         id="merch-section"
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-xl w-full"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-outline-variant/40"
       >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-sm mb-space-lg">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">
-                Campus Storefront
-              </span>
-            </div>
-            <h2 className="font-headline-lg text-headline-lg font-bold text-primary">
-              Collegiate Store &amp; Official Merchandise
+            <span className="text-label-sm uppercase tracking-widest text-secondary font-bold block">
+              Official Club Storefront
+            </span>
+            <h2 className="text-headline-lg font-bold text-on-surface mt-1">
+              Collegiate Apparel, Tech Gear &amp; Stationery
             </h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Support student societies with faculty-licensed apparel, stickers,
-              and gear.
+            <p className="text-body-md text-on-surface-variant mt-1 max-w-2xl">
+              Every purchase directly funds student society hackathons and
+              workshops. Filter by category, search by SKU, and combine
+              merchandise with event passes in a single cart.
             </p>
           </div>
+          <Link
+            href="/dashboard/products"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-outline-variant/60 bg-surface-lowest px-4 py-2 text-label-md font-semibold text-primary hover:bg-surface-low transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-[17px] text-secondary">
+              table_chart
+            </span>
+            <span>Inspect SKU Inventory in AG Grid</span>
+          </Link>
         </div>
 
         <StoreGrid products={products} currency={org.currency} />
       </section>
 
       {/* ============================================================
-          5. FEATURED CAMPUS ORGANIZATIONS (1:1 with Stitch Section 5)
+          4. SAAS & E-COMMERCE ARCHITECTURE COMPARISON MATRIX
           ============================================================ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-xl w-full">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-sm mb-space-lg">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-              <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">
-                Accredited Student Bodies
+      <section
+        id="saas-architecture"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full border-t border-outline-variant/40"
+      >
+        <div className="rounded-3xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 lg:p-10 shadow-sm space-y-8">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-outline-variant/40 pb-6">
+            <div className="space-y-1.5 max-w-3xl">
+              <span className="text-label-sm uppercase tracking-widest font-bold text-secondary block">
+                Unified Platform Architecture
               </span>
+              <h2 className="text-headline-lg font-bold text-on-surface">
+                How the Public Storefront Connects to the Organizer SaaS Console
+              </h2>
+              <p className="text-body-md text-on-surface-variant leading-relaxed">
+                CampusHub 2.0 pairs a consumer-grade e-commerce storefront with
+                purpose-built operational technologies — using{" "}
+                <strong className="text-on-surface">Bryntum Scheduler</strong>{" "}
+                for temporal venue scheduling and{" "}
+                <strong className="text-on-surface">AG Grid Community</strong>{" "}
+                for high-density transactional ledgers.
+              </p>
             </div>
-            <h2 className="font-headline-lg text-headline-lg font-bold text-primary">
-              Featured Campus Organizations
-            </h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Meet the accredited university clubs and societies hosting this
-              semester&apos;s biggest initiatives.
-            </p>
+            <Link
+              href="/dashboard"
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-label-md font-semibold text-on-primary hover:bg-primary-container transition-colors shrink-0"
+            >
+              <span>Launch Organizer Console</span>
+              <span className="material-symbols-outlined text-[16px]">
+                arrow_forward
+              </span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Pillar 1 */}
+            <div className="rounded-2xl border border-outline-variant/45 bg-surface-low/50 p-5 flex flex-col justify-between gap-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-primary text-secondary-fixed flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">
+                      view_timeline
+                    </span>
+                  </div>
+                  <Badge tone="teal">Bryntum 8.0</Badge>
+                </div>
+                <h3 className="text-headline-sm font-bold text-on-surface">
+                  Event Timeline &amp; Venue Calendar
+                </h3>
+                <p className="text-body-sm text-on-surface-variant leading-relaxed">
+                  Multi-track venue allocation across lecture halls and labs,
+                  Day/Week/Semester view presets, vertical calendar schedules,
+                  and drag-and-drop rescheduling.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/events"
+                className="inline-flex items-center gap-1 text-label-md font-semibold text-secondary hover:underline"
+              >
+                <span>Open Events Scheduler</span>
+                <span className="material-symbols-outlined text-[15px]">
+                  arrow_forward
+                </span>
+              </Link>
+            </div>
+
+            {/* Pillar 2 */}
+            <div className="rounded-2xl border border-outline-variant/45 bg-surface-low/50 p-5 flex flex-col justify-between gap-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-primary text-secondary-fixed flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">
+                      table_chart
+                    </span>
+                  </div>
+                  <Badge tone="primary">AG Grid 36</Badge>
+                </div>
+                <h3 className="text-headline-sm font-bold text-on-surface">
+                  High-Density Data Ledgers
+                </h3>
+                <p className="text-body-sm text-on-surface-variant leading-relaxed">
+                  Dedicated tabular management for Events, Registrations,
+                  Products, Orders, and Transactions with instant column
+                  filtering, status chips, and CSV export.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/orders"
+                className="inline-flex items-center gap-1 text-label-md font-semibold text-secondary hover:underline"
+              >
+                <span>Inspect AG Grid Ledgers</span>
+                <span className="material-symbols-outlined text-[15px]">
+                  arrow_forward
+                </span>
+              </Link>
+            </div>
+
+            {/* Pillar 3 */}
+            <div className="rounded-2xl border border-outline-variant/45 bg-surface-low/50 p-5 flex flex-col justify-between gap-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-primary text-secondary-fixed flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">
+                      account_balance_wallet
+                    </span>
+                  </div>
+                  <Badge tone="success">PayPal v2</Badge>
+                </div>
+                <h3 className="text-headline-sm font-bold text-on-surface">
+                  Atomic Checkout &amp; Webhooks
+                </h3>
+                <p className="text-body-sm text-on-surface-variant leading-relaxed">
+                  Server-side{" "}
+                  <code className="font-mono text-[11px]">place_order</code>{" "}
+                  Postgres RPC locks inventory, calculates exact platform fees,
+                  and verifies cryptographic PayPal webhooks.
+                </p>
+              </div>
+              <Link
+                href="/demo/checkout"
+                className="inline-flex items-center gap-1 text-label-md font-semibold text-secondary hover:underline"
+              >
+                <span>Test Checkout Stepper</span>
+                <span className="material-symbols-outlined text-[15px]">
+                  arrow_forward
+                </span>
+              </Link>
+            </div>
+
+            {/* Pillar 4 */}
+            <div className="rounded-2xl border border-outline-variant/45 bg-surface-low/50 p-5 flex flex-col justify-between gap-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-primary text-secondary-fixed flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[20px]">
+                      auto_awesome
+                    </span>
+                  </div>
+                  <Badge tone="teal">Grounded AI</Badge>
+                </div>
+                <h3 className="text-headline-sm font-bold text-on-surface">
+                  Zero-Hallucination Analytics
+                </h3>
+                <p className="text-body-sm text-on-surface-variant leading-relaxed">
+                  Live Postgres metrics packs ground every AI summary, anomaly
+                  scan, and analyst chat turn without exposing student PII.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/ai-insights"
+                className="inline-flex items-center gap-1 text-label-md font-semibold text-secondary hover:underline"
+              >
+                <span>Explore AI Workspace</span>
+                <span className="material-symbols-outlined text-[15px]">
+                  arrow_forward
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* 3 Society Profile Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
-          {/* Society 1: Tech Society */}
-          <div className="rounded-2xl bg-surface-container-lowest ring-1 ring-outline-variant/30 hover:ring-secondary/40 shadow-sm hover:shadow-md transition-all p-space-lg flex flex-col justify-between">
-            <div className="flex flex-col gap-space-sm">
+      {/* ============================================================
+          5. ACCREDITED CAMPUS ORGANIZATIONS
+          ============================================================ */}
+      <section
+        id="societies-section"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full"
+      >
+        <div className="mb-6">
+          <span className="text-label-sm uppercase tracking-widest text-secondary font-bold block">
+            Accredited Student Bodies
+          </span>
+          <h2 className="text-headline-lg font-bold text-on-surface mt-1">
+            Featured Campus Organizations
+          </h2>
+          <p className="text-body-md text-on-surface-variant mt-1">
+            Meet the verified university clubs and societies hosting this
+            semester&apos;s flagship initiatives.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl bg-surface-lowest border border-outline-variant/45 p-6 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="w-14 h-14 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-headline-md shadow-sm">
-                  <span className="material-symbols-outlined text-[30px] text-secondary-fixed">
+                <div className="w-12 h-12 rounded-xl bg-primary text-secondary-fixed flex items-center justify-center shadow-xs">
+                  <span className="material-symbols-outlined text-[26px]">
                     terminal
                   </span>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    verified
-                  </span>
-                  Tier 1 Club
-                </span>
+                <Badge tone="teal" icon="verified">
+                  Tier 1 Society
+                </Badge>
               </div>
               <div>
-                <h3 className="font-headline-md text-headline-md font-bold text-primary">
+                <h3 className="text-headline-md font-bold text-on-surface">
                   Tech Society
                 </h3>
-                <span className="font-label-sm text-label-sm text-secondary font-semibold">
-                  Faculty of Computer Science
+                <span className="text-label-sm text-secondary font-semibold">
+                  Faculty of Computer Science &amp; Engineering
                 </span>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-                  Organizers of annual hackathons, algorithmic code sprints, and
-                  open-source developer collectives.
+                <p className="text-body-sm text-on-surface-variant mt-2 leading-relaxed">
+                  Organizers of Innovation Week 2026, 48-hour campus hackathons,
+                  machine learning bootcamps, and developer collectives.
                 </p>
               </div>
             </div>
-            <div className="mt-space-md pt-space-md border-t border-outline-variant/20 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+            <div className="mt-5 pt-4 border-t border-outline-variant/35 flex items-center justify-between text-label-sm text-on-surface-variant tabular-nums">
               <span>480 Active Members</span>
-              <span>14 Events Hosted</span>
+              <span>6 Scheduled Events</span>
             </div>
           </div>
 
-          {/* Society 2: Design Guild */}
-          <div className="rounded-2xl bg-surface-container-lowest ring-1 ring-outline-variant/30 hover:ring-secondary/40 shadow-sm hover:shadow-md transition-all p-space-lg flex flex-col justify-between">
-            <div className="flex flex-col gap-space-sm">
+          <div className="rounded-2xl bg-surface-lowest border border-outline-variant/45 p-6 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="w-14 h-14 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-headline-md shadow-sm">
-                  <span className="material-symbols-outlined text-[30px] text-tertiary-fixed">
+                <div className="w-12 h-12 rounded-xl bg-primary-container text-tertiary-fixed flex items-center justify-center shadow-xs">
+                  <span className="material-symbols-outlined text-[26px]">
                     palette
                   </span>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-tertiary-fixed/30 text-on-tertiary-container font-label-sm text-label-sm font-semibold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    verified
-                  </span>
+                <Badge tone="success" icon="verified">
                   Creative Partner
-                </span>
+                </Badge>
               </div>
               <div>
-                <h3 className="font-headline-md text-headline-md font-bold text-primary">
+                <h3 className="text-headline-md font-bold text-on-surface">
                   Design &amp; Multimedia Guild
                 </h3>
-                <span className="font-label-sm text-label-sm text-secondary font-semibold">
-                  Creative Media Faculty
+                <span className="text-label-sm text-secondary font-semibold">
+                  School of Creative Media &amp; Design
                 </span>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-                  UI/UX workshops, motion graphic showcases, and design
-                  thinking symposiums for digital creators.
+                <p className="text-body-sm text-on-surface-variant mt-2 leading-relaxed">
+                  UI/UX design systems workshops, motion graphics showcases, and
+                  official collegiate apparel collaborations.
                 </p>
               </div>
             </div>
-            <div className="mt-space-md pt-space-md border-t border-outline-variant/20 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+            <div className="mt-5 pt-4 border-t border-outline-variant/35 flex items-center justify-between text-label-sm text-on-surface-variant tabular-nums">
               <span>310 Active Members</span>
               <span>8 Exhibitions</span>
             </div>
           </div>
 
-          {/* Society 3: Sports Council */}
-          <div className="rounded-2xl bg-surface-container-lowest ring-1 ring-outline-variant/30 hover:ring-secondary/40 shadow-sm hover:shadow-md transition-all p-space-lg flex flex-col justify-between">
-            <div className="flex flex-col gap-space-sm">
+          <div className="rounded-2xl bg-surface-lowest border border-outline-variant/45 p-6 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="w-14 h-14 rounded-xl bg-surface-container-high text-primary flex items-center justify-center font-bold text-headline-md shadow-sm">
-                  <span className="material-symbols-outlined text-[30px] text-primary">
+                <div className="w-12 h-12 rounded-xl bg-surface-container-high text-primary flex items-center justify-center shadow-xs">
+                  <span className="material-symbols-outlined text-[26px]">
                     sports_esports
                   </span>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    verified
-                  </span>
+                <Badge tone="primary" icon="verified">
                   Council Body
-                </span>
+                </Badge>
               </div>
               <div>
-                <h3 className="font-headline-md text-headline-md font-bold text-primary">
-                  Sports &amp; Athletics Council
+                <h3 className="text-headline-md font-bold text-on-surface">
+                  Sports &amp; Esports Council
                 </h3>
-                <span className="font-label-sm text-label-sm text-secondary font-semibold">
-                  University Sports Complex
+                <span className="text-label-sm text-secondary font-semibold">
+                  University Arena &amp; Student Union
                 </span>
-                <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-                  Inter-faculty sports championships, varsity tournaments, and
-                  collegiate esports leagues.
+                <p className="text-body-sm text-on-surface-variant mt-2 leading-relaxed">
+                  Inter-faculty championships, varsity athletics, and collegiate
+                  esports leagues across campus venues.
                 </p>
               </div>
             </div>
-            <div className="mt-space-md pt-space-md border-t border-outline-variant/20 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+            <div className="mt-5 pt-4 border-t border-outline-variant/35 flex items-center justify-between text-label-sm text-on-surface-variant tabular-nums">
               <span>620 Student Athletes</span>
               <span>24 Tournaments</span>
             </div>
@@ -646,94 +865,87 @@ export default async function DemoStorefront() {
       </section>
 
       {/* ============================================================
-          6. PROTECTED COLLEGIATE COMMERCE STANDARD (1:1 with Stitch Section 6)
+          6. PROTECTED COLLEGIATE COMMERCE STANDARD
           ============================================================ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-space-lg mb-space-xl w-full">
-        <div className="rounded-3xl bg-primary text-on-primary p-space-xl shadow-xl relative overflow-hidden">
-          {/* Ambient Backlights */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-10 w-full">
+        <div className="rounded-3xl bg-primary text-on-primary p-8 lg:p-10 shadow-xl relative overflow-hidden">
           <div
             aria-hidden
             className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-secondary/20 blur-3xl pointer-events-none"
           />
-          <div
-            aria-hidden
-            className="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-tertiary-fixed/10 blur-3xl pointer-events-none"
-          />
-
-          <div className="relative z-10 flex flex-col gap-space-lg">
+          <div className="relative z-10 flex flex-col gap-6">
             <div className="max-w-2xl">
-              <span className="px-3 py-1 rounded-full bg-surface-container-lowest/15 text-secondary-fixed font-label-sm text-label-sm font-bold uppercase tracking-wider">
-                Campus Guarantee
+              <span className="px-3 py-1 rounded-full bg-white/10 text-secondary-fixed text-label-sm font-bold uppercase tracking-wider">
+                Institutional Compliance Guarantee
               </span>
-              <h3 className="font-headline-lg text-headline-lg lg:text-3xl font-bold mt-2 text-white">
+              <h2 className="text-headline-lg font-bold mt-2.5 text-white">
                 Protected Collegiate Commerce Standard
-              </h3>
-              <p className="font-body-md text-body-md text-on-primary-container mt-1">
-                Every transaction, ticket scan, and apparel order is directly
-                integrated with verified university bursary accounts and student
-                registry services.
+              </h2>
+              <p className="text-body-md text-on-primary-container mt-1 leading-relaxed">
+                Every transaction, ticket scan, and merchandise order is
+                reconciled with university bursary accounts and verified PayPal
+                webhooks.
               </p>
             </div>
 
-            {/* 4 Key Guarantees */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md pt-space-xs">
-              <div className="p-space-md rounded-2xl bg-surface-container-lowest/10 backdrop-blur-sm border border-on-primary/10 flex flex-col gap-2">
-                <div className="w-10 h-10 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[22px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-white/8 border border-white/10 space-y-2">
+                <div className="w-9 h-9 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">
                     shield
                   </span>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm font-bold text-on-primary">
-                  100% Fund Protection
-                </h4>
-                <p className="font-body-sm text-body-sm text-on-primary-container leading-snug">
-                  Student funds are escrowed directly into verified bursary
-                  accounts with PayPal security.
+                <h3 className="text-headline-sm font-bold text-white">
+                  100% Escrow Protection
+                </h3>
+                <p className="text-body-sm text-on-primary-container leading-relaxed">
+                  Student payments settle into verified bursary accounts via
+                  PayPal Orders v2.
                 </p>
               </div>
 
-              <div className="p-space-md rounded-2xl bg-surface-container-lowest/10 backdrop-blur-sm border border-on-primary/10 flex flex-col gap-2">
-                <div className="w-10 h-10 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[22px]">
+              <div className="p-4 rounded-2xl bg-white/8 border border-white/10 space-y-2">
+                <div className="w-9 h-9 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">
                     qr_code_2
                   </span>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm font-bold text-on-primary">
-                  Instant QR Entry
-                </h4>
-                <p className="font-body-sm text-body-sm text-on-primary-container leading-snug">
-                  Encrypted dynamic tickets with rapid check-in gate scanning
-                  and duplicate prevention.
+                <h3 className="text-headline-sm font-bold text-white">
+                  Cryptographic QR Passes
+                </h3>
+                <p className="text-body-sm text-on-primary-container leading-relaxed">
+                  Unique QR tokens per registration with real-time gate check-in
+                  deduplication.
                 </p>
               </div>
 
-              <div className="p-space-md rounded-2xl bg-surface-container-lowest/10 backdrop-blur-sm border border-on-primary/10 flex flex-col gap-2">
-                <div className="w-10 h-10 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[22px]">
-                    badge
+              <div className="p-4 rounded-2xl bg-white/8 border border-white/10 space-y-2">
+                <div className="w-9 h-9 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">
+                    inventory
                   </span>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm font-bold text-on-primary">
-                  Verified Identities
-                </h4>
-                <p className="font-body-sm text-body-sm text-on-primary-container leading-snug">
-                  Matriculation ID authentication prevents scalping and secures
-                  student society allocations.
+                <h3 className="text-headline-sm font-bold text-white">
+                  Atomic Stock Locks
+                </h3>
+                <p className="text-body-sm text-on-primary-container leading-relaxed">
+                  Postgres <code className="font-mono text-xs">place_order</code>{" "}
+                  transactions prevent overselling on high-demand drops.
                 </p>
               </div>
 
-              <div className="p-space-md rounded-2xl bg-surface-container-lowest/10 backdrop-blur-sm border border-on-primary/10 flex flex-col gap-2">
-                <div className="w-10 h-10 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[22px]">
+              <div className="p-4 rounded-2xl bg-white/8 border border-white/10 space-y-2">
+                <div className="w-9 h-9 rounded-lg bg-secondary-fixed/20 text-secondary-fixed flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">
                     savings
                   </span>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm font-bold text-on-primary">
-                  Student Pricing
-                </h4>
-                <p className="font-body-sm text-body-sm text-on-primary-container leading-snug">
-                  Tiered society discounts and subsidized member passes for
-                  affordable campus experiences.
+                <h3 className="text-headline-sm font-bold text-white">
+                  Transparent Fee Math
+                </h3>
+                <p className="text-body-sm text-on-primary-container leading-relaxed">
+                  Subsidized student pricing with transparent 2.9% + RM 0.50
+                  processing disclosure.
                 </p>
               </div>
             </div>

@@ -246,62 +246,75 @@ body {
 }
 
 .text-display {
-  font-size: 36px;
-  line-height: 44px;
+  font-size: clamp(28px, 3.2vw, 38px);
+  line-height: 1.15;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.028em;
 }
 .text-display-lg {
-  font-size: 56px;
-  line-height: 64px;
+  font-size: clamp(34px, 4.2vw, 52px);
+  line-height: 1.1;
   font-weight: 700;
-  letter-spacing: -0.03em;
-}
-[data-theme="light"] .text-display-lg {
-  font-size: 36px;
-  line-height: 44px;
+  letter-spacing: -0.032em;
 }
 .text-headline-lg {
-  font-size: 28px;
-  line-height: 36px;
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.25;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 .text-headline-md {
   font-size: 20px;
   line-height: 28px;
   font-weight: 600;
+  letter-spacing: -0.015em;
 }
 .text-headline-sm {
   font-size: 16px;
   line-height: 24px;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .text-body-lg {
   font-size: 16px;
-  line-height: 24px;
+  line-height: 25px;
 }
 .text-body-md {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 21px;
 }
 .text-body-sm {
   font-size: 12px;
-  line-height: 16px;
+  line-height: 17px;
 }
 .text-label-lg {
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
+  letter-spacing: -0.005em;
 }
 .text-label-md {
   font-size: 12px;
   line-height: 16px;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 .text-label-sm {
   font-size: 11px;
   line-height: 14px;
   font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.tabular-nums,
+.data-kpi,
+.data-tabular {
+  font-variant-numeric: tabular-nums;
+}
+.data-kpi {
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 /* Stitch alias utilities — Stitch HTML pairs font-X with text-X on the
@@ -602,58 +615,317 @@ body {
 }
 
 /* ============================================================
-   Bryntum Scheduler — Stitch Design System Integration
-   Aligns Bryntum headers, event bars, and grid to the Stitch palette.
+   Bryntum Scheduler — Native CampusHub 2.0 Design System Theme
+   Complete structural & visual integration matching DESIGN.md
    ============================================================ */
+:root,
+[data-theme="light"] {
+  --b-primary: #006a66;
+  --b-secondary: #142b45;
+  --b-widget-font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --b-primary: #2dd4bf;
+  --b-secondary: #57f1db;
+}
+
+.campushub-bryntum.b-widget,
+.campushub-bryntum .b-scheduler,
+.bryntum-stitch-theme .b-scheduler,
 .bryntum-stitch-container .b-scheduler {
-  font-family: inherit !important;
-  border-radius: 12px;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
   background-color: var(--st-surface-lowest) !important;
   color: var(--st-on-surface) !important;
+  border: none !important;
+  --b-widget-border-color: var(--st-outline-variant);
+  --b-panel-background: var(--st-surface-lowest);
+  --b-grid-row-odd-color: var(--st-surface-lowest);
+  --b-grid-row-even-color: color-mix(in srgb, var(--st-surface-low) 45%, var(--st-surface-lowest));
+  --b-grid-cell-border-color: color-mix(in srgb, var(--st-outline-variant) 45%, transparent);
+  --b-column-lines-color: color-mix(in srgb, var(--st-outline-variant) 35%, transparent);
+  --b-column-lines-major-color: color-mix(in srgb, var(--st-outline-variant) 65%, transparent);
 }
 
-.bryntum-stitch-container .b-grid-header-container,
-.bryntum-stitch-container .b-grid-headers,
-.bryntum-stitch-theme .b-grid-header-container,
-.bryntum-stitch-theme .b-grid-headers {
-  background: var(--st-primary-container) !important;
-  color: #ffffff !important;
-  font-weight: 600;
-  font-size: 12px;
+/* Grid & TimeAxis Header Hierarchy */
+.campushub-bryntum .b-grid-header-container,
+.bryntum-stitch-theme .b-grid-header-container {
+  background: var(--st-surface-low) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--st-outline-variant) 70%, transparent) !important;
+  box-shadow: none !important;
 }
 
-.bryntum-stitch-container .b-sch-header-text,
+.campushub-bryntum .b-grid-headers,
+.campushub-bryntum .b-grid-header,
+.bryntum-stitch-theme .b-grid-headers,
+.bryntum-stitch-theme .b-grid-header {
+  background: var(--st-surface-low) !important;
+  color: var(--st-on-surface-variant) !important;
+  border-color: color-mix(in srgb, var(--st-outline-variant) 55%, transparent) !important;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+.campushub-bryntum .b-grid-header-text,
+.campushub-bryntum .b-sch-header-text,
 .bryntum-stitch-theme .b-sch-header-text {
-  color: #ffffff !important;
+  color: var(--st-on-surface-variant) !important;
+  font-weight: 600 !important;
 }
 
-.bryntum-stitch-container .b-grid-cell,
+/* Top tier timeaxis row (e.g. Month / Week banner) */
+.campushub-bryntum .b-sch-header-row-0 .b-sch-header-timeaxis-cell,
+.bryntum-stitch-theme .b-sch-header-row-0 .b-sch-header-timeaxis-cell {
+  background: color-mix(in srgb, var(--st-primary) 5%, var(--st-surface-low)) !important;
+  color: var(--st-primary) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em !important;
+  border-color: color-mix(in srgb, var(--st-outline-variant) 50%, transparent) !important;
+}
+
+.campushub-bryntum .b-sch-header-row-0 .b-sch-header-text,
+.bryntum-stitch-theme .b-sch-header-row-0 .b-sch-header-text {
+  color: var(--st-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Lower tier timeaxis row (Day numbers / hours) */
+.campushub-bryntum .b-sch-header-row-1 .b-sch-header-timeaxis-cell,
+.bryntum-stitch-theme .b-sch-header-row-1 .b-sch-header-timeaxis-cell {
+  background: var(--st-surface-lowest) !important;
+  color: var(--st-on-surface-variant) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  font-variant-numeric: tabular-nums !important;
+  border-color: color-mix(in srgb, var(--st-outline-variant) 40%, transparent) !important;
+}
+
+.campushub-bryntum .b-sch-header-timeaxis-cell:hover,
+.bryntum-stitch-theme .b-sch-header-timeaxis-cell:hover {
+  background: color-mix(in srgb, var(--st-secondary) 8%, var(--st-surface-low)) !important;
+}
+
+/* Subgrid Splitter */
+.campushub-bryntum .b-grid-splitter,
+.bryntum-stitch-theme .b-grid-splitter {
+  background: color-mix(in srgb, var(--st-outline-variant) 60%, transparent) !important;
+  width: 1px !important;
+}
+
+/* Resource Rows & Cells */
+.campushub-bryntum .b-grid-row,
+.bryntum-stitch-theme .b-grid-row {
+  background-color: var(--st-surface-lowest) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--st-outline-variant) 40%, transparent) !important;
+  transition: background-color 0.15s ease;
+}
+
+.campushub-bryntum .b-grid-row.b-odd,
+.bryntum-stitch-theme .b-grid-row.b-odd {
+  background-color: color-mix(in srgb, var(--st-surface-low) 38%, var(--st-surface-lowest)) !important;
+}
+
+.campushub-bryntum .b-grid-row:hover,
+.campushub-bryntum .b-grid-row.b-hover,
+.bryntum-stitch-theme .b-grid-row:hover {
+  background-color: color-mix(in srgb, var(--st-secondary) 4%, var(--st-surface-low)) !important;
+}
+
+.campushub-bryntum .b-grid-cell,
 .bryntum-stitch-theme .b-grid-cell {
   color: var(--st-on-surface) !important;
-  font-size: 13px;
-  border-color: var(--st-outline-variant) !important;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 13px !important;
+  border-color: color-mix(in srgb, var(--st-outline-variant) 35%, transparent) !important;
+  padding-inline: 14px !important;
 }
 
-.bryntum-stitch-container .b-sch-event,
+/* Custom CampusHub Event Cards inside Bryntum */
+.campushub-bryntum .b-sch-event-wrap,
+.bryntum-stitch-theme .b-sch-event-wrap {
+  z-index: 5;
+}
+
+.campushub-bryntum .b-sch-event,
 .bryntum-stitch-theme .b-sch-event {
-  background: linear-gradient(135deg, var(--st-primary-container) 0%, var(--st-secondary) 100%) !important;
-  color: #ffffff !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--st-secondary-fixed) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
-  font-weight: 600 !important;
-  font-size: 12px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  overflow: visible !important;
 }
 
-.bryntum-stitch-container .b-sch-event:hover,
-.bryntum-stitch-theme .b-sch-event:hover {
-  filter: brightness(1.1);
+.campushub-bryntum .b-sch-event-content,
+.bryntum-stitch-theme .b-sch-event-content {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+}
+
+.ch-bryntum-event-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--st-secondary) 30%, var(--st-outline-variant));
+  border-left-width: 4px;
+  background: var(--st-surface-lowest);
+  color: var(--st-on-surface);
+  box-shadow: 0 2px 6px -1px rgba(0, 22, 46, 0.07), 0 1px 2px rgba(0, 22, 46, 0.04);
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.16s ease, border-color 0.16s ease;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+}
+
+.ch-bryntum-event-card:hover {
   transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(0, 106, 102, 0.16), 0 2px 6px rgba(0, 22, 46, 0.06);
 }
 
-.bryntum-stitch-container .b-sch-timeaxis-cell,
-.bryntum-stitch-theme .b-sch-timeaxis-cell {
-  border-color: var(--st-surface-container) !important;
+.b-sch-event-selected .ch-bryntum-event-card,
+.b-sch-event:focus-visible .ch-bryntum-event-card {
+  outline: 2px solid var(--st-secondary);
+  outline-offset: 1px;
+  box-shadow: 0 10px 24px -4px rgba(0, 106, 102, 0.22);
+}
+
+/* Event Card Status Variants */
+.ch-bryntum-event-card[data-status="published"] {
+  border-left-color: var(--st-secondary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--st-secondary) 11%, var(--st-surface-lowest)) 0%,
+    color-mix(in srgb, var(--st-secondary) 4%, var(--st-surface-lowest)) 100%
+  );
+}
+
+.ch-bryntum-event-card[data-status="draft"] {
+  border-left-color: var(--st-warning);
+  border-style: solid;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--st-warning) 12%, var(--st-surface-lowest)) 0%,
+    color-mix(in srgb, var(--st-warning) 4%, var(--st-surface-lowest)) 100%
+  );
+}
+
+.ch-bryntum-event-card[data-status="completed"] {
+  border-left-color: var(--st-primary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--st-primary) 10%, var(--st-surface-lowest)) 0%,
+    color-mix(in srgb, var(--st-surface-low) 80%, var(--st-surface-lowest)) 100%
+  );
+}
+
+.ch-bryntum-event-card[data-status="cancelled"] {
+  border-left-color: var(--st-error);
+  opacity: 0.78;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--st-error) 10%, var(--st-surface-lowest)) 0%,
+    var(--st-surface-lowest) 100%
+  );
+}
+
+/* Floating Bryntum Popups, Tooltips & Context Menus (mounted in .b-float-root) */
+.b-float-root .b-popup,
+.b-float-root .b-tooltip,
+.b-float-root .b-menu {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif !important;
+  background: var(--st-surface-lowest) !important;
+  color: var(--st-on-surface) !important;
+  border: 1px solid color-mix(in srgb, var(--st-outline-variant) 80%, transparent) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 40px -12px rgba(0, 22, 46, 0.18), 0 4px 12px rgba(0, 22, 46, 0.08) !important;
+  overflow: hidden;
+}
+
+.b-float-root .b-menuitem {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--st-on-surface) !important;
+  border-radius: 8px !important;
+  margin: 2px 6px !important;
+  padding: 6px 10px !important;
+}
+
+.b-float-root .b-menuitem:hover,
+.b-float-root .b-menuitem.b-active {
+  background: color-mix(in srgb, var(--st-secondary) 12%, var(--st-surface-low)) !important;
+  color: var(--st-primary) !important;
+}
+
+/* ============================================================
+   AG Grid Community — Native CampusHub 2.0 Design System Theme
+   ============================================================ */
+.campushub-ag-grid {
+  --ag-font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.campushub-ag-grid .ag-root-wrapper {
+  border-radius: 14px !important;
+  border: 1px solid color-mix(in srgb, var(--st-outline-variant) 55%, transparent) !important;
+  background-color: var(--st-surface-lowest) !important;
+  overflow: hidden;
+}
+
+.campushub-ag-grid .ag-header {
+  background-color: var(--st-surface-low) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--st-outline-variant) 60%, transparent) !important;
+}
+
+.campushub-ag-grid .ag-header-cell-text {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.045em !important;
+  text-transform: uppercase !important;
+  color: var(--st-on-surface-variant) !important;
+}
+
+.campushub-ag-grid .ag-cell {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 13.5px !important;
+  color: var(--st-on-surface) !important;
+  line-height: 1.35 !important;
+}
+
+.campushub-ag-grid .ag-right-aligned-cell {
+  justify-content: flex-end !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.campushub-ag-grid .ag-row {
+  border-bottom-color: color-mix(in srgb, var(--st-outline-variant) 35%, transparent) !important;
+  transition: background-color 0.12s ease;
+}
+
+.campushub-ag-grid .ag-row-hover {
+  background-color: color-mix(in srgb, var(--st-secondary) 5%, var(--st-surface-low)) !important;
+}
+
+.campushub-ag-grid .ag-paging-panel {
+  background-color: var(--st-surface-lowest) !important;
+  border-top: 1px solid color-mix(in srgb, var(--st-outline-variant) 50%, transparent) !important;
+  color: var(--st-on-surface-variant) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  font-variant-numeric: tabular-nums !important;
+  height: 46px !important;
+  padding-inline: 16px !important;
 }
 
 /* Scrollbar */

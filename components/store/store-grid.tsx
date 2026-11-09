@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { addToCart } from "@/components/store/cart";
 import { formatMoney } from "@/lib/money";
+import { Badge } from "@/components/ui/badge";
 
 export type StoreProduct = {
   id: string;
@@ -13,9 +14,10 @@ export type StoreProduct = {
   category: string | null;
   price_cents: number;
   stock: number;
+  sku?: string | null;
+  low_stock_threshold?: number | null;
 };
 
-// Fallback images matching Stitch merchandise palette if a product has no image
 const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
   "tee-navy":
     "https://lh3.googleusercontent.com/aida-public/AB6AXuCZoqsNaO5Ex0N6IVf_qkLrMqYjQYpS9fQZd7UOjq6jxmBrFEwyD8YUXaDodlsuiFKADPYe9GJnBXIutDmIQ3YU64oOvxrol49FWL3XBF93KmZo4IRRVyC-yuPm7VfE9ZBFgWQjphAQyGmDuGTVo15bSKE53aAIWtkdn-fOcrvYv8HdCAgpGFJoFyQ5dEPX1xCh19GgEcZOsW4rcVARrn93fx4OpxqUL_cjuPyiCmoO",
@@ -35,8 +37,11 @@ const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
     "https://lh3.googleusercontent.com/aida-public/AB6AXuDi0rI0hkm4ObQPP6bZ8RRp4h2EuNd7OtQro7xzq12KEf0vDNXvCS8wHPs8br6NfsaVIBYgqcP9JnUdIFXf2qCczzeiJxnzrLzJd2IHYKC1-SiQV8BK2rN2IhocSP12V93SlH_vIs8azHJzoiXYVZohp70sWsRbN479HmxDc_PIaelq1dHDEG2rODtRz162pVYJkXPkp4WnSwMn3BSbTbpNd8GzsLSUA4hMxA9_8Q_u",
 };
 
+type SortKey = "featured" | "price-asc" | "price-desc" | "stock-desc";
+
 /**
- * 1:1 Stitch Product Grid Card from `4e0845fd823449faa93d81e37db30de5.html` Section 4.
+ * Interactive CampusHub 2.0 Merchandise Catalog Grid:
+ * Category filtering, instant search, sort selector, SKU badges, and stock health meters.
  */
 export function StoreGrid({
   products,
@@ -46,6 +51,55 @@ export function StoreGrid({
   currency: string;
 }) {
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortKey>("featured");
+
+  const categories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of products) {
+      const cat = p.category || "Merch";
+      counts.set(cat, (counts.get(cat) ?? 0) + 1);
+    }
+    return [
+      { key: "all", label: "All Items", count: products.length },
+      ...[...counts.entries()].map(([cat, count]) => ({
+        key: cat,
+        label: cat,
+        count,
+      })),
+    ];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const base = products.filter((p) => {
+      if (
+        selectedCategory !== "all" &&
+        (p.category || "Merch") !== selectedCategory
+      ) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchName = p.name.toLowerCase().includes(q);
+        const matchDesc = (p.description ?? "").toLowerCase().includes(q);
+        const matchSku = (p.sku ?? "").toLowerCase().includes(q);
+        if (!matchName && !matchDesc && !matchSku) return false;
+      }
+      return true;
+    });
+
+    if (sortBy === "price-asc") {
+      return [...base].sort((a, b) => a.price_cents - b.price_cents);
+    }
+    if (sortBy === "price-desc") {
+      return [...base].sort((a, b) => b.price_cents - a.price_cents);
+    }
+    if (sortBy === "stock-desc") {
+      return [...base].sort((a, b) => b.stock - a.stock);
+    }
+    return base;
+  }, [products, selectedCategory, searchQuery, sortBy]);
 
   function add(p: StoreProduct) {
     addToCart({
@@ -59,76 +113,163 @@ export function StoreGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-space-md">
-      {products.map((p) => {
-        const imageUrl =
-          p.images?.[0] ||
-          DEFAULT_PRODUCT_IMAGES[p.slug] ||
-          DEFAULT_PRODUCT_IMAGES["hoodie-midnight"];
-        const isLow = p.stock > 0 && p.stock <= 10;
-        const isOut = p.stock <= 0;
-
-        return (
-          <article
-            key={p.id}
-            className="group rounded-2xl bg-surface-container-lowest ring-1 ring-outline-variant/30 hover:ring-secondary/40 shadow-sm hover:shadow-lg transition-all flex flex-col p-3"
-          >
-            {/* Image Container with Stitch Zoom & Status Pill */}
-            <div className="relative h-48 w-full rounded-xl overflow-hidden bg-surface-container-low mb-3">
-              <div
-                className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-                style={{ backgroundImage: `url('${imageUrl}')` }}
-              />
-              <span
-                className={`absolute top-2 left-2 px-2 py-0.5 rounded-full font-label-sm text-[10px] font-bold ${
-                  isOut
-                    ? "bg-error-container text-on-error-container"
-                    : isLow
-                      ? "bg-warning-container text-warning"
-                      : "bg-tertiary-fixed/40 text-on-tertiary-container"
+    <div className="space-y-6">
+      {/* Interactive Filter, Search & Sort Control Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 rounded-2xl border border-outline-variant/50 bg-surface-lowest p-3.5 shadow-xs">
+        {/* Category Pills */}
+        <div
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0"
+          role="group"
+          aria-label="Filter merchandise by category"
+        >
+          {categories.map((cat) => {
+            const active = selectedCategory === cat.key;
+            return (
+              <button
+                key={cat.key}
+                type="button"
+                onClick={() => setSelectedCategory(cat.key)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-label-md font-semibold whitespace-nowrap transition-all ${
+                  active
+                    ? "bg-primary text-on-primary shadow-2xs"
+                    : "bg-surface-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
                 }`}
               >
-                {isOut ? "Out of Stock" : isLow ? `${p.stock} left` : "Active"}
-              </span>
-            </div>
-
-            {/* Content Body */}
-            <div className="flex-1 flex flex-col justify-between">
-              <div>
-                <span className="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">
-                  {p.category ?? "Collegiate Merch"}
-                </span>
-                <h4 className="font-headline-sm text-body-lg font-bold text-primary group-hover:text-secondary transition-colors line-clamp-1 mt-0.5">
-                  {p.name}
-                </h4>
-                {p.description ? (
-                  <p className="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mt-1">
-                    {p.description}
-                  </p>
-                ) : null}
-              </div>
-
-              {/* Price & Action Button */}
-              <div className="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between gap-2">
-                <span className="font-headline-sm text-headline-sm font-bold text-primary">
-                  {formatMoney(p.price_cents, currency)}
-                </span>
-                <button
-                  type="button"
-                  disabled={isOut}
-                  onClick={() => add(p)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold transition-all shadow-xs hover:shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                <span>{cat.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] tabular-nums ${
+                    active
+                      ? "bg-white/20 text-on-primary"
+                      : "bg-surface-container-high text-on-surface-variant"
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">
-                    {addedId === p.id ? "check" : "add_shopping_cart"}
-                  </span>
-                  <span>{addedId === p.id ? "Added" : isOut ? "Sold" : "Add"}</span>
-                </button>
+                  {cat.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search & Sort Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="relative flex-1 sm:flex-initial">
+            <span className="material-symbols-outlined text-[17px] text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              search
+            </span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search merch, apparel, or SKU…"
+              aria-label="Search merchandise"
+              className="focus-aura h-9 w-full sm:w-60 rounded-lg border border-outline-variant/60 bg-surface-low/80 pl-9 pr-3 text-body-sm text-on-surface outline-none placeholder:text-on-surface-variant focus:bg-surface-lowest"
+            />
+          </div>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortKey)}
+            aria-label="Sort merchandise"
+            className="focus-aura h-9 rounded-lg border border-outline-variant/60 bg-surface-low/80 px-3 text-label-md font-medium text-on-surface outline-none"
+          >
+            <option value="featured">Sort: Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="stock-desc">Inventory: Most Available</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Product Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        {filteredProducts.map((p) => {
+          const imageUrl =
+            p.images?.[0] ||
+            DEFAULT_PRODUCT_IMAGES[p.slug] ||
+            DEFAULT_PRODUCT_IMAGES["hoodie-midnight"];
+          const threshold = p.low_stock_threshold ?? 15;
+          const isLow = p.stock > 0 && p.stock <= threshold;
+          const isOut = p.stock <= 0;
+
+          return (
+            <article
+              key={p.id}
+              className="group rounded-2xl bg-surface-lowest border border-outline-variant/45 hover:border-secondary/45 shadow-xs hover:shadow-md transition-all flex flex-col overflow-hidden"
+            >
+              {/* Image Container */}
+              <div className="relative h-52 w-full overflow-hidden bg-surface-low border-b border-outline-variant/30">
+                <div
+                  className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                  style={{ backgroundImage: `url('${imageUrl}')` }}
+                />
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                  <Badge tone="primary">{p.category ?? "Merch"}</Badge>
+                  <Badge
+                    tone={isOut ? "error" : isLow ? "warning" : "success"}
+                  >
+                    {isOut
+                      ? "Sold Out"
+                      : isLow
+                        ? `Only ${p.stock} left`
+                        : `${p.stock} in stock`}
+                  </Badge>
+                </div>
               </div>
-            </div>
-          </article>
-        );
-      })}
+
+              {/* Content Body */}
+              <div className="p-4 flex-1 flex flex-col justify-between gap-4">
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[11px] text-on-surface-variant">
+                      {p.sku ?? p.slug.toUpperCase()}
+                    </span>
+                    <span className="text-[11px] text-secondary font-semibold">
+                      Official Licensed
+                    </span>
+                  </div>
+                  <h3 className="text-headline-sm font-bold text-on-surface group-hover:text-primary transition-colors mt-1">
+                    {p.name}
+                  </h3>
+                  {p.description ? (
+                    <p className="text-body-sm text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">
+                      {p.description}
+                    </p>
+                  ) : null}
+                </div>
+
+                {/* Price & Action Button */}
+                <div className="pt-3 border-t border-outline-variant/35 flex items-center justify-between gap-2">
+                  <div className="tabular-nums">
+                    <span className="text-[10.5px] uppercase tracking-wider text-on-surface-variant block">
+                      Member Price
+                    </span>
+                    <span className="text-headline-sm font-bold text-primary">
+                      {formatMoney(p.price_cents, currency)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isOut}
+                    onClick={() => add(p)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:bg-primary-container text-on-primary text-label-md font-semibold transition-all shadow-2xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      {addedId === p.id ? "check" : "add_shopping_cart"}
+                    </span>
+                    <span>
+                      {addedId === p.id
+                        ? "Added"
+                        : isOut
+                          ? "Sold Out"
+                          : "Add to Cart"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 }

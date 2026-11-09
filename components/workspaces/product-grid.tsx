@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { ColDef } from "ag-grid-community";
 import type { ProductRow as RepoProductRow } from "@/lib/db/repo";
-import { DataTable } from "@/components/grid/data-table";
+import { DataTable, type DataTableFilterPill } from "@/components/grid/data-table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/icon";
@@ -21,7 +21,14 @@ const statusTone: Record<
   "success" | "warning" | "neutral"
 > = { active: "success", draft: "warning", archived: "neutral" };
 
-/** Products grid with create/edit modal and archive/activate actions. */
+const PRODUCT_FILTER_PILLS: DataTableFilterPill[] = [
+  { value: "all", label: "All SKUs" },
+  { value: "active", label: "Active" },
+  { value: "draft", label: "Draft" },
+  { value: "archived", label: "Archived" },
+];
+
+/** Products AG Grid with product media previews, stock health bars, and SKU management. */
 export function ProductGrid({ rows }: { rows: ProductRow[] }) {
   const [modalProduct, setModalProduct] = useState<ProductModalRow | null>(
     null,
@@ -36,65 +43,145 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
     setModalProduct(p);
     setModalOpen(true);
   };
-  const close = () => setModalOpen(false);
 
   const columnDefs = useMemo<ColDef<ProductRow>[]>(
     () => [
-      { field: "name", headerName: "Name", minWidth: 200, flex: 2 },
+      {
+        field: "name",
+        headerName: "Product & Merch Item",
+        minWidth: 250,
+        flex: 2.2,
+        cellRenderer: (p: { data?: ProductRow }) => {
+          const row = p.data;
+          if (!row) return null;
+          const thumb = row.images?.[0];
+          return (
+            <div className="flex items-center gap-3 min-w-0 py-1">
+              <div className="w-9 h-9 rounded-lg bg-surface-container overflow-hidden flex items-center justify-center shrink-0 border border-outline-variant/40">
+                {thumb ? (
+                  <div
+                    role="img"
+                    aria-label={row.name}
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: `url('${thumb}')` }}
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant">
+                    shopping_bag
+                  </span>
+                )}
+              </div>
+              <div className="leading-tight min-w-0">
+                <p className="text-body-md font-semibold text-on-surface truncate">
+                  {row.name}
+                </p>
+                {row.description ? (
+                  <p className="text-body-sm text-on-surface-variant truncate mt-0.5">
+                    {row.description}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          );
+        },
+      },
       {
         field: "sku",
-        headerName: "SKU",
-        minWidth: 120,
-        cellClass: "font-mono text-[12px]",
-        valueFormatter: (p) => p.value ?? "—",
+        headerName: "SKU Code",
+        minWidth: 130,
+        maxWidth: 155,
+        cellRenderer: (p: { value: string | null }) =>
+          p.value ? (
+            <span className="rounded-md bg-surface-container px-2 py-0.5 font-mono text-[11.5px] font-medium text-on-surface">
+              {p.value}
+            </span>
+          ) : (
+            <span className="text-on-surface-variant">—</span>
+          ),
       },
       {
         field: "category",
         headerName: "Category",
-        minWidth: 130,
-        valueFormatter: (p) => p.value ?? "—",
+        minWidth: 120,
+        maxWidth: 150,
+        cellRenderer: (p: { value: string | null }) =>
+          p.value ? (
+            <Badge tone="primary">{p.value}</Badge>
+          ) : (
+            <span className="text-on-surface-variant">—</span>
+          ),
       },
       {
         field: "price_cents",
-        headerName: "Price",
+        headerName: "Unit Price",
         type: "rightAligned",
-        minWidth: 110,
-        maxWidth: 140,
-        valueFormatter: (p) => formatMoney(Number(p.value)),
+        minWidth: 120,
+        maxWidth: 145,
+        cellRenderer: (p: { value: number }) => (
+          <span className="tabular-nums font-bold text-primary">
+            {formatMoney(Number(p.value))}
+          </span>
+        ),
       },
       {
         field: "stock",
-        headerName: "Stock",
-        type: "rightAligned",
-        minWidth: 130,
-        maxWidth: 170,
+        headerName: "Inventory Level",
+        minWidth: 165,
+        maxWidth: 195,
         cellRenderer: (p: { data?: ProductRow }) => {
           const row = p.data;
           if (!row) return null;
           const low = row.stock <= row.low_stock_threshold;
+          const pct = Math.min(
+            100,
+            Math.round((row.stock / Math.max(row.low_stock_threshold * 4, 40)) * 100),
+          );
           return (
-            <span className="inline-flex items-center gap-2">
-              <span>{row.stock}</span>
-              {low ? (
-                <Badge tone={row.stock === 0 ? "error" : "warning"} icon="warning">
-                  {row.stock === 0 ? "out" : "low"}
-                </Badge>
-              ) : null}
-            </span>
+            <div className="w-full space-y-1 tabular-nums">
+              <div className="flex items-center justify-between gap-2 text-body-sm">
+                <span className="font-semibold text-on-surface">
+                  {row.stock} <span className="text-on-surface-variant font-normal">units</span>
+                </span>
+                {low ? (
+                  <Badge
+                    tone={row.stock === 0 ? "error" : "warning"}
+                    icon="warning"
+                  >
+                    {row.stock === 0 ? "Out" : "Low"}
+                  </Badge>
+                ) : (
+                  <span className="text-[11px] text-success font-semibold">
+                    Healthy
+                  </span>
+                )}
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-surface-container-high overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    row.stock === 0
+                      ? "bg-error"
+                      : low
+                        ? "bg-warning"
+                        : "bg-secondary"
+                  }`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
           );
         },
       },
       {
         field: "status",
         headerName: "Status",
-        minWidth: 110,
-        maxWidth: 130,
+        minWidth: 115,
+        maxWidth: 135,
         cellRenderer: (p: { value: ProductRow["status"] }) => (
           <Badge tone={statusTone[p.value]}>{p.value}</Badge>
         ),
       },
       {
-        headerName: "",
+        headerName: "Actions",
         sortable: false,
         filter: false,
         resizable: false,
@@ -104,11 +191,11 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
           const row = p.data;
           if (!row) return null;
           return (
-            <span className="flex h-full items-center gap-1">
+            <span className="flex h-full items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => openEdit(row)}
-                className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+                className="inline-flex items-center gap-1 rounded-lg border border-outline-variant/60 bg-surface-lowest px-2.5 py-1 text-label-sm font-semibold text-on-surface hover:bg-surface-low transition-colors"
               >
                 <Icon name="edit" size={14} />
                 Edit
@@ -116,7 +203,9 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
               {row.status === "active" || row.status === "archived" ? (
                 <ProductStatusButton id={row.id} status={row.status} />
               ) : (
-                <span className="text-label-sm text-on-surface-variant">draft</span>
+                <span className="text-label-sm text-on-surface-variant px-2">
+                  draft
+                </span>
               )}
             </span>
           );
@@ -127,13 +216,20 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
   );
 
   return (
-    <>
-      <div className="flex items-center justify-between px-5 py-4">
-        <h3 className="text-headline-sm text-on-surface">All products</h3>
+    <div className="p-5 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/40 pb-4">
+        <div>
+          <h3 className="text-headline-sm font-bold text-on-surface">
+            Merchandise &amp; SKU Catalog
+          </h3>
+          <p className="text-body-sm text-on-surface-variant">
+            Manage retail pricing, stock thresholds, and storefront visibility across official society gear.
+          </p>
+        </div>
         <button
           type="button"
           onClick={openNew}
-          className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-label-lg font-semibold text-[var(--accent-foreground)] transition-transform hover:-translate-y-0.5"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-lg font-semibold text-on-primary shadow-xs transition-all hover:bg-primary-container"
         >
           <Icon name="add" size={16} />
           New product
@@ -148,7 +244,7 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
             <button
               type="button"
               onClick={openNew}
-              className="rounded-full bg-[var(--accent)] px-5 py-2 text-label-lg font-semibold text-[var(--accent-foreground)]"
+              className="rounded-full bg-primary px-5 py-2 text-label-lg font-semibold text-on-primary"
             >
               New product
             </button>
@@ -156,11 +252,19 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
           className="m-4 border-dashed"
         />
       ) : (
-        <DataTable columnDefs={columnDefs} rowData={rows} height={480} />
+        <DataTable
+          columnDefs={columnDefs}
+          rowData={rows}
+          height={520}
+          searchPlaceholder="Search products by name, SKU code, or category…"
+          filterField="status"
+          filterPills={PRODUCT_FILTER_PILLS}
+          exportFileName="campushub-products.csv"
+        />
       )}
       {modalOpen ? (
-        <ProductModal product={modalProduct} onClose={close} />
+        <ProductModal product={modalProduct} onClose={() => setModalOpen(false)} />
       ) : null}
-    </>
+    </div>
   );
 }

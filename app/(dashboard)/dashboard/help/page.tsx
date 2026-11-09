@@ -1,4 +1,5 @@
 import { SectionHeader } from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/badge";
 import {
   AccordionRoot,
   AccordionItem,
@@ -9,66 +10,79 @@ import {
   AccordionBody,
 } from "@heroui/react";
 
-export const metadata = { title: "Help — CampusHub 2.0" };
+export const metadata = { title: "Documentation & Runbook — CampusHub 2.0" };
 
-const FAQS: { id: string; icon: string; question: string; answer: React.ReactNode }[] = [
+const FAQS: {
+  id: string;
+  icon: string;
+  question: string;
+  answer: React.ReactNode;
+}[] = [
   {
     id: "database",
     icon: "database",
-    question: "How do I connect my Postgres database?",
+    question: "How do I connect my Postgres database and apply the seed?",
     answer: (
       <>
         <p>
-          CampusHub runs on any Postgres database (Render Postgres on
-          production). Set{" "}
-          <code className="font-mono text-[12px]">DATABASE_URL</code> and{" "}
-          <code className="font-mono text-[12px]">AUTH_SECRET</code> in your{" "}
-          <code className="font-mono text-[12px]">.env.local</code>. On Render,
-          the blueprint wires{" "}
-          <code className="font-mono text-[12px]">DATABASE_URL</code> from the{" "}
-          <code className="font-mono text-[12px]">campushub-db</code> service
-          automatically.
+          CampusHub 2.0 uses a vanilla Postgres connection pool (
+          <code className="font-mono text-xs">pg</code>) with explicit
+          application-layer organization scoping in{" "}
+          <code className="font-mono text-xs">lib/db/repo.ts</code>.
         </p>
-        <p>
-          Apply the schema by running{" "}
-          <code className="font-mono text-[12px]">db/schema.sql</code> then{" "}
-          <code className="font-mono text-[12px]">db/seed.sql</code> against
-          your database (see the README for the psql invocation).
+        <p className="mt-2">
+          Set <code className="font-mono text-xs">DATABASE_URL</code> in{" "}
+          <code className="font-mono text-xs">.env.local</code>, then apply the
+          schema and demo seed:
         </p>
+        <pre className="mt-2 overflow-x-auto rounded-lg bg-surface-container p-3 font-mono text-xs">
+          psql &quot;$DATABASE_URL&quot; -f db/schema.sql -f db/seed.sql
+        </pre>
       </>
     ),
   },
   {
     id: "paypal",
     icon: "account_balance_wallet",
-    question: "How do I set up PayPal sandbox and webhooks?",
+    question: "How do PayPal Orders v2 and cryptographic webhooks work?",
     answer: (
       <>
         <p>
-          Create a sandbox app in the{" "}
-          <a
-            href="https://developer.paypal.com/dashboard/applications/sandbox"
-            className="text-secondary underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            PayPal Developer Dashboard
-          </a>{" "}
-          and set{" "}
-          <code className="font-mono text-[12px]">PAYPAL_CLIENT_ID</code>,{" "}
-          <code className="font-mono text-[12px]">PAYPAL_CLIENT_SECRET</code>, and{" "}
-          <code className="font-mono text-[12px]">PAYPAL_ENV=sandbox</code> (set{" "}
-          <code className="font-mono text-[12px]">PAYPAL_CURRENCY</code> if your
-          account rejects MYR).
+          Checkout validates cart items server-side via the{" "}
+          <code className="font-mono text-xs">place_order</code> Postgres RPC
+          function, builds the PayPal order from the authoritative database
+          total, and verifies <code className="font-mono text-xs">COMPLETED</code>{" "}
+          status before marking orders paid.
         </p>
+        <p className="mt-2">
+          Configure <code className="font-mono text-xs">PAYPAL_CLIENT_ID</code>,{" "}
+          <code className="font-mono text-xs">PAYPAL_CLIENT_SECRET</code>,{" "}
+          <code className="font-mono text-xs">NEXT_PUBLIC_PAYPAL_CLIENT_ID</code>
+          , and <code className="font-mono text-xs">PAYPAL_WEBHOOK_ID</code>.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "bryntum-aggrid",
+    icon: "view_timeline",
+    question:
+      "How are Bryntum Scheduler and AG Grid Community integrated?",
+    answer: (
+      <>
         <p>
-          Add a webhook pointing to{" "}
-          <code className="font-mono text-[12px]">/api/paypal/webhook</code>{" "}
-          subscribed to <em>CHECKOUT.ORDER.APPROVED</em>,{" "}
-          <em>PAYMENT.CAPTURE.COMPLETED</em>, and{" "}
-          <em>PAYMENT.CAPTURE.REFUNDED</em>, and copy its webhook ID into{" "}
-          <code className="font-mono text-[12px]">PAYPAL_WEBHOOK_ID</code> —
-          signature verification uses it to reject forged payloads.
+          <strong>Bryntum Scheduler 8.0</strong> powers the interactive Event
+          Timeline &amp; Calendar views on{" "}
+          <code className="font-mono text-xs">/dashboard/events</code> (supporting
+          Venue, Category, and Initiative tracks, Day/Week/Multi-Week/Semester
+          presets, Horizontal Timeline &amp; Vertical Calendar modes, and
+          drag-and-drop rescheduling).
+        </p>
+        <p className="mt-2">
+          <strong>AG Grid Community 36</strong> powers all structured data
+          management tables across Events, Registrations, Products, Orders,
+          Transactions, and Members with instant quick-filtering, status pills,
+          density controls, and CSV export.
         </p>
       </>
     ),
@@ -76,67 +90,16 @@ const FAQS: { id: string; icon: string; question: string; answer: React.ReactNod
   {
     id: "ai",
     icon: "auto_awesome",
-    question: "How do AI gateway keys work?",
-    answer: (
-      <p>
-        The AI Commerce Intelligence features call an OpenAI-compatible endpoint.
-        Set <code className="font-mono text-[12px]">AI_BASE_URL</code>,{" "}
-        <code className="font-mono text-[12px]">AI_API_KEY</code>, and optionally{" "}
-        <code className="font-mono text-[12px]">AI_MODEL</code> (default{" "}
-        <code className="font-mono text-[12px]">glm-5.3-flash</code>). Without a
-        key the insights page shows a setup notice and the generate buttons are
-        disabled — CampusHub never fabricates AI results. Insights are grounded
-        in real database aggregates only.
-      </p>
-    ),
-  },
-  {
-    id: "sponsors",
-    icon: "extension",
-    question: "Where do Channel3, Astropods, and Bryntum keys go?",
+    question: "How does Grounded AI prevent hallucinated numbers?",
     answer: (
       <>
         <p>
-          <strong>Channel3</strong> (market discovery): set{" "}
-          <code className="font-mono text-[12px]">CHANNEL3_API_KEY</code>; the
-          discovery widget stays hidden without it.
-        </p>
-        <p>
-          <strong>Astropods</strong> (analyst agent): set{" "}
-          <code className="font-mono text-[12px]">ASTROPODS_API_KEY</code>; the
-          agent spec lives in{" "}
-          <code className="font-mono text-[12px]">
-            agents/astropods.yml
-          </code>
-          .
-        </p>
-        <p>
-          <strong>Bryntum Scheduler</strong> (events timeline): set{" "}
-          <code className="font-mono text-[12px]">BRYNTUM_LICENSE_KEY</code>.
-          Without a valid license the trial build is used and says so — it never
-          pretends to be licensed.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "refunds",
-    icon: "undo",
-    question: "What is the refunds workflow?",
-    answer: (
-      <>
-        <p>
-          Refunds start in PayPal (sandbox or live): issue a refund for a capture
-          from the PayPal Dashboard or API. When the refund completes, PayPal
-          sends a <em>PAYMENT.CAPTURE.REFUNDED</em> webhook; CampusHub verifies
-          its signature, marks the order{" "}
-          <code className="font-mono text-[12px]">refunded</code>, records a{" "}
-          <code className="font-mono text-[12px]">refund</code> transaction, and
-          restores event ticket stock.
-        </p>
-        <p>
-          Refunded orders are excluded from revenue KPIs and appear with a
-          “refunded” badge in the orders workspace.
+          Every AI request fetches a fresh metrics pack from{" "}
+          <code className="font-mono text-xs">POST /api/insights/pack</code>{" "}
+          containing aggregated Postgres figures (daily revenue, tier
+          sell-through, refund totals, and low-stock counts). Raw customer PII
+          is never sent to the model, and the system prompt forbids citing
+          numbers outside the pack.
         </p>
       </>
     ),
@@ -150,35 +113,85 @@ export default function HelpPage() {
   );
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="help"
-        title="Help & Support Center"
-        subtitle="Setup guides, FAQs, and how to reach the CampusHub team."
+        eyebrow="Operations Runbook & Architecture"
+        title="Help & Administrator Documentation"
+        subtitle="Reference guides for Postgres database provisioning, PayPal Orders v2 webhook verification, Bryntum Scheduler, AG Grid Community, and Grounded AI."
+        actions={<Badge tone="teal">CampusHub v2.0</Badge>}
       />
 
-      <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-        <AccordionRoot className="flex flex-col">
-          {FAQS.map((faq) => (
-            <AccordionItem key={faq.id} id={faq.id} className="group">
+      {/* Stack Architecture Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-5 shadow-xs space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-secondary-container/50 text-on-secondary-container flex items-center justify-center">
+            <span className="material-symbols-outlined text-[19px]">
+              view_timeline
+            </span>
+          </div>
+          <h3 className="text-headline-sm font-bold text-on-surface">
+            Bryntum Scheduler 8.0
+          </h3>
+          <p className="text-body-sm text-on-surface-variant leading-relaxed">
+            Dedicated to event scheduling, multi-venue capacity planning,
+            horizontal timelines, and vertical calendar views.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-5 shadow-xs space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-primary-fixed/60 text-primary flex items-center justify-center">
+            <span className="material-symbols-outlined text-[19px]">
+              table_chart
+            </span>
+          </div>
+          <h3 className="text-headline-sm font-bold text-on-surface">
+            AG Grid Community 36
+          </h3>
+          <p className="text-body-sm text-on-surface-variant leading-relaxed">
+            Dedicated to high-density transactional ledgers across Events,
+            Registrations, Products, Orders, and Transactions.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-5 shadow-xs space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-tertiary-fixed/35 text-on-tertiary-container flex items-center justify-center">
+            <span className="material-symbols-outlined text-[19px]">
+              account_balance_wallet
+            </span>
+          </div>
+          <h3 className="text-headline-sm font-bold text-on-surface">
+            PayPal Orders v2 &amp; AI
+          </h3>
+          <p className="text-body-sm text-on-surface-variant leading-relaxed">
+            Atomic Postgres <code className="font-mono text-xs">place_order</code>{" "}
+            checkout, HMAC webhook verification, and grounded AI analytics.
+          </p>
+        </div>
+      </div>
+
+      {/* Interactive FAQ Accordion */}
+      <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
+        <h3 className="text-headline-sm font-bold text-on-surface mb-4">
+          Frequently Asked Operational Questions
+        </h3>
+        <AccordionRoot className="divide-y divide-outline-variant/40">
+          {FAQS.map((f) => (
+            <AccordionItem key={f.id} id={f.id} className="py-2">
               <AccordionHeading>
-                <AccordionTrigger className="flex w-full cursor-pointer items-center gap-3 px-space-md py-space-md text-left">
-                  <span className="material-symbols-outlined text-[20px] text-secondary">
-                    {faq.icon}
-                  </span>
-                  <span className="flex-1 font-headline-sm text-headline-sm text-on-surface">
-                    {faq.question}
-                  </span>
-                  <AccordionIndicator className="text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[20px]">
-                      expand_more
+                <AccordionTrigger className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-body-lg font-semibold text-on-surface hover:text-primary">
+                  <span className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[20px] text-secondary">
+                      {f.icon}
                     </span>
-                  </AccordionIndicator>
+                    {f.question}
+                  </span>
+                  <AccordionIndicator />
                 </AccordionTrigger>
               </AccordionHeading>
-              <AccordionPanel className="border-t border-outline-variant px-space-md py-space-md">
-                <AccordionBody className="flex flex-col gap-2 font-body-md text-body-md text-on-surface-variant [&_p]:leading-relaxed">
-                  {faq.answer}
+              <AccordionPanel>
+                <AccordionBody className="pb-3 pl-8 text-body-md text-on-surface-variant leading-relaxed">
+                  {f.answer}
                 </AccordionBody>
               </AccordionPanel>
             </AccordionItem>
@@ -186,22 +199,23 @@ export default function HelpPage() {
         </AccordionRoot>
       </section>
 
-      <section className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1">Contact support</h3>
-        <p className="font-body-md text-body-md text-on-surface-variant mb-4">
-          Email us and we’ll get back to you within one business day.
-        </p>
+      {/* Support Card */}
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
+        <div>
+          <h3 className="text-headline-sm font-bold text-on-surface">
+            Need direct institutional support?
+          </h3>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            Contact the CampusHub platform engineering desk for bursary settlement or custom webhook onboarding.
+          </p>
+        </div>
         <a
-          href={`mailto:support@campushub.app?subject=${subject}&body=${body}`}
-          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-primary px-5 text-label-lg font-semibold text-white transition hover:opacity-90 dark:text-on-primary-container"
+          href={`mailto:support@campushub.example?subject=${subject}&body=${body}`}
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-label-md font-semibold text-on-primary hover:bg-primary-container transition-colors shrink-0"
         >
-          <span className="material-symbols-outlined text-[18px]">mail</span>
-          Email support
+          <span className="material-symbols-outlined text-[17px]">mail</span>
+          <span>Contact Engineering Desk</span>
         </a>
-        <p className="mt-3 font-body-sm text-body-sm text-on-surface-variant">
-          Note: in-app support tickets are not yet wired to a backend — email is
-          the supported channel for now.
-        </p>
       </section>
     </div>
   );

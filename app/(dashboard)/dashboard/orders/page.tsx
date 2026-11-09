@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { StatStrip } from "@/components/ui/kpi-card";
-import { OrderGrid, type OrderWithItems } from "@/components/workspaces/order-grid";
+import {
+  OrderGrid,
+  type OrderWithItems,
+} from "@/components/workspaces/order-grid";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { orders } from "@/lib/db/repo";
@@ -21,6 +24,9 @@ export default async function OrdersPage() {
   const paidOrFulfilled = orderRows.filter(
     (o) => o.status === "paid" || o.status === "fulfilled",
   );
+  const fulfilledCount = orderRows.filter(
+    (o) => o.status === "fulfilled",
+  ).length;
   const revenueCents = paidOrFulfilled.reduce((s, o) => s + o.total_cents, 0);
   const pendingCount = orderRows.filter((o) => o.status === "pending").length;
   const refundedCents = orderRows
@@ -32,50 +38,57 @@ export default async function OrdersPage() {
       : 0;
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="receipt_long"
-        title="Order Management"
-        subtitle="Track campus student merchandise orders, inspect payment settlements, and process order fulfillment and parcel pick-ups."
+        eyebrow="Commerce Order Fulfillment"
+        title="Order Ledger & Fulfillment Queue"
+        subtitle="Track student merchandise and event pass checkouts in AG Grid Community, inspect line-item fee breakdowns, and manage parcel fulfillment."
       />
 
       <StatStrip
         items={[
           {
-            label: "Paid revenue",
+            label: "Settled Order Volume",
             value: revenueCents,
             icon: "payments",
             format: "money",
+            tone: "teal",
+            sublabel: `${paidOrFulfilled.length} paid (${fulfilledCount} fulfilled)`,
           },
           {
-            label: "Pending orders",
+            label: "Pending Checkout",
             value: pendingCount,
             icon: "hourglass_top",
             tone: "neutral",
+            sublabel: "Awaiting PayPal capture",
           },
           {
-            label: "Refunded",
+            label: "Refunded Volume",
             value: refundedCents,
             icon: "currency_exchange",
             tone: "neutral",
             format: "money",
+            sublabel: "Returned to student buyers",
           },
           {
-            label: "Avg order value",
+            label: "Average Basket Size",
             value: avgOrderCents,
             icon: "analytics",
             format: "money",
+            tone: "primary",
+            sublabel: "Across settled transactions",
           },
         ]}
       />
 
-      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
+      <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest shadow-xs overflow-hidden">
         {orderRows.length === 0 ? (
           <EmptyState
             icon="receipt_long"
             title="No orders yet"
             body="Orders will appear here after the first storefront checkout."
-            className="m-4"
+            className="m-5"
           />
         ) : (
           <OrderGrid rows={orderRows} />

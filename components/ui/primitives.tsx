@@ -1,37 +1,55 @@
 import { cn } from "@/lib/utils";
 
-/** Icon tile + heading + subtitle used atop dashboard sections. */
+/** Icon tile + eyebrow + heading + subtitle used atop dashboard workspaces. */
 export function SectionHeader({
   icon,
+  eyebrow,
   title,
   subtitle,
   actions,
   className,
 }: {
   icon: string;
+  eyebrow?: string;
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-start justify-between gap-space-md", className)}>
-      <div className="flex items-center gap-space-md">
-        <div className="w-10 h-10 rounded-xl bg-secondary-container/40 text-on-secondary-container flex items-center justify-center shrink-0">
-          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+    <div
+      className={cn(
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1",
+        className,
+      )}
+    >
+      <div className="flex items-start sm:items-center gap-3.5">
+        <div className="w-11 h-11 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-xs ring-1 ring-outline-variant/20">
+          <span className="material-symbols-outlined text-[21px] text-secondary-fixed">
+            {icon}
+          </span>
         </div>
-        <div>
-          <h2 className="font-headline-sm text-headline-sm text-on-surface">
+        <div className="space-y-0.5">
+          {eyebrow ? (
+            <span className="text-label-sm uppercase tracking-wider font-bold text-secondary block">
+              {eyebrow}
+            </span>
+          ) : null}
+          <h1 className="text-headline-lg font-bold text-on-surface tracking-tight">
             {title}
-          </h2>
+          </h1>
           {subtitle ? (
-            <p className="font-body-sm text-body-sm text-on-surface-variant">
+            <p className="text-body-md text-on-surface-variant max-w-3xl leading-relaxed">
               {subtitle}
             </p>
           ) : null}
         </div>
       </div>
-      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -53,25 +71,25 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-xl bg-surface-container-low px-6 py-12 text-center",
+        "flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant/40 bg-surface-low/60 px-6 py-12 text-center",
         className,
       )}
     >
-      <span className="material-symbols-outlined text-[32px] text-on-surface-variant">
-        {icon}
-      </span>
-      <p className="font-headline-sm text-headline-sm text-on-surface">{title}</p>
+      <div className="w-12 h-12 rounded-2xl bg-surface-container flex items-center justify-center text-on-surface-variant">
+        <span className="material-symbols-outlined text-[26px]">{icon}</span>
+      </div>
+      <p className="text-headline-sm font-bold text-on-surface">{title}</p>
       {body ? (
-        <p className="max-w-sm font-body-sm text-body-sm text-on-surface-variant">
+        <p className="max-w-md text-body-md text-on-surface-variant leading-relaxed">
           {body}
         </p>
       ) : null}
-      {action}
+      {action ? <div className="pt-1">{action}</div> : null}
     </div>
   );
 }
 
-/** Price display in Stitch commerce style. */
+/** Price display in CampusHub commerce style with tabular numerals. */
 export function PriceTag({
   formatted,
   originalFormatted,
@@ -82,8 +100,8 @@ export function PriceTag({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-baseline gap-1.5", className)}>
-      <span className="text-headline-sm font-semibold text-on-surface">
+    <span className={cn("inline-flex items-baseline gap-1.5 tabular-nums", className)}>
+      <span className="text-headline-sm font-bold text-on-surface">
         {formatted}
       </span>
       {originalFormatted ? (

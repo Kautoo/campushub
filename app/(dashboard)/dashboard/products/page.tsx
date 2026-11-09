@@ -2,12 +2,13 @@ import { SetupNotice } from "@/components/layout/setup-notice";
 import { redirect } from "next/navigation";
 import { SectionHeader, EmptyState } from "@/components/ui/primitives";
 import { StatStrip } from "@/components/ui/kpi-card";
+import { Badge } from "@/components/ui/badge";
 import { ProductGrid } from "@/components/workspaces/product-grid";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { products } from "@/lib/db/repo";
 
-export const metadata = { title: "Products — CampusHub 2.0" };
+export const metadata = { title: "Products & Inventory — CampusHub 2.0" };
 
 export default async function ProductsPage() {
   const db = getDbSafe();
@@ -21,6 +22,7 @@ export default async function ProductsPage() {
   ]);
 
   const active = products_.filter((p) => p.status === "active");
+  const totalUnits = products_.reduce((s, p) => s + p.stock, 0);
   const inventoryValueCents = products_.reduce(
     (s, p) => s + p.stock * p.price_cents,
     0,
@@ -39,96 +41,120 @@ export default async function ProductsPage() {
   }));
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="shopping_bag"
-        title="Product Management"
-        subtitle="Catalog, monitor stock levels, manage merchandise pricing, and track inventory velocity across campus sales channels."
+        eyebrow="Merchandise & SKU Control"
+        title="Product Catalog & Inventory Matrix"
+        subtitle="Manage society apparel, tech accessories, and stationery SKUs in AG Grid Community, monitor safety stock thresholds, and audit real-time stock movements."
       />
 
       <StatStrip
         items={[
           {
-            label: "Active products",
+            label: "Active Catalog SKUs",
             value: active.length,
             icon: "inventory_2",
+            tone: "primary",
+            sublabel: `${totalUnits.toLocaleString()} total units on hand`,
           },
           {
-            label: "Inventory value",
+            label: "Inventory Valuation",
             value: inventoryValueCents,
             icon: "account_balance_wallet",
             format: "money",
+            tone: "teal",
+            sublabel: "Retail value of current stock",
           },
           {
-            label: "Low stock",
+            label: "Low Stock Alerts",
             value: lowStockCount,
             icon: "warning",
             tone: "neutral",
+            sublabel: "At or below safety threshold",
           },
           {
-            label: "Out of stock",
+            label: "Out of Stock",
             value: outOfStockCount,
             icon: "remove_shopping_cart",
             tone: "neutral",
+            sublabel: "Temporarily paused on storefront",
           },
         ]}
       />
 
-      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
+      <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest shadow-xs overflow-hidden">
         <ProductGrid rows={products_} />
       </section>
 
-      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
-        <div className="px-5 py-4">
-          <h3 className="text-headline-sm text-on-surface">Recent inventory movements</h3>
-          <p className="text-body-sm text-on-surface-variant">
-            Last 50 stock changes across all products
-          </p>
+      <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-outline-variant/40">
+          <div>
+            <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
+              Inventory Audit Trail
+            </span>
+            <h3 className="text-headline-sm font-bold text-on-surface mt-0.5">
+              Recent Stock Movements
+            </h3>
+          </div>
+          <Badge tone="neutral">{movementRows.length} logged events</Badge>
         </div>
         {movementRows.length === 0 ? (
           <EmptyState
             icon="swap_vert"
             title="No inventory movements yet"
-            body="Stock changes from checkouts and manual edits will appear here."
-            className="m-4"
+            body="Atomic stock decrements from storefront checkouts and manual restocks will appear here."
+            className="mt-4"
           />
         ) : (
-          <table className="w-full text-left text-body-md">
-            <thead>
-              <tr className="border-t border-outline-variant text-label-sm text-on-surface-variant">
-                <th className="px-5 py-2 font-semibold">Product</th>
-                <th className="px-5 py-2 font-semibold">Change</th>
-                <th className="px-5 py-2 font-semibold">Reason</th>
-                <th className="px-5 py-2 font-semibold">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movementRows.map((m) => (
-                <tr
-                  key={m.id}
-                  className="border-t border-outline-variant hover:bg-surface-low"
-                >
-                  <td className="px-5 py-3 text-on-surface">
-                    {m.products?.name ?? "—"}
-                  </td>
-                  <td
-                    className={`px-5 py-3 font-mono text-[13px] font-semibold ${
-                      m.delta >= 0 ? "text-success" : "text-error"
-                    }`}
-                  >
-                    {m.delta >= 0 ? `+${m.delta}` : m.delta}
-                  </td>
-                  <td className="px-5 py-3 text-on-surface-variant">{m.reason}</td>
-                  <td className="px-5 py-3 text-on-surface-variant">
-                    {new Date(m.created_at).toLocaleString("en-MY", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </td>
+          <div className="overflow-x-auto mt-2">
+            <table className="w-full text-left text-body-md">
+              <thead>
+                <tr className="border-b border-outline-variant/50 text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  <th className="px-4 py-3 font-semibold">Product SKU</th>
+                  <th className="px-4 py-3 font-semibold text-right">
+                    Net Delta
+                  </th>
+                  <th className="px-4 py-3 font-semibold">Audit Reason</th>
+                  <th className="px-4 py-3 font-semibold text-right">
+                    Timestamp
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/35">
+                {movementRows.map((m) => (
+                  <tr
+                    key={m.id}
+                    className="hover:bg-surface-low/60 transition-colors"
+                  >
+                    <td className="px-4 py-3 font-semibold text-on-surface">
+                      {m.products?.name ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[12px] font-bold ${
+                          m.delta >= 0
+                            ? "bg-success-container text-success"
+                            : "bg-error-container text-error"
+                        }`}
+                      >
+                        {m.delta >= 0 ? `+${m.delta}` : m.delta}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-on-surface-variant">
+                      {m.reason}
+                    </td>
+                    <td className="px-4 py-3 text-right text-body-sm text-on-surface-variant tabular-nums">
+                      {new Date(m.created_at).toLocaleString("en-MY", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </div>

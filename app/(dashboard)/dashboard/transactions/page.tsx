@@ -7,7 +7,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { transactions } from "@/lib/db/repo";
 
-export const metadata = { title: "Transactions — CampusHub 2.0" };
+export const metadata = { title: "Transactions & Webhooks — CampusHub 2.0" };
 
 export default async function TransactionsPage() {
   const db = getDbSafe();
@@ -25,51 +25,60 @@ export default async function TransactionsPage() {
     .reduce((s, t) => s + t.amount_cents, 0);
   const verifiedCount = txns.filter((t) => t.verified).length;
   const unverifiedCount = txns.length - verifiedCount;
+  const verificationRate =
+    txns.length > 0 ? Math.round((verifiedCount / txns.length) * 100) : 0;
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="account_balance_wallet"
-        title="Transaction Management"
-        subtitle="Reconcile PayPal payments, refunds, and server-side verification status."
+        eyebrow="Payment Gateway Reconciliation"
+        title="Transactions & PayPal Webhook Ledger"
+        subtitle="Audit captured PayPal Orders v2 payments, refund settlements, and cryptographic webhook signature verification status."
       />
 
       <StatStrip
         items={[
           {
-            label: "Completed payments",
+            label: "Captured Payments",
             value: completedPaymentsCents,
             icon: "payments",
             format: "money",
+            tone: "teal",
+            sublabel: "Settled into bursary escrow",
           },
           {
-            label: "Refunds",
+            label: "Issued Refunds",
             value: refundsCents,
             icon: "currency_exchange",
             tone: "neutral",
             format: "money",
+            sublabel: "Completed refund reversals",
           },
           {
-            label: "Verified",
+            label: "HMAC Verified",
             value: verifiedCount,
             icon: "verified",
+            tone: "success",
+            sublabel: `${verificationRate}% webhook signature match`,
           },
           {
-            label: "Unverified",
+            label: "Pending Verification",
             value: unverifiedCount,
             icon: "gpp_maybe",
             tone: "neutral",
+            sublabel: "Awaiting webhook callback",
           },
         ]}
       />
 
-      <section className="rounded-xl bg-surface-container-lowest shadow-sm">
+      <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest shadow-xs overflow-hidden">
         {txns.length === 0 ? (
           <EmptyState
             icon="payments"
             title="No transactions yet"
             body="Captured PayPal payments and refunds will appear here."
-            className="m-4"
+            className="m-5"
           />
         ) : (
           <TxnGrid rows={txns} />

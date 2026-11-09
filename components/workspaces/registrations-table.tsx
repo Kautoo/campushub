@@ -2,11 +2,14 @@
 
 import { useMemo } from "react";
 import type { ColDef } from "ag-grid-community";
-import { DataTable } from "@/components/grid/data-table";
+import { DataTable, type DataTableFilterPill } from "@/components/grid/data-table";
 import { Badge, type ChipTone } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
 import { formatMoney } from "@/lib/money";
-import { RegistrationActions, type RegistrationStatus } from "./registration-actions";
+import {
+  RegistrationActions,
+  type RegistrationStatus,
+} from "./registration-actions";
 
 export type RegistrationRow = {
   id: string;
@@ -35,68 +38,125 @@ const statusLabels: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-/** Registrations grid with per-row status + check-in actions. */
+const REGISTRATION_FILTER_PILLS: DataTableFilterPill[] = [
+  { value: "all", label: "All Passes" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "checked_in", label: "Checked In" },
+  { value: "pending", label: "Pending" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+/** Registrations AG Grid with attendee avatars, tier badges, and gate check-in actions. */
 export function RegistrationsTable({ rows }: { rows: RegistrationRow[] }) {
   const columnDefs = useMemo<ColDef<RegistrationRow>[]>(
     () => [
       {
         headerName: "Attendee",
-        minWidth: 200,
+        minWidth: 230,
+        flex: 1.6,
         valueGetter: (p) =>
           p.data ? `${p.data.attendee_name} · ${p.data.attendee_email}` : "",
         cellRenderer: (p: { data?: RegistrationRow }) => {
           if (!p.data) return null;
+          const initials = p.data.attendee_name
+            .split(" ")
+            .map((w) => w[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
           return (
-            <div className="leading-tight">
-              <p className="text-body-sm font-medium text-on-surface">
-                {p.data.attendee_name}
-              </p>
-              <p className="text-body-sm text-on-surface-variant">{p.data.attendee_email}</p>
+            <div className="flex items-center gap-3 min-w-0 py-1">
+              <div className="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-label-sm font-bold shrink-0">
+                {initials || "ST"}
+              </div>
+              <div className="leading-tight min-w-0">
+                <p className="text-body-md font-semibold text-on-surface truncate">
+                  {p.data.attendee_name}
+                </p>
+                <p className="text-body-sm text-on-surface-variant truncate mt-0.5">
+                  {p.data.attendee_email}
+                </p>
+              </div>
             </div>
           );
         },
       },
-      { field: "event", headerName: "Event", minWidth: 180 },
-      { field: "tier", headerName: "Tier", minWidth: 130 },
+      {
+        headerName: "Event & Ticket Tier",
+        minWidth: 220,
+        flex: 1.5,
+        valueGetter: (p) => (p.data ? `${p.data.event} ${p.data.tier}` : ""),
+        cellRenderer: (p: { data?: RegistrationRow }) => {
+          if (!p.data) return null;
+          return (
+            <div className="leading-tight min-w-0 py-1">
+              <p className="text-body-md font-medium text-on-surface truncate">
+                {p.data.event}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-0.2 text-[11px] font-semibold text-primary">
+                  {p.data.tier}
+                </span>
+              </div>
+            </div>
+          );
+        },
+      },
       {
         field: "qty",
         headerName: "Qty",
-        maxWidth: 80,
+        maxWidth: 85,
         type: "rightAligned",
+        cellClass: "tabular-nums font-semibold",
       },
       {
-        headerName: "Amount",
+        headerName: "Fee Settled",
         maxWidth: 140,
         type: "rightAligned",
         valueGetter: (p) => p.data?.amount_cents ?? 0,
-        valueFormatter: (p) => formatMoney(Number(p.value)),
+        cellRenderer: (p: { value: number }) => (
+          <span className="tabular-nums font-bold text-primary">
+            {p.value === 0 ? "Free Pass" : formatMoney(Number(p.value))}
+          </span>
+        ),
       },
       {
         field: "status",
-        headerName: "Status",
-        maxWidth: 140,
+        headerName: "Gate Status",
+        maxWidth: 145,
         cellRenderer: (p: { value: RegistrationStatus }) => (
-          <Badge tone={statusTones[p.value] ?? "neutral"}>
+          <Badge
+            tone={statusTones[p.value] ?? "neutral"}
+            icon={
+              p.value === "checked_in"
+                ? "verified"
+                : p.value === "confirmed"
+                  ? "check_circle"
+                  : undefined
+            }
+          >
             {statusLabels[p.value] ?? p.value}
           </Badge>
         ),
       },
       {
-        headerName: "Created",
-        maxWidth: 150,
+        headerName: "Registered",
+        maxWidth: 145,
         valueGetter: (p) => p.data?.created_at ?? "",
         valueFormatter: (p) =>
           new Date(p.value).toLocaleDateString("en-MY", {
-            day: "numeric",
+            day: "2-digit",
             month: "short",
             year: "numeric",
           }),
       },
       {
-        headerName: "",
+        headerName: "Gate Check-In & Actions",
         sortable: false,
         filter: false,
-        width: 260,
+        resizable: false,
+        minWidth: 245,
+        maxWidth: 265,
         cellRenderer: (p: { data?: RegistrationRow }) =>
           p.data ? (
             <RegistrationActions id={p.data.id} status={p.data.status} />
@@ -116,5 +176,15 @@ export function RegistrationsTable({ rows }: { rows: RegistrationRow[] }) {
     );
   }
 
-  return <DataTable columnDefs={columnDefs} rowData={rows} height={560} />;
+  return (
+    <DataTable
+      columnDefs={columnDefs}
+      rowData={rows}
+      height={560}
+      searchPlaceholder="Search attendee name, student email, event, or tier…"
+      filterField="status"
+      filterPills={REGISTRATION_FILTER_PILLS}
+      exportFileName="campushub-registrations.csv"
+    />
+  );
 }

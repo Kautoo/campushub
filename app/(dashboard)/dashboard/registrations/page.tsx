@@ -38,23 +38,54 @@ export default async function RegistrationsPage() {
   const confirmed = rows.filter((r) => r.status === "confirmed").length;
   const checkedIn = rows.filter((r) => r.status === "checked_in").length;
   const pending = rows.filter((r) => r.status === "pending").length;
+  const checkInRate =
+    total > 0 ? Math.round((checkedIn / total) * 100) : 0;
 
   return (
-    <div className="space-y-space-lg">
+    <div className="space-y-6">
       <SectionHeader
         icon="how_to_reg"
-        title="Registration Management"
-        subtitle="Monitor real-time attendee flow, ticket tier fulfillment, manual check-in gates, and student fee settlement across active campus society initiatives."
+        eyebrow="Attendee Roster & Gate Operations"
+        title="Registration & Check-In Management"
+        subtitle="Monitor real-time attendee flow, ticket tier allocations, manual gate check-ins, and student fee settlement across active campus society events."
       />
       <StatStrip
         items={[
-          { label: "Total registrations", value: total, icon: "group", format: "number" },
-          { label: "Confirmed", value: confirmed, icon: "check_circle", format: "number", tone: "success" },
-          { label: "Checked in", value: checkedIn, icon: "how_to_reg", format: "number" },
-          { label: "Pending", value: pending, icon: "hourglass_top", format: "number", tone: "neutral" },
+          {
+            label: "Total Registrations",
+            value: total,
+            icon: "group",
+            format: "number",
+            tone: "primary",
+            sublabel: "Total issued event passes",
+          },
+          {
+            label: "Confirmed Passes",
+            value: confirmed,
+            icon: "check_circle",
+            format: "number",
+            tone: "success",
+            sublabel: "Ready for QR gate scan",
+          },
+          {
+            label: "Gate Checked In",
+            value: checkedIn,
+            icon: "how_to_reg",
+            format: "number",
+            tone: "teal",
+            sublabel: `${checkInRate}% attendance arrival rate`,
+          },
+          {
+            label: "Pending Settlement",
+            value: pending,
+            icon: "hourglass_top",
+            format: "number",
+            tone: "neutral",
+            sublabel: "Awaiting payment capture",
+          },
         ]}
       />
-      <div className="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+      <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-5 shadow-xs">
         <RegistrationsTable rows={rows} />
       </div>
     </div>

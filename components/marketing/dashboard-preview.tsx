@@ -141,26 +141,33 @@ export function DashboardPreview() {
       <StatStrip
         items={[
           {
-            label: "Total revenue",
+            label: "Gross Settled Revenue",
             value: REVENUE_CENTS,
             icon: "payments",
             format: "money",
+            tone: "teal",
+            sublabel: "PayPal Orders v2 verified",
           },
           {
-            label: "Paid orders",
+            label: "Paid & Fulfilled Orders",
             value: PAID_ORDER_COUNT,
             icon: "receipt_long",
+            tone: "primary",
+            sublabel: "Tracked in AG Grid Community",
           },
           {
-            label: "Tickets sold",
+            label: "Event Passes Issued",
             value: TICKETS_SOLD,
             icon: "confirmation_number",
+            tone: "success",
+            sublabel: "Scheduled on Bryntum Timeline",
           },
           {
-            label: "Low stock products",
+            label: "Low Stock Alerts",
             value: LOW_STOCK,
             icon: "inventory_2",
             tone: "neutral",
+            sublabel: "12 active SKUs in catalog",
           },
         ]}
       />
