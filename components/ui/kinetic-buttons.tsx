@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 /**
  * Kinetic CTA trio from the Stitch "MagicUI Trio" spec.
  * - PayPalButton: pulse aura, PayPal blue #0070BA
- * - ShimmerAIButton: teal shimmer sweep for AI actions
+ * - ShimmerAIButton: high-contrast teal-navy gradient shimmer for AI actions with crisp white text
  * - GradientFlowButton: kinetic gradient flow
  * All accept HeroUI Button props via onPress.
  */
@@ -18,10 +18,9 @@ export function PayPalButton({
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
-      
       className={cn(
         "animate-pulse-aura h-11 px-6 text-label-lg font-semibold text-white",
-        "bg-[var(--st-paypal)] hover:brightness-110",
+        "bg-[#0070BA] hover:bg-[#005ea6] shadow-sm hover:shadow-md transition-all",
         className,
       )}
       {...props}
@@ -38,11 +37,10 @@ export function ShimmerAIButton({
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
-      
       className={cn(
-        "animate-shimmer h-11 px-6 text-label-lg font-semibold text-[#00201c]",
-        "bg-[linear-gradient(110deg,var(--st-primary),var(--st-gradient-a),var(--st-primary))]",
-        "border border-primary/40 shadow-glow hover:brightness-105",
+        "h-11 px-6 text-label-md font-semibold text-white",
+        "bg-gradient-to-r from-[#00162e] via-[#005a50] to-[#00162e] dark:from-[#142b45] dark:via-[#007567] dark:to-[#142b45]",
+        "border border-secondary/40 shadow-xs hover:border-secondary hover:shadow-md active:scale-[0.98] transition-all",
         className,
       )}
       {...props}
@@ -59,10 +57,9 @@ export function GradientFlowButton({
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
-      
       className={cn(
         "animate-gradient-flow bg-gradient-kinetic h-11 px-6 text-label-lg font-semibold text-white",
-        "hover:brightness-110",
+        "hover:brightness-110 shadow-sm hover:shadow-md transition-all",
         className,
       )}
       {...props}

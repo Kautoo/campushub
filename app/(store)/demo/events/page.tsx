@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
 import { StorePrice } from "@/components/store/currency-provider";
@@ -13,12 +14,19 @@ export const metadata = {
 export default async function DemoEventsCatalogPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ org?: string }>;
+  searchParams?: Promise<{ org?: string; preview?: string }>;
 }) {
   if (!hasDatabaseEnv()) return <SetupNotice what="the events catalog" />;
 
   const params = await searchParams;
-  const data = await getStorefrontData(params?.org);
+  let targetOrg = params?.org;
+  if (!targetOrg && params?.preview === "1") {
+    const session = await getSessionContext();
+    if (session?.orgIds?.[0]) {
+      targetOrg = session.orgIds[0];
+    }
+  }
+  const data = await getStorefrontData(targetOrg);
   if (!data) return <SetupNotice what="events data" />;
   const { org, events } = data;
   const totalSeats = events.reduce((s, e) => s + (e.capacity || 0), 0);

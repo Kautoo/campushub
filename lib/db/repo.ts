@@ -378,6 +378,20 @@ export const users = {
       [ids],
     );
   },
+  async updateProfile(
+    userId: string,
+    fields: { name?: string; image?: string | null },
+  ): Promise<Pick<UserRow, "id" | "name" | "image" | "email"> | null> {
+    const rows = await query<Pick<UserRow, "id" | "name" | "image" | "email">>(
+      `update public.users
+       set name = coalesce($2, name),
+           image = coalesce($3, image)
+       where id = $1::uuid
+       returning id, name, image, email`,
+      [userId, fields.name ?? null, fields.image ?? null],
+    );
+    return rows[0] ?? null;
+  },
 };
 
 // ---------- events ----------
@@ -712,6 +726,48 @@ export const orders = {
       `select * from public.orders where paypal_order_id = $1`,
       [paypalOrderId],
     );
+  },
+  async getPendingOrder(id: string): Promise<OrderRow | null> {
+    const rows = await query<OrderRow>(
+      `select * from public.orders where id = $1::uuid and status = 'pending' limit 1`,
+      [id],
+    );
+    return rows[0] ?? null;
+  },
+
+  async markPaidViaPaypal(
+    orderId: string,
+    captureId: string | null,
+    totalCents: number,
+    currency: string,
+    orgId: string,
+    paypalOrderId: string,
+    orderNumber: string,
+  ): Promise<void> {
+    await withTransaction(async (client) => {
+      await client.query(
+        `update public.orders
+         set status = 'paid', paypal_capture_id = $2, updated_at = now()
+         where id = $1::uuid`,
+        [orderId, captureId],
+      );
+      await client.query(
+        `insert into public.transactions (org_id, order_id, provider, provider_ref, type, amount_cents, currency, status, verified, raw)
+         values ($1::uuid, $2::uuid, 'paypal', $3, 'payment', $4, $5, 'completed', true, $6::jsonb)`,
+        [orgId, orderId, captureId ?? paypalOrderId, totalCents, currency, JSON.stringify({ capture_id: captureId })],
+      );
+      await client.query(
+        `update public.registrations
+         set status = 'confirmed', payment_ref = $2, updated_at = now()
+         where order_id = $1::uuid`,
+        [orderId, paypalOrderId],
+      );
+      await client.query(
+        `insert into public.notifications (org_id, type, title, body, link)
+         values ($1::uuid, 'order', 'New paid order', $2, '/dashboard/orders')`,
+        [orgId, `${orderNumber} was paid via PayPal.`],
+      );
+    });
   },
 
   async updateStatus(

@@ -11,13 +11,16 @@ export const instant = false;
 
 export default async function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ org?: string }>;
 }) {
   if (!hasDatabaseEnv()) return <SetupNotice what="product details" />;
 
   const { slug } = await params;
-  const data = await getStorefrontData();
+  const sParams = await searchParams;
+  const data = await getStorefrontData(sParams?.org);
   if (!data) return <SetupNotice what="product data" />;
 
   const { org, products } = data;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { StoreGrid } from "@/components/store/store-grid";
 import { Channel3StoreSearch } from "@/components/store/channel3-store-search";
@@ -13,12 +14,19 @@ export const metadata = {
 export default async function DemoMerchShopPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ org?: string }>;
+  searchParams?: Promise<{ org?: string; preview?: string }>;
 }) {
   if (!hasDatabaseEnv()) return <SetupNotice what="the merchandise shop" />;
 
   const params = await searchParams;
-  const data = await getStorefrontData(params?.org);
+  let targetOrg = params?.org;
+  if (!targetOrg && params?.preview === "1") {
+    const session = await getSessionContext();
+    if (session?.orgIds?.[0]) {
+      targetOrg = session.orgIds[0];
+    }
+  }
+  const data = await getStorefrontData(targetOrg);
   if (!data) return <SetupNotice what="merchandise data" />;
   const { org, products } = data;
   const totalUnits = products.reduce((s, p) => s + p.stock, 0);

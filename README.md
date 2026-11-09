@@ -1,8 +1,8 @@
 # CampusHub 2.0
 
-AI-powered campus events & commerce platform: multi-page student storefront,
-Bryntum Scheduler 8.0 venue timelines, AG Grid Community 36 operational
-ledgers, PayPal Orders v2 escrow payments, and exclusive Astropods autonomous
+AI-powered campus events & commerce platform deployed at **`https://campushub.hyria.top`**:
+multi-page student storefront, Bryntum Scheduler 8.0 venue timelines, AG Grid Community 36
+operational ledgers, PayPal Orders v2 escrow payments, and exclusive Astropods autonomous
 commerce analytics — one Next.js app, one Render Postgres database.
 
 ## Architecture
@@ -34,14 +34,29 @@ live multi-currency conversion (**MYR (RM)**, **USD ($)**, **SGD (S$)**, **EUR (
 - `/demo/cart` — Shopping Bag: Line-item management (`−`/`+` quantity steppers, item removal), pass vs. merch classification, fee transparency, and checkout link.
 - `/demo/checkout` — 4-Step Express Checkout: 2-column receipt layout with buyer details, order items review, and PayPal Orders v2 capture.
 
-## Live Storefront Sync & Wix-Style Preview
+## Live Storefront Sync & Multi-Device Live Preview
 
 When organizers make changes in the dashboard:
 1. **Immediate Cache Invalidation**: `app/actions/events.ts` and `app/actions/products.ts` invoke `revalidateTag("storefront")` and revalidate all `/demo/*` routes so edits to titles, prices, stock, dates, venues, or status appear on the storefront **immediately**.
-2. **Wix-Style In-Modal Preview**: Both `EventModal` and `ProductModal` feature a **Live Storefront Card Preview** that updates in real time as organizers type or select photo presets.
-3. **One-Click Live View**: Every active row in AG Grid and the Bryntum inspector includes a direct `open_in_new` link to its live storefront page (`/demo/events/[slug]` or `/demo/products/[slug]`).
-4. **Photo Customizer**: Both modals include high-res campus imagery presets (Conference Hall, Hackathon Lab, AI Lab, Career Fair, Apparel, Tech Gear) plus custom photo URL support.
+2. **Full /demo Storefront Live Preview**: Both `EventModal` and `ProductModal` feature an interactive **Full Storefront Live Preview** with **Desktop (100%)**, **Tablet (768px)**, and **Mobile (375px)** device viewport switchers, letting organizers preview how their store looks in total view across all screen sizes.
+3. **User-Isolated Preview Sessions**: Previews render in an isolated session scope (`/demo?preview=1`) showing that specific user's draft and catalog changes, while public visitors and other evaluators see the pristine, unmodified default template.
+4. **Wix-Style In-Modal Card Preview**: Rapid single-card preview updating in real time as organizers edit titles, categories, pricing, and photo presets.
+5. **One-Click Live View**: Every active row in AG Grid and the Bryntum inspector includes a direct `open_in_new` link to its live storefront page (`/demo/events/[slug]` or `/demo/products/[slug]`).
 
+## Session-Isolated Demo Sandbox Architecture
+
+To prevent multiple evaluators from colliding or corrupting the master showcase template:
+- **Auto-Cloned Isolated Sandboxes**: Signing in via the demo credentials (`owner@campushub.test` / `campushub-demo`) or clicking the 1-Click Sandbox launcher automatically provisions a dedicated sandbox organization (`sandbox-xxxx`) pre-populated with fresh seed events, ticket tiers, and products.
+- **Pristine Public Showroom**: The master university organization (`00000000-0000-4000-8000-000000000001`) remains permanently pristine for public visitors on `https://campushub.hyria.top`.
+- **Personal Profile Customization**: Users can customize their display name and avatar icon (`person`, `school`, `executive`, `admin`, `tech`, `creative`, `esports`, `kinetic`) in `/dashboard/settings`.
+
+## Executive CSV Audit Exports
+
+Downloaded CSV reports (`/dashboard/reports`) feature executive formatting:
+- **Microsoft Excel & Google Sheets Native**: Prepended with UTF-8 BOM (`\uFEFF`) to prevent character distortion.
+- **Formatted Financials**: Outputs localized decimal currency (e.g. `RM 45.00`) alongside raw integer cents.
+- **Human-Readable Dates**: Formatted as clean timestamps (`YYYY-MM-DD HH:mm:ss`) alongside local calendar dates.
+- **Clean Status Columns**: Formatted uppercase labels for order fulfillment, audit verification, and gate check-in status.
 ## Astropods Exclusive AI Engine
 
 All commerce analysis on `/dashboard/ai-insights` is powered exclusively by the

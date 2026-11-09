@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { SectionHeader } from "@/components/ui/primitives";
 import { OrgSettingsForm } from "@/components/settings/org-settings-form";
+import { UserProfileForm } from "@/components/settings/user-profile-form";
 import { MembersGrid } from "@/components/settings/members-grid";
 import { Badge } from "@/components/ui/badge";
 import { getDbSafe } from "@/lib/db/safe";
@@ -17,11 +18,11 @@ export default async function SettingsPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const [orgList, members] = await Promise.all([
+  const [orgList, members, currentUser] = await Promise.all([
     orgs.list(session.orgIds),
     orgMembers.listByOrgs(session.orgIds),
+    users.getById(session.user.id),
   ]);
-
   const org = orgList[0];
   if (!org) return <SetupNotice what="an organization" />;
 
@@ -49,6 +50,16 @@ export default async function SettingsPage() {
             Org ID: {org.slug}
           </Badge>
         }
+      />
+
+      {/* Personal User Profile Editor */}
+      <UserProfileForm
+        user={{
+          id: session.user.id,
+          name: currentUser?.name ?? session.user.name,
+          email: session.user.email ?? "member@campus.edu",
+          image: currentUser?.image,
+        }}
       />
 
       <OrgSettingsForm org={org} />

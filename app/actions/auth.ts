@@ -39,6 +39,15 @@ export async function signIn(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
+  if (
+    parsed.data.email.toLowerCase() === "owner@campushub.test" &&
+    parsed.data.password === "campushub-demo"
+  ) {
+    // Route demo user to an isolated per-session sandbox cloned from the master template
+    await createDemoSandbox();
+    return null;
+  }
+
   try {
     await authSignIn("credentials", {
       email: parsed.data.email,

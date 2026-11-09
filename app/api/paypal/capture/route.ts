@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ordersController, paypalConfigured } from "@/lib/paypal";
 import { getDbSafe } from "@/lib/db/safe";
-import { getSessionContext } from "@/lib/auth/session";
-import {
-  orders,
-  orderItems,
-  transactions,
-  registrations,
-  notifications,
-} from "@/lib/db/repo";
+import { query } from "@/lib/db";
+import { orders, type OrderRow } from "@/lib/db/repo";
 
 const bodySchema = z.object({
   order_id: z.string().uuid(),
@@ -26,13 +21,9 @@ const captureResultSchema = z.object({
               .array(
                 z.object({
                   id: z.string(),
-                  status: z.string(),
-                  amount: z
-                    .object({ value: z.string(), currencyCode: z.string() })
-                    .optional(),
+                  status: z.string().optional(),
                 }),
               )
-              .min(1)
               .optional(),
           })
           .optional(),
@@ -45,9 +36,8 @@ const captureResultSchema = z.object({
 /**
  * Captures an approved PayPal order. Verifies COMPLETED status against the
  * PayPal API response before flipping the DB order to `paid`, records a
- * verified transaction, and confirms ticket registrations.
- * Stays on the cookie-aware server client: orders/registrations/transactions
- * RLS is org-member-only, so an anon public client would be blocked.
+ * verified transaction, confirms ticket registrations, and emits an organizer notification.
+ * Works seamlessly for both guest student checkouts and organizer dashboard testing.
  */
 export async function POST(request: Request) {
   if (!paypalConfigured()) {
@@ -57,21 +47,25 @@ export async function POST(request: Request) {
   if (!db) {
     return NextResponse.json({ error: "store_unavailable" }, { status: 503 });
   }
-  const session = await getSessionContext();
-  if (!session) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const order = await orders.getById(parsed.data.order_id, session.orgIds);
+  // Look up order directly by ID
+  const orderRes = await query<OrderRow>(
+    `select id, org_id, order_number, total_cents, currency, status, paypal_order_id
+     from public.orders
+     where id = $1::uuid limit 1`,
+    [parsed.data.order_id],
+  );
+  const order = orderRes[0];
 
   if (!order || !order.paypal_order_id) {
     return NextResponse.json({ error: "order_not_capturable" }, { status: 400 });
   }
+
   if (order.status === "paid" || order.status === "fulfilled") {
     // Idempotent: already captured
     return NextResponse.json({ status: "already_paid", order_id: order.id });
@@ -90,39 +84,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "capture_incomplete" }, { status: 402 });
     }
 
-    // Flip order to paid + record verified transaction
-    await orders.updateStatus(order.id, session.orgIds, {
-      status: "paid",
-      paypal_capture_id: captureRef?.id ?? null,
-    });
+    // Atomic settlement in one transaction
+    await orders.markPaidViaPaypal(
+      order.id,
+      captureRef?.id ?? null,
+      order.total_cents,
+      order.currency,
+      order.org_id,
+      order.paypal_order_id,
+      order.order_number,
+    );
 
-    await transactions.insert({
-      org_id: order.org_id,
-      order_id: order.id,
-      provider: "paypal",
-      provider_ref: captureRef?.id ?? order.paypal_order_id,
-      type: "payment",
-      amount_cents: order.total_cents,
-      currency: order.currency,
-      status: "completed",
-      verified: true,
-      raw: { capture_status: capture.status, capture_id: captureRef?.id },
-    });
-
-    // Confirm ticket registrations tied to this order
-    const registrationIds = await orderItems.listTicketRegistrationIds(order.id);
-
-    if (registrationIds.length > 0) {
-      await registrations.confirmByIds(registrationIds, order.paypal_order_id);
-    }
-
-    await notifications.insert({
-      org_id: order.org_id,
-      type: "order",
-      title: "New paid order",
-      body: `${order.order_number} was paid via PayPal.`,
-      link: "/dashboard/orders",
-    });
+    revalidateTag("storefront", { expire: 0 });
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/orders");
+    revalidatePath("/dashboard/transactions");
 
     return NextResponse.json({ status: "completed", order_id: order.id });
   } catch (err) {

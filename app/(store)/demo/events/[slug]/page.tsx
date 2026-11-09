@@ -10,13 +10,16 @@ export const instant = false;
 
 export default async function EventDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ org?: string }>;
 }) {
   if (!hasDatabaseEnv()) return <SetupNotice what="event details" />;
 
   const { slug } = await params;
-  const data = await getStorefrontData();
+  const sParams = await searchParams;
+  const data = await getStorefrontData(sParams?.org);
   if (!data) return <SetupNotice what="event data" />;
 
   const { org, events } = data;

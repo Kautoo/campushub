@@ -1,26 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Theme toggle: flips `data-theme` on <html> and persists to a cookie
- * that the root layout's inline script reads before paint.
+ * Theme toggle: flips `data-theme` on <html> and persists to both
+ * localStorage and cookie (`ch-theme`) so the root layout's inline script
+ * reads it before paint, keeping all subpages (storefront & dashboard) in sync.
  */
 export function ThemeToggle({ className }: { className?: string }) {
-  // Read the DOM (external system) lazily on first client render so the
-  // effect body stays a pure sync — no setState-in-effect cascade.
-  const [theme, setTheme] = useState<"light" | "dark">(() =>
-    typeof document !== "undefined" &&
-    document.documentElement.getAttribute("data-theme") === "dark"
-      ? "dark"
-      : "light",
-  );
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    // Initial sync with DOM or storage
+    const current =
+      typeof document !== "undefined" &&
+      document.documentElement.getAttribute("data-theme") === "dark"
+        ? "dark"
+        : "light";
+    setTheme(current);
+
+    const handleSync = () => {
+      const active =
+        typeof document !== "undefined" &&
+        document.documentElement.getAttribute("data-theme") === "dark"
+          ? "dark"
+          : "light";
+      setTheme(active);
+    };
+
+    window.addEventListener("ch-theme-changed", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("ch-theme-changed", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, []);
 
   function toggle() {
     const next = theme === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    document.cookie = `ch-theme=${next};path=/;max-age=31536000;samesite=lax`;
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-theme", next);
+      document.cookie = `ch-theme=${next};path=/;max-age=31536000;samesite=lax`;
+      try {
+        localStorage.setItem("ch-theme", next);
+      } catch {}
+      window.dispatchEvent(new Event("ch-theme-changed"));
+    }
     setTheme(next);
   }
 
@@ -32,7 +58,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       className={cn(
         "focus-aura inline-flex h-9 w-9 items-center justify-center rounded-full",
         "border border-outline-variant bg-surface-lowest text-on-surface-variant",
-        "transition-colors hover:bg-surface-container",
+        "transition-colors hover:bg-surface-container hover:text-on-surface cursor-pointer",
         className,
       )}
     >

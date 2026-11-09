@@ -542,20 +542,20 @@ export function EventScheduler({
           return `
             <div class="ch-bryntum-event-card" data-status="${escapeHtml(status)}">
               <div class="flex items-center justify-between gap-1.5 min-w-0">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${meta.dotColor}"></span>
-                  <span class="text-[12.5px] font-semibold text-on-surface truncate leading-tight">${title}</span>
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-2 h-2 rounded-full shrink-0 bg-white ring-2 ring-white/30"></span>
+                  <span class="text-[13px] font-bold text-white truncate leading-tight tracking-tight">${title}</span>
                 </div>
-                <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold tracking-wider uppercase bg-surface-container/90 text-on-surface-variant shrink-0">
+                <span class="px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tracking-wider uppercase bg-white/20 text-white shrink-0 border border-white/25">
                   ${escapeHtml(meta.badge)}
                 </span>
               </div>
-              <div class="flex items-center justify-between gap-2 mt-1 text-[11px] text-on-surface-variant min-w-0">
-                <span class="truncate">${venue} · <strong class="font-medium text-secondary">${category}</strong></span>
-                <span class="tabular-nums font-semibold text-on-surface shrink-0">${sold}/${cap} (${pct}%)</span>
+              <div class="flex items-center justify-between gap-2 text-[11.5px] text-white/90 min-w-0 font-medium">
+                <span class="truncate">${venue} · <strong class="font-bold text-white">${category}</strong></span>
+                <span class="tabular-nums font-bold text-white shrink-0 bg-black/20 px-1.5 py-0.5 rounded">${sold}/${cap} (${pct}%)</span>
               </div>
-              <div class="w-full h-1 rounded-full bg-surface-container-high/80 overflow-hidden mt-1">
-                <div class="h-full rounded-full" style="width:${pct}%;background:${meta.dotColor}"></div>
+              <div class="w-full h-1.5 rounded-full bg-black/30 overflow-hidden mt-1">
+                <div class="h-full rounded-full bg-white shadow-xs" style="width:${pct}%"></div>
               </div>
             </div>
           `;
@@ -1036,6 +1036,33 @@ export function EventScheduler({
         </div>
       ) : null}
 
+      {/* Beginner-Friendly Timeline Guide Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-secondary/35 bg-secondary-container/15 px-4 py-2 text-label-sm text-on-surface">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="font-bold text-secondary flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">help</span>
+            Interactive Guide:
+          </span>
+          <span className="inline-flex items-center gap-1 text-on-surface-variant">
+            <span className="font-semibold text-on-surface">👆 Click card</span> to inspect details
+          </span>
+          <span className="text-outline-variant">•</span>
+          <span className="inline-flex items-center gap-1 text-on-surface-variant">
+            <span className="font-semibold text-on-surface">↔️ Drag</span> to reschedule
+          </span>
+          <span className="text-outline-variant">•</span>
+          <span className="inline-flex items-center gap-1 text-on-surface-variant">
+            <span className="font-semibold text-on-surface">📐 Drag edges</span> to resize duration
+          </span>
+          <span className="text-outline-variant">•</span>
+          <span className="inline-flex items-center gap-1 text-on-surface-variant">
+            <span className="font-semibold text-on-surface">⚡ Double-click</span> to edit
+          </span>
+        </div>
+        <span className="text-xs text-secondary font-semibold">
+          Instant Postgres Sync
+        </span>
+      </div>
       {/* ============================================================
           4. BRYNTUM SCHEDULER CANVAS + NATIVE EVENT INSPECTOR PANEL
           ============================================================ */}

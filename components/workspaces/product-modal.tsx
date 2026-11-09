@@ -9,6 +9,7 @@ import {
   type ProductActionState,
 } from "@/app/actions/products";
 import { Badge } from "@/components/ui/badge";
+import { FullStorefrontPreview } from "@/components/store/full-storefront-preview";
 
 export type ProductModalRow = {
   id: string;
@@ -110,7 +111,7 @@ function ProductModalForm({
   );
   const [sku, setSku] = useState(product?.sku ?? "");
   const [stock, setStock] = useState(product?.stock ?? 50);
-  const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
+  const [previewMode, setPreviewMode] = useState<"edit" | "card" | "storefront">("edit");
 
   useEffect(() => {
     if (state?.ok) onClose();
@@ -148,7 +149,7 @@ function ProductModalForm({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Wix-style Edit vs Storefront Preview Tab Switcher */}
+          {/* Wix-style Edit vs Card vs Full Storefront Preview */}
           <div className="inline-flex rounded-xl border border-outline-variant/60 bg-surface-low p-0.5">
             <button
               type="button"
@@ -163,17 +164,31 @@ function ProductModalForm({
             </button>
             <button
               type="button"
-              onClick={() => setPreviewMode("preview")}
+              onClick={() => setPreviewMode("card")}
               className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold transition-all flex items-center gap-1 ${
-                previewMode === "preview"
+                previewMode === "card"
                   ? "bg-primary text-on-primary shadow-2xs"
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
               <span className="material-symbols-outlined text-[14px]">
-                visibility
+                credit_card
               </span>
-              <span>Live Store Preview</span>
+              <span>Card</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewMode("storefront")}
+              className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold transition-all flex items-center gap-1 ${
+                previewMode === "storefront"
+                  ? "bg-primary text-on-primary shadow-2xs"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">
+                desktop_windows
+              </span>
+              <span>Full Storefront</span>
             </button>
           </div>
 
@@ -190,8 +205,15 @@ function ProductModalForm({
         </div>
       </div>
 
+      {previewMode === "storefront" ? (
+        <FullStorefrontPreview
+          previewUrl="/demo/shop?preview=1"
+          title="Official Merch Storefront"
+        />
+      ) : null}
+
       {/* Wix-Style Live Storefront Product Card Preview */}
-      {previewMode === "preview" ? (
+      {previewMode === "card" ? (
         <div className="space-y-4 rounded-2xl border border-outline-variant/50 bg-surface-low/70 p-6">
           <div className="flex items-center justify-between">
             <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">

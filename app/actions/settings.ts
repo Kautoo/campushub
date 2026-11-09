@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { orgSettingsSchema } from "@/lib/validation";
 import { hasDatabaseEnv, getPool } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs } from "@/lib/db/repo";
+import { orgs, users } from "@/lib/db/repo";
 
 export type SettingsState = { ok?: string; error?: string } | null;
 
@@ -45,6 +45,30 @@ export async function updateOrgSettings(
   if (!updated) return { error: "Could not save the organization settings." };
   revalidatePath("/dashboard/settings");
   return { ok: "Organization settings saved." };
+}
+export async function updateUserProfile(
+  _prev: SettingsState,
+  formData: FormData,
+): Promise<SettingsState> {
+  if (!hasDatabaseEnv()) return { error: "Database is not configured." };
+  const session = await getSessionContext();
+  if (!session) return { error: "You must be signed in." };
+
+  const name = String(formData.get("name") || "").trim();
+  const image = String(formData.get("image") || "").trim();
+
+  if (!name) return { error: "Name cannot be empty." };
+
+  const updated = await users.updateProfile(session.user.id, {
+    name,
+    image: image || null,
+  });
+
+  if (!updated) return { error: "Failed to update profile." };
+
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/dashboard/settings");
+  return { ok: "Personal profile updated successfully." };
 }
 
 /** Restore demo organization events and merchandise to active status */

@@ -169,6 +169,43 @@ export default function CheckoutPage() {
       setStage("error");
     },
   };
+  async function simulateDemoSettlement() {
+    setError(null);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          org_id: orgId,
+          items: cart.map((l) => ({
+            product_id: l.product_id,
+            tier_id: l.tier_id,
+            qty: l.qty,
+          })),
+          customer_name: name || "Demo Campus Student",
+          customer_email: email || "student@campus.edu",
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "order_failed");
+      const order = json.order as DbOrder;
+      setDbOrder(order);
+
+      const capRes = await fetch("/api/checkout/demo-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: order.id }),
+      });
+      if (!capRes.ok) throw new Error("Demo settlement failed.");
+
+      clearCart();
+      setCart([]);
+      setStage("done");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "settlement_failed");
+      setStage("error");
+    }
+  }
 
   if (stage === "done") {
     return (
@@ -505,9 +542,16 @@ export default function CheckoutPage() {
                   </Badge>
                 </div>
                 <p className="text-body-sm text-warning leading-relaxed pt-1">
-                  PayPal checkout is currently offline in this demo environment
-                  until sandbox credentials are configured.
+                  PayPal credentials not detected in environment. You can simulate instant checkout to test order placement and live ledger updates.
                 </p>
+                <Button
+                  variant="primary"
+                  className="mt-2 h-11 w-full rounded-full text-label-md font-semibold bg-[#0070ba] text-white"
+                  onPress={simulateDemoSettlement}
+                  isDisabled={!name.trim() || !email.trim() || cart.length === 0}
+                >
+                  Simulate Instant PayPal Settlement
+                </Button>
               </div>
             )}
 

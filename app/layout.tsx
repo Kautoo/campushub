@@ -30,7 +30,7 @@ export const metadata: Metadata = {
  * Applies the persisted theme before first paint to avoid a flash and
  * hydration mismatch. Reads `data-theme` cookie; defaults to light.
  */
-const themeInitScript = `(function(){try{var m=document.cookie.match(/(?:^|; )ch-theme=(light|dark)/);var t=m?m[1]:"light";document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
+const themeInitScript = `(function(){try{var m=document.cookie.match(/(?:^|; )ch-theme=(light|dark)/);var t=m?m[1]:(window.localStorage?localStorage.getItem("ch-theme"):"light")||"light";document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
 
 export default function RootLayout({
   children,

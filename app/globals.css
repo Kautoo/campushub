@@ -786,68 +786,54 @@ body {
   justify-content: space-between;
   width: 100%;
   height: 100%;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--st-secondary) 30%, var(--st-outline-variant));
-  border-left-width: 4px;
-  background: var(--st-surface-lowest);
-  color: var(--st-on-surface);
-  box-shadow: 0 2px 6px -1px rgba(0, 22, 46, 0.07), 0 1px 2px rgba(0, 22, 46, 0.04);
-  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.16s ease, border-color 0.16s ease;
-  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-left-width: 5px;
+  box-shadow: 0 4px 12px -2px rgba(0, 22, 46, 0.14), 0 2px 4px rgba(0, 22, 46, 0.08);
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.16s ease, filter 0.16s ease;
+  cursor: grab;
   user-select: none;
   overflow: hidden;
 }
 
 .ch-bryntum-event-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -4px rgba(0, 106, 102, 0.16), 0 2px 6px rgba(0, 22, 46, 0.06);
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 10px 24px -4px rgba(0, 22, 46, 0.22), 0 4px 8px rgba(0, 22, 46, 0.12);
 }
 
 .b-sch-event-selected .ch-bryntum-event-card,
 .b-sch-event:focus-visible .ch-bryntum-event-card {
-  outline: 2px solid var(--st-secondary);
-  outline-offset: 1px;
-  box-shadow: 0 10px 24px -4px rgba(0, 106, 102, 0.22);
+  outline: 3px solid #ffffff;
+  outline-offset: -1px;
+  box-shadow: 0 12px 28px -4px rgba(0, 22, 46, 0.35);
 }
 
-/* Event Card Status Variants */
+/* Event Card Status Variants — Vibrant, Solid & High-Contrast */
 .ch-bryntum-event-card[data-status="published"] {
-  border-left-color: var(--st-secondary);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--st-secondary) 11%, var(--st-surface-lowest)) 0%,
-    color-mix(in srgb, var(--st-secondary) 4%, var(--st-surface-lowest)) 100%
-  );
+  border-left-color: #003632;
+  background: linear-gradient(135deg, #006a60 0%, #004d46 100%) !important;
+  color: #ffffff !important;
 }
 
 .ch-bryntum-event-card[data-status="draft"] {
-  border-left-color: var(--st-warning);
-  border-style: solid;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--st-warning) 12%, var(--st-surface-lowest)) 0%,
-    color-mix(in srgb, var(--st-warning) 4%, var(--st-surface-lowest)) 100%
-  );
+  border-left-color: #78350f;
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  color: #ffffff !important;
 }
 
 .ch-bryntum-event-card[data-status="completed"] {
-  border-left-color: var(--st-primary);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--st-primary) 10%, var(--st-surface-lowest)) 0%,
-    color-mix(in srgb, var(--st-surface-low) 80%, var(--st-surface-lowest)) 100%
-  );
+  border-left-color: #000c1c;
+  background: linear-gradient(135deg, #00162e 0%, #142b45 100%) !important;
+  color: #ffffff !important;
 }
 
 .ch-bryntum-event-card[data-status="cancelled"] {
-  border-left-color: var(--st-error);
-  opacity: 0.78;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--st-error) 10%, var(--st-surface-lowest)) 0%,
-    var(--st-surface-lowest) 100%
-  );
+  border-left-color: #7f1d1d;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  color: #ffffff !important;
+  opacity: 0.85;
 }
 
 /* Floating Bryntum Popups, Tooltips & Context Menus (mounted in .b-float-root) */

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
 import { StoreGrid } from "@/components/store/store-grid";
 import { Channel3StoreSearch } from "@/components/store/channel3-store-search";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
@@ -20,12 +21,19 @@ export const metadata = {
 export default async function DemoStorefront({
   searchParams,
 }: {
-  searchParams?: Promise<{ org?: string }>;
+  searchParams?: Promise<{ org?: string; preview?: string }>;
 }) {
   if (!hasDatabaseEnv()) return <SetupNotice what="the storefront" />;
 
   const params = await searchParams;
-  const data = await getStorefrontData(params?.org);
+  let targetOrg = params?.org;
+  if (!targetOrg && params?.preview === "1") {
+    const session = await getSessionContext();
+    if (session?.orgIds?.[0]) {
+      targetOrg = session.orgIds[0];
+    }
+  }
+  const data = await getStorefrontData(targetOrg);
   if (!data) return <SetupNotice what="store data" />;
 
   const { org, products, events } = data;

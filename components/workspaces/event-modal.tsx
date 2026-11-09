@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@heroui/react";
 import { createEvent, updateEvent } from "@/app/actions/events";
 import { Badge } from "@/components/ui/badge";
+import { FullStorefrontPreview } from "@/components/store/full-storefront-preview";
 import type { EventInput } from "@/lib/validation";
 
 export type EventRow = {
@@ -92,7 +93,7 @@ export function EventModal({
   const [status, setStatus] = useState(event?.status ?? "draft");
   const [startDate, setStartDate] = useState(toLocalInput(event?.start_at ?? null));
   const [capacity, setCapacity] = useState(event?.capacity ?? 150);
-  const [previewMode, setPreviewMode] = useState<"edit" | "preview">("edit");
+  const [previewMode, setPreviewMode] = useState<"edit" | "card" | "storefront">("edit");
 
   if (!open) return null;
 
@@ -167,7 +168,7 @@ export function EventModal({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Wix-style Edit vs Storefront Preview Tab Switcher */}
+            {/* Wix-style Edit vs Card vs Full Storefront Preview */}
             <div className="inline-flex rounded-xl border border-outline-variant/60 bg-surface-low p-0.5">
               <button
                 type="button"
@@ -182,17 +183,31 @@ export function EventModal({
               </button>
               <button
                 type="button"
-                onClick={() => setPreviewMode("preview")}
+                onClick={() => setPreviewMode("card")}
                 className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold transition-all flex items-center gap-1 ${
-                  previewMode === "preview"
+                  previewMode === "card"
                     ? "bg-primary text-on-primary shadow-2xs"
                     : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
                 <span className="material-symbols-outlined text-[14px]">
-                  visibility
+                  credit_card
                 </span>
-                <span>Live Store Preview</span>
+                <span>Card</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode("storefront")}
+                className={`px-3 py-1.5 rounded-lg text-label-sm font-semibold transition-all flex items-center gap-1 ${
+                  previewMode === "storefront"
+                    ? "bg-primary text-on-primary shadow-2xs"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  desktop_windows
+                </span>
+                <span>Full Storefront</span>
               </button>
             </div>
 
@@ -209,8 +224,15 @@ export function EventModal({
           </div>
         </div>
 
+        {previewMode === "storefront" ? (
+          <FullStorefrontPreview
+            previewUrl="/demo?preview=1"
+            title="Events & Passes Storefront"
+          />
+        ) : null}
+
         {/* Wix-Style Live Storefront Card Preview */}
-        {previewMode === "preview" ? (
+        {previewMode === "card" ? (
           <div className="space-y-4 rounded-2xl border border-outline-variant/50 bg-surface-low/70 p-6">
             <div className="flex items-center justify-between">
               <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">

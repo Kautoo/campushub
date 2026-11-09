@@ -4,35 +4,45 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { orders, transactions, registrations, reports } from "@/lib/db/repo";
 import { putFile, signedUrl } from "@/lib/files";
+import { formatMoney } from "@/lib/money";
 
 const exportSchema = z.object({
   type: z.enum(["orders", "transactions", "registrations"]),
 });
 
-type CsvCell = string | number | boolean | null;
+type CsvCell = string | number | boolean | null | undefined;
 
-/** RFC-4180 CSV escaping, no external libs. */
+/** RFC-4180 CSV cell escaping. */
 function csvEscape(value: CsvCell): string {
   if (value === null || value === undefined) return "";
-  const str = String(value);
+  const str = String(value).trim();
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
 }
 
+/** Formats ISO timestamp to human-friendly YYYY-MM-DD HH:mm:ss. */
+function formatHumanDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  return d.toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
+}
+
+/** Builds CSV text with UTF-8 BOM so Microsoft Excel & Google Sheets render cleanly. */
 function toCsv(headers: string[], rows: CsvCell[][]): string {
+  const BOM = "\uFEFF";
   const lines = [headers.map(csvEscape).join(",")];
   for (const row of rows) {
     lines.push(row.map(csvEscape).join(","));
   }
-  return lines.join("\r\n");
+  return BOM + lines.join("\r\n");
 }
 
 /**
- * Generate a CSV report for the signed-in organizer's first org, store it in
- * the files table (DB-backed file store), build a 24h token-signed download
- * URL, and record the export in the reports table.
+ * Generates an executive-formatted CSV audit export for the organizer's active org.
+ * Formats monetary amounts, human-readable dates, clean status labels, and UTF-8 BOM.
  */
 export async function POST(request: Request) {
   const db = getDbSafe();
@@ -59,14 +69,15 @@ export async function POST(request: Request) {
   const parsed = exportSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "validation_failed", issues: parsed.error.issues },
+      { error: "invalid_body", issues: parsed.error.issues },
       { status: 400 },
     );
   }
   const type = parsed.data.type;
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const name = `${type}-${timestamp}.csv`;
+  const now = new Date();
+  const timestamp = now.toISOString().slice(0, 19).replace(/[:.]/g, "-");
+  const name = `CampusHub-${type}-${timestamp}.csv`;
 
   let headers: string[];
   let rows: CsvCell[][];
@@ -74,85 +85,125 @@ export async function POST(request: Request) {
   if (type === "orders") {
     const data = await orders.listSimple([orgId]);
     headers = [
-      "order_number",
-      "customer_name",
-      "customer_email",
-      "status",
-      "subtotal_cents",
-      "fee_cents",
-      "total_cents",
-      "currency",
-      "created_at",
+      "Order Number",
+      "Customer / Student Name",
+      "Customer Email",
+      "Payment Gateway",
+      "Fulfillment Status",
+      "Subtotal Formatted",
+      "Subtotal Cents",
+      "Platform Fee Formatted",
+      "Platform Fee Cents",
+      "Total Settled Formatted",
+      "Total Settled Cents",
+      "Currency",
+      "Created At (UTC)",
+      "Local Date",
     ];
     rows = data
       .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
-      .map((o) => [
-        o.order_number,
-        o.customer_name,
-        o.customer_email,
-        o.status,
-        o.subtotal_cents,
-        o.fee_cents,
-        o.total_cents,
-        o.currency,
-        o.created_at,
-      ]);
+      .map((o) => {
+        const ccy = o.currency || "MYR";
+        return [
+          o.order_number,
+          o.customer_name ?? "Campus Buyer",
+          o.customer_email,
+          "PayPal Orders v2",
+          o.status.toUpperCase(),
+          formatMoney(o.subtotal_cents, ccy),
+          o.subtotal_cents,
+          formatMoney(o.fee_cents, ccy),
+          o.fee_cents,
+          formatMoney(o.total_cents, ccy),
+          o.total_cents,
+          ccy,
+          formatHumanDate(o.created_at),
+          new Date(o.created_at).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          }),
+        ];
+      });
   } else if (type === "transactions") {
     const data = await transactions.list([orgId], 10000);
     headers = [
-      "provider",
-      "provider_ref",
-      "type",
-      "amount_cents",
-      "currency",
-      "status",
-      "verified",
-      "created_at",
+      "Transaction ID",
+      "Provider / Gateway",
+      "PayPal / Gateway Reference",
+      "Ledger Type",
+      "Settlement Amount Formatted",
+      "Raw Cents",
+      "Currency",
+      "Settlement Status",
+      "Audit Verified",
+      "Recorded Timestamp (UTC)",
+      "Local Date",
     ];
-    rows = data.map((t) => [
-      t.provider,
-      t.provider_ref,
-      t.type,
-      t.amount_cents,
-      t.currency,
-      t.status,
-      t.verified,
-      t.created_at,
-    ]);
+    rows = data.map((t) => {
+      const ccy = t.currency || "MYR";
+      return [
+        t.id,
+        t.provider === "paypal" ? "PayPal Orders v2" : t.provider,
+        t.provider_ref ?? "—",
+        t.type.toUpperCase(),
+        formatMoney(t.amount_cents, ccy),
+        t.amount_cents,
+        ccy,
+        t.status.toUpperCase(),
+        t.verified ? "VERIFIED (TRUE)" : "UNVERIFIED",
+        formatHumanDate(t.created_at),
+        new Date(t.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
+      ];
+    });
   } else {
     const data = await registrations.listWithJoins([orgId], 10000);
     headers = [
-      "attendee_name",
-      "attendee_email",
-      "event",
-      "qty",
-      "amount_cents",
-      "status",
-      "created_at",
+      "Attendee Name",
+      "Attendee Email",
+      "Campus Event Title",
+      "Pass Tier",
+      "Pass Quantity",
+      "Fee Settled Formatted",
+      "Fee Cents",
+      "Gate Check-In Status",
+      "Payment Reference",
+      "Registered At (UTC)",
+      "Local Date",
     ];
     rows = data.map((r) => [
       r.attendee_name,
       r.attendee_email,
-      r.event_title ?? null,
+      r.event_title ?? "Campus Event",
+      r.tier_name ?? "General Admission",
       r.qty,
+      r.amount_cents === 0 ? "Free Pass" : formatMoney(r.amount_cents, "MYR"),
       r.amount_cents,
-      r.status,
-      r.created_at,
+      r.status.toUpperCase(),
+      r.paypal_order_id ?? "—",
+      formatHumanDate(r.created_at),
+      new Date(r.created_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
     ]);
   }
 
   const csv = toCsv(headers, rows);
 
-  // Store the CSV in the files table; on failure report honestly (never a
-  // fake ready row).
   let fileId: string | null = null;
   try {
     fileId = await putFile({
       orgId,
-      bucket: "report-exports",
+      bucket: "reports",
       name,
-      mime: "text/csv",
-      bytes: Buffer.from(csv, "utf8"),
+      mime: "text/csv; charset=utf-8",
+      bytes: Buffer.from(csv, "utf-8"),
       createdBy: session.user.id,
     });
   } catch (err) {
@@ -160,18 +211,7 @@ export async function POST(request: Request) {
   }
 
   if (!fileId) {
-    // Record the failure honestly; never a fake ready row.
-    await reports.insert({
-      org_id: orgId,
-      type,
-      params: { requested_by: session.user.id },
-      file_url: null,
-      status: "failed",
-    });
-    return NextResponse.json(
-      { error: "storage_unavailable" },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: "file_store_failed" }, { status: 500 });
   }
 
   const url = signedUrl(fileId);
@@ -179,7 +219,7 @@ export async function POST(request: Request) {
   const inserted = await reports.insert({
     org_id: orgId,
     type,
-    params: { requested_by: session.user.id },
+    params: {},
     file_url: url,
     status: "ready",
   });
