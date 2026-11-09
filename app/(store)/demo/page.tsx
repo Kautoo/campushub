@@ -7,7 +7,6 @@ import { Channel3StoreSearch } from "@/components/store/channel3-store-search";
 import { TierBuyButton } from "@/components/store/tier-buy-button";
 import { StorePrice } from "@/components/store/currency-provider";
 import { Badge } from "@/components/ui/badge";
-import { StorefrontBanner } from "@/components/store/storefront-banner";
 import {
   getStorefrontData,
   STITCH_EVENT_IMAGES,
@@ -54,10 +53,6 @@ export default async function DemoStorefront({
 
   return (
     <main className="w-full bg-surface min-h-screen">
-      <StorefrontBanner
-        orgName={org.name}
-        isCustomOrg={org.isCustomOrg}
-      />
       {/* ============================================================
           1. HERO & FLAGSHIP EVENT SPOTLIGHT
           ============================================================ */}

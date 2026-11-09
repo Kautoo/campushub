@@ -5,7 +5,6 @@ import { SetupNotice } from "@/components/layout/setup-notice";
 import { StoreGrid } from "@/components/store/store-grid";
 import { Channel3StoreSearch } from "@/components/store/channel3-store-search";
 import { Badge } from "@/components/ui/badge";
-import { StorefrontBanner } from "@/components/store/storefront-banner";
 import { getStorefrontData } from "@/lib/storefront";
 export const metadata = {
   title: "Official Merch Shop — CampusHub Storefront",
@@ -33,10 +32,6 @@ export default async function DemoMerchShopPage({
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      <StorefrontBanner
-        orgName={org.name}
-        isCustomOrg={org.isCustomOrg}
-      />
       <div className="rounded-2xl border border-outline-variant/50 bg-surface-lowest p-6 sm:p-8 shadow-xs space-y-4">
         <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
           <Link href="/demo" className="hover:text-primary transition-colors">
