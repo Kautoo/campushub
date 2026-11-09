@@ -28,12 +28,12 @@ export function StorefrontBanner({
         <div className="flex items-center gap-3 text-xs">
           {isCustomOrg ? (
             <Link
-              href="/demo"
+              href="/demo?org=tech-society"
               className="text-secondary font-semibold hover:underline flex items-center gap-1"
             >
-              <span>Back to Main Marketplace</span>
+              <span>View Default Public Showroom</span>
               <span className="material-symbols-outlined text-[13px]">
-                arrow_forward
+                visibility
               </span>
             </Link>
           ) : (

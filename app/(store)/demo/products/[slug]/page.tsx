@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { hasDatabaseEnv } from "@/lib/db";
+import { getSessionContext } from "@/lib/auth/session";
 import { SetupNotice } from "@/components/layout/setup-notice";
 import { ProductBuyBox } from "@/components/store/product-buy-box";
 import { StorePrice } from "@/components/store/currency-provider";
@@ -20,7 +21,14 @@ export default async function ProductDetailPage({
 
   const { slug } = await params;
   const sParams = await searchParams;
-  const data = await getStorefrontData(sParams?.org);
+  let targetOrg = sParams?.org;
+  if (!targetOrg) {
+    const session = await getSessionContext();
+    if (session?.orgIds?.[0]) {
+      targetOrg = session.orgIds[0];
+    }
+  }
+  const data = await getStorefrontData(targetOrg);
   if (!data) return <SetupNotice what="product data" />;
 
   const { org, products } = data;

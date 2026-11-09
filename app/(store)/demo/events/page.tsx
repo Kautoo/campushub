@@ -20,7 +20,7 @@ export default async function DemoEventsCatalogPage({
 
   const params = await searchParams;
   let targetOrg = params?.org;
-  if (!targetOrg && params?.preview === "1") {
+  if (!targetOrg) {
     const session = await getSessionContext();
     if (session?.orgIds?.[0]) {
       targetOrg = session.orgIds[0];
