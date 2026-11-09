@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import type { CartLine } from "@/components/store/cart";
 import { useStoreCurrency } from "@/components/store/currency-provider";
 
@@ -9,6 +10,7 @@ import { useStoreCurrency } from "@/components/store/currency-provider";
 export function CartPill({ className }: { className?: string }) {
   const [count, setCount] = useState(0);
   const [total, setTotal] = useState(0);
+  const [bumped, setBumped] = useState(false);
   const { format } = useStoreCurrency();
 
   useEffect(() => {
@@ -18,8 +20,9 @@ export function CartPill({ className }: { className?: string }) {
       ) as CartLine[];
       setCount(cart.reduce((s, l) => s + l.qty, 0));
       setTotal(cart.reduce((s, l) => s + l.qty * l.price_cents, 0));
+      setBumped(true);
+      setTimeout(() => setBumped(false), 600);
     }
-    sync();
     window.addEventListener("ch-cart-changed", sync);
     return () => window.removeEventListener("ch-cart-changed", sync);
   }, []);
@@ -28,8 +31,11 @@ export function CartPill({ className }: { className?: string }) {
     <Link
       href="/demo/cart"
       className={
-        "btn-step focus-aura inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-label-md font-semibold text-on-primary shadow-2xs hover:opacity-90 transition-all tabular-nums " +
-        (className ?? "")
+        cn(
+          "btn-step focus-aura inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3.5 text-label-md font-semibold text-on-primary shadow-2xs hover:opacity-90 transition-all tabular-nums",
+          bumped && "scale-105 ring-2 ring-secondary shadow-md",
+          className,
+        )
       }
       aria-label={`Shopping bag, ${count} items`}
     >
