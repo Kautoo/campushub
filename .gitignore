@@ -64,3 +64,6 @@ next-env.d.ts
 # os cruft
 *.swp
 *~
+
+# feature documentation artifact
+FEATURES.md
