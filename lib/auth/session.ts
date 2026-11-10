@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { orgs } from "@/lib/db/repo";
+import { orgs, users } from "@/lib/db/repo";
 import { hasDatabaseEnv } from "@/lib/db";
 
 export type SessionContext = {
@@ -16,6 +16,25 @@ export async function getSessionContext(): Promise<SessionContext | null> {
   const session = await auth();
   const user = session?.user;
   if (!user?.id || !hasDatabaseEnv()) return null;
-  const orgIds = await orgs.listIdsByUser(user.id);
-  return { user: { id: user.id, email: user.email, name: user.name }, orgIds };
+
+  let orgIds = await orgs.listIdsByUser(user.id);
+  let resolvedUser = { id: user.id, email: user.email, name: user.name };
+
+  // If user has no orgs (e.g. database was wiped/reseeded while JWT cookie remained),
+  // recover by email if account exists in the fresh database:
+  if (orgIds.length === 0 && user.email) {
+    const dbUser = await users.getByEmail(user.email);
+    if (dbUser) {
+      orgIds = await orgs.listIdsByUser(dbUser.id);
+      resolvedUser = { id: dbUser.id, email: dbUser.email, name: dbUser.name };
+    }
+  }
+
+  // If user has no organizations linked in this database, treat session as expired
+  // so protected routes redirect to /login rather than showing setup-notice.
+  if (orgIds.length === 0) {
+    return null;
+  }
+
+  return { user: resolvedUser, orgIds };
 }

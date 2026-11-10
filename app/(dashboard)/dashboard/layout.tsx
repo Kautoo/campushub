@@ -34,12 +34,7 @@ export default async function DashboardLayout({
   ]);
 
   if (orgList.length === 0) {
-    return (
-      <SetupNotice
-        what="an organization"
-        hint="No organization is linked to your account. Register a new account to get your own workspace, or sign in with the seeded demo credentials from the README."
-      />
-    );
+    redirect("/login");
   }
 
   const activeOrgId = cookieStore.get("ch-active-org")?.value;
