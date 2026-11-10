@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import type { ColDef } from "ag-grid-community";
 import { DataTable, type DataTableFilterPill } from "@/components/grid/data-table";
@@ -11,7 +11,10 @@ import { Button } from "@heroui/react";
 import { Icon } from "@/components/ui/icon";
 import { setEventStatus } from "@/app/actions/events";
 import { EventModal, type EventRow } from "./event-modal";
-import { SandboxPromptModal } from "@/components/workspaces/sandbox-prompt-modal";
+import {
+  autoConvertToSandbox,
+  consumePendingSandboxAction,
+} from "@/lib/sandbox-convert";
 
 // Bryntum Scheduler is loaded lazily and browser-only (touches window on init).
 const EventScheduler = dynamic(
@@ -78,12 +81,31 @@ export function EventsWorkspace({
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<EventRow | undefined>(undefined);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [sandboxPromptOpen, setSandboxPromptOpen] = useState(false);
+  const [converting, setConverting] = useState<string | null>(null);
+  const [convertedNotice, setConvertedNotice] = useState(false);
   const [, startTransition] = useTransition();
+
+  // Auto-conversion handoff: after the session swaps into a fresh sandbox and
+  // the page reloads, reopen the new-event editor or show the notice banner.
+  useEffect(() => {
+    const pending = consumePendingSandboxAction();
+    if (isReadOnly) return; // conversion fell through; drop the stale flag
+    if (pending === "events:new") {
+      setEditing(undefined);
+      setModalOpen(true);
+    } else if (pending) {
+      setConvertedNotice(true);
+    }
+  }, [isReadOnly]);
+
+  const convertToSandbox = (pending: string) => {
+    setConverting(pending);
+    void autoConvertToSandbox(pending);
+  };
 
   const openCreate = (defaults?: Partial<EventRow>) => {
     if (isReadOnly) {
-      setSandboxPromptOpen(true);
+      convertToSandbox("events:new");
       return;
     }
     if (defaults) {
@@ -108,7 +130,7 @@ export function EventsWorkspace({
 
   const openEdit = (row: EventRow) => {
     if (isReadOnly) {
-      setSandboxPromptOpen(true);
+      convertToSandbox("events:edit");
       return;
     }
     setEditing(row);
@@ -117,7 +139,7 @@ export function EventsWorkspace({
 
   const togglePublish = (row: EventRow) => {
     if (isReadOnly) {
-      setSandboxPromptOpen(true);
+      convertToSandbox("events:edit");
       return;
     }
     setBusyId(row.id);
@@ -340,7 +362,7 @@ export function EventsWorkspace({
           {isReadOnly ? (
             <button
               type="button"
-              onClick={() => setSandboxPromptOpen(true)}
+              onClick={() => convertToSandbox("events:edit")}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning-container text-warning text-label-sm font-bold border border-warning/40 hover:bg-warning-container/80 transition-colors shadow-2xs"
             >
               <span className="material-symbols-outlined text-[15px]">lock</span>
@@ -414,10 +436,54 @@ export function EventsWorkspace({
         event={editing?.id ? editing : undefined}
       />
 
-      <SandboxPromptModal
-        isOpen={sandboxPromptOpen}
-        onClose={() => setSandboxPromptOpen(false)}
-      />
+      {convertedNotice ? (
+        <div
+          role="status"
+          className="fixed bottom-4 right-4 z-40 flex max-w-sm items-start gap-3 rounded-2xl border border-success/30 bg-success-container/95 p-4 shadow-xl"
+        >
+          <span className="material-symbols-outlined text-[20px] text-success">
+            check_circle
+          </span>
+          <div className="space-y-1">
+            <p className="text-label-md font-bold text-on-surface">
+              Private sandbox is live
+            </p>
+            <p className="text-body-sm text-on-surface-variant">
+              Your session was converted from the read-only showcase. You
+              now have full editing rights — every change stays in your own
+              sandbox.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setConvertedNotice(false)}
+            aria-label="Dismiss"
+            className="text-on-surface-variant hover:text-on-surface"
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              close
+            </span>
+          </button>
+        </div>
+      ) : null}
+
+      {converting !== null ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm space-y-3 rounded-3xl border border-outline-variant/60 bg-surface-lowest p-7 text-center shadow-2xl">
+            <span className="material-symbols-outlined inline-block animate-spin text-[32px] text-primary">
+              progress_activity
+            </span>
+            <h3 className="text-headline-sm text-on-surface">
+              Launching your private sandbox…
+            </h3>
+            <p className="text-body-sm text-on-surface-variant">
+              The showcase is read-only, so CampusHub is creating your own
+              sandbox workspace and reloading this page with full editing
+              rights.
+            </p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

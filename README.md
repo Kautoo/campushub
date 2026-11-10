@@ -47,7 +47,7 @@ When organizers make changes in the dashboard:
 
 CampusHub features an enterprise-grade multi-tenant workspace architecture:
 1. **Protected Master Showcase (`Tech Society`)**: The default demo organization (`00000000-0000-4000-8000-000000000001`) is a read-only showcase populated with realistic conferences, hackathons, merchandise, and PayPal orders. Evaluators can explore all 12 workspaces, inspect Bryntum schedules, and review AG Grid ledgers without restrictions.
-2. **Mutation Guard & Sandbox Launcher**: Attempting to create or edit items in the master showcase triggers the `SandboxPromptModal` and server action guard, inviting the user to launch their private 1-click sandbox workspace.
+2. **Auto-Conversion on Edit Attempt**: Attempting to create or edit events or products in the master showcase automatically converts the session — a `Launching your private sandbox…` overlay appears, `createDemoSandbox()` provisions the private workspace, and the page reloads on the same route with the editor reopened (for New actions) or a `Private sandbox is live` notice. The server action guard remains as a backstop and rejects any showcase mutation that reaches the API.
 3. **Auto-Cloned Private Sandboxes (`sandbox-xxxx`)**: Clones baseline events, tiers, and 12 products automatically, giving evaluators full unrestricted edit access (drag-and-drop in Bryntum, edit prices in AG Grid, add new events).
 4. **Workspace Switcher**: Evaluators can seamlessly switch back and forth between the Master Showcase (Read-Only) and their private Sandbox Workspace from the header dropdown.
 
