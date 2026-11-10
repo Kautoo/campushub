@@ -140,6 +140,18 @@ const STATS = [
   { label: "Verified orders", value: 34, icon: "receipt_long" },
 ];
 
+const TECH_MARQUEE = [
+  { name: "PayPal Orders v2", icon: "account_balance_wallet" },
+  { name: "Render Cloud Platform", icon: "cloud" },
+  { name: "Render Postgres DB", icon: "database" },
+  { name: "Bryntum Scheduler 8.0", icon: "calendar_month" },
+  { name: "AG Grid Community 36", icon: "table_chart" },
+  { name: "Astropods Agent Engine", icon: "smart_toy" },
+  { name: "Channel3 Market Radar", icon: "travel_explore" },
+  { name: "Next.js 16 App Router", icon: "layers" },
+  { name: "Tailwind CSS v4 & HeroUI", icon: "palette" },
+];
+
 const PRICING = [
   {
     name: "Student Society",
@@ -148,6 +160,8 @@ const PRICING = [
     per: " / semester + 2.9% + RM 0.50 gateway fee",
     highlight: false,
     cta: "Start free workspace",
+    comingSoon: false,
+    badge: null,
     features: [
       "Unlimited published events & pass tiers",
       "Multi-page storefront & guest cart",
@@ -161,7 +175,9 @@ const PRICING = [
     price: "RM 149",
     per: " / semester + PayPal standard rates",
     highlight: true,
-    cta: "Launch Pro workspace",
+    cta: "Prototype · Coming Soon",
+    comingSoon: true,
+    badge: "Prototype · Coming Soon",
     features: [
       "Everything in Student Society",
       "Bryntum Scheduler multi-venue timeline & calendar views",
@@ -176,6 +192,8 @@ const PRICING = [
     per: " · institutional SLA",
     highlight: false,
     cta: "Onboard university",
+    comingSoon: false,
+    badge: null,
     features: [
       "Dedicated Render Postgres instance & custom domain",
       "Automated bursary settlement exports & webhook auditing",
@@ -198,25 +216,16 @@ export default function LandingPage() {
         className="border-y border-outline-variant/60 bg-surface-lowest py-4"
         aria-label="Built with"
       >
-        <Marquee pauseOnHover className="[--duration:22s]">
-          {[
-            "PayPal Orders v2",
-            "Render Postgres",
-            "Bryntum Scheduler 8.0",
-            "AG Grid Community 36",
-            "Vercel AI SDK",
-            "Channel3 Commerce",
-            "Astropods Agent",
-            "Next.js 16 App Router",
-          ].map((n) => (
+        <Marquee pauseOnHover className="[--duration:24s]">
+          {TECH_MARQUEE.map((tech) => (
             <span
-              key={n}
-              className="text-on-surface-variant mx-8 flex items-center gap-2 whitespace-nowrap text-sm font-semibold"
+              key={tech.name}
+              className="text-on-surface mx-6 flex items-center gap-2.5 whitespace-nowrap text-sm font-semibold rounded-full bg-surface-low/80 border border-outline-variant/45 px-3.5 py-1.5 shadow-2xs"
             >
-              <span className="material-symbols-outlined text-[15px] text-secondary">
-                verified
+              <span className="material-symbols-outlined text-[17px] text-secondary">
+                {tech.icon}
               </span>
-              {n}
+              <span>{tech.name}</span>
             </span>
           ))}
         </Marquee>
@@ -450,10 +459,13 @@ export default function LandingPage() {
                     : "border-outline-variant/60 bg-surface-lowest")
                 }
               >
-                {p.highlight ? (
+                {p.badge ? (
                   <span className="absolute -top-3 left-7">
-                    <Badge tone="teal" icon="verified">
-                      Most Popular
+                    <Badge
+                      tone={p.comingSoon ? "warning" : "teal"}
+                      icon={p.comingSoon ? "schedule" : "verified"}
+                    >
+                      {p.badge}
                     </Badge>
                   </span>
                 ) : null}
@@ -484,14 +496,29 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/register" className="mt-7">
-                  <Button
-                    variant={p.highlight ? "primary" : "outline"}
-                    className="btn-step h-11 w-full rounded-full text-label-lg font-semibold"
-                  >
-                    {p.cta}
-                  </Button>
-                </Link>
+                {p.comingSoon ? (
+                  <div className="mt-7">
+                    <button
+                      type="button"
+                      disabled
+                      className="h-11 w-full rounded-full border border-warning/50 bg-warning-container/30 text-label-md font-bold text-warning cursor-not-allowed opacity-90 flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        schedule
+                      </span>
+                      <span>{p.cta}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Link href="/register" className="mt-7">
+                    <Button
+                      variant={p.highlight ? "primary" : "outline"}
+                      className="btn-step h-11 w-full rounded-full text-label-lg font-semibold"
+                    >
+                      {p.cta}
+                    </Button>
+                  </Link>
+                )}
               </article>
             </BlurFade>
           ))}

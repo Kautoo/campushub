@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { hasDatabaseEnv } from "@/lib/db";
+import { SetupNotice } from "@/components/layout/setup-notice";
 import {
   listAllStorefrontSocieties,
   CAMPUS_SOCIETIES,
@@ -13,6 +15,7 @@ export const metadata = {
 
 export const instant = false;
 export default async function DemoSocietiesPage() {
+  if (!hasDatabaseEnv()) return <SetupNotice what="the clubs & societies directory" />;
   const liveOrgs = await listAllStorefrontSocieties();
 
   const societyList: StorefrontSocietyItem[] =

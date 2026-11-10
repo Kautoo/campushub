@@ -53,15 +53,14 @@ export async function updateUserProfile(
   if (!hasDatabaseEnv()) return { error: "Database is not configured." };
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
-
-  const name = String(formData.get("name") || "").trim();
-  const image = String(formData.get("image") || "").trim();
+  const name = String(formData.get("name") || "").trim().slice(0, 100);
+  const rawImage = String(formData.get("image") || "").trim().slice(0, 1000);
 
   if (!name) return { error: "Name cannot be empty." };
 
   const updated = await users.updateProfile(session.user.id, {
     name,
-    image: image || null,
+    image: rawImage || null,
   });
 
   if (!updated) return { error: "Failed to update profile." };

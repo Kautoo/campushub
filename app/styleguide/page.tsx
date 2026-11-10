@@ -272,14 +272,14 @@ export default function StyleguidePage() {
               17 sold). Restock the keycap set — 12 units left, sells 4/week.”
             </p>
             <div className="mt-3 flex gap-2">
-              <Badge tone="teal">glm-5.3-flash</Badge>
+              <Badge tone="teal">Astropods Agent</Badge>
               <Badge tone="neutral">verified data</Badge>
             </div>
           </div>
         </div>
         <Row className="mt-4 overflow-hidden rounded-xl border border-outline-variant py-3">
           <Marquee pauseOnHover className="[--duration:18s]">
-            {["PayPal", "Render Postgres", "Vercel AI SDK", "AG Grid", "Bryntum", "Channel3", "Astropods"].map(
+            {["PayPal Orders v2", "Render Cloud Platform", "Render Postgres", "AG Grid Community", "Bryntum Scheduler", "Channel3", "Astropods Agent"].map(
               (n) => (
                 <span
                   key={n}

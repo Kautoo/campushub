@@ -19,6 +19,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "store_unavailable" }, { status: 503 });
   }
 
+  if (process.env.PAYPAL_ENV === "live") {
+    return NextResponse.json(
+      { error: "demo_settlement_disabled_in_live" },
+      { status: 403 },
+    );
+  }
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });

@@ -21,7 +21,9 @@ services:
       - key: PORT
         value: "3000"
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://campushub-2.onrender.com
+        value: https://campushub.hyria.top
+      - key: NEXTAUTH_URL
+        value: https://campushub.hyria.top
       # --- Database (wired from the Render Postgres service above) ---
       - key: DATABASE_URL
         fromDatabase:
@@ -43,13 +45,11 @@ services:
         value: MYR
       - key: PAYPAL_WEBHOOK_ID
         sync: false
-      # --- AI gateway (optional; without it insights show setup notice) ---
-      - key: AI_BASE_URL
+      # --- Astropods Autonomous Agent (Exclusive AI Engine) ---
+      - key: ASTROPODS_AGENT_URL
         sync: false
-      - key: AI_API_KEY
+      - key: ASTROPODS_API_KEY
         sync: false
-      - key: AI_MODEL
-        value: glm-5.3-flash
       # Bearer tokens for machine agents hitting /api/insights/pack (Astropods)
       - key: PACK_API_TOKENS
         sync: false

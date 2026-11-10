@@ -2,6 +2,7 @@ import Link from "next/link";
 import { StoreNav } from "@/components/store/store-nav";
 import { StoreCurrencyProvider } from "@/components/store/currency-provider";
 import { StorefrontBanner } from "@/components/store/storefront-banner";
+import { hasDatabaseEnv } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
 import { getStorefrontData } from "@/lib/storefront";
 
@@ -11,13 +12,23 @@ export default async function StoreLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSessionContext();
-  const targetOrg = session?.orgIds?.[0];
-  const data = await getStorefrontData(targetOrg);
-  const org = data?.org ?? {
+  let org: { name: string; isCustomOrg?: boolean } = {
     name: "Tech Society",
     isCustomOrg: false,
   };
+  if (hasDatabaseEnv()) {
+    try {
+      const session = await getSessionContext();
+      const targetOrg = session?.orgIds?.[0];
+      const data = await getStorefrontData(targetOrg);
+      if (data?.org) {
+        org = {
+          name: data.org.name,
+          isCustomOrg: Boolean(data.org.isCustomOrg),
+        };
+      }
+    } catch {}
+  }
 
   return (
     <StoreCurrencyProvider>
