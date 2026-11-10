@@ -1,20 +1,77 @@
 /**
- * Astropods Autonomous Agent Integration — Exclusive AI Engine for CampusHub 2.0.
+ * CampusHub AI Commerce Analyst — Custom Model & Grounded Analytics Engine.
  *
- * Implements the Astropods Analyst Agent spec (`agents/astropods.yml`).
- * All insights are generated strictly from real database aggregates (metrics pack).
- * Does not require external third-party AI provider subscriptions.
+ * Supports:
+ * 1. Custom AI Provider via standard OpenAI-compatible completions API:
+ *    AI_BASE_URL (or OPENAI_BASE_URL), AI_API_KEY (or OPENAI_API_KEY), AI_MODEL.
+ *    Works with OpenAI, Groq, DeepSeek, OpenRouter, Together AI, Ollama, vLLM, etc.
+ * 2. Embedded Grounded Analytics Engine:
+ *    Computes real-time conversational intelligence directly from live Postgres
+ *    metrics pack aggregates without requiring third-party API subscriptions.
  */
+
+export type AiProviderDetails = {
+  mode: "custom-llm" | "native-grounded-engine";
+  provider: string;
+  model: string;
+  endpoint: string;
+};
 
 export function aiConfigured(): boolean {
   return true;
 }
 
 export function aiModelId(): string {
-  return "astropods-analyst";
+  return (
+    process.env.AI_MODEL ??
+    process.env.OPENAI_MODEL ??
+    (process.env.AI_API_KEY || process.env.OPENAI_API_KEY
+      ? "gpt-4o-mini"
+      : "campushub-grounded-analyst")
+  );
 }
 
-export const GROUNDED_SYSTEM_PROMPT = `You are the CampusHub Commerce Analyst powered by Astropods.
+export function aiProviderInfo(): AiProviderDetails {
+  const apiKey = process.env.AI_API_KEY ?? process.env.OPENAI_API_KEY;
+  const baseUrl =
+    process.env.AI_BASE_URL ??
+    process.env.OPENAI_BASE_URL ??
+    (apiKey ? "https://api.openai.com/v1" : "");
+  const model = aiModelId();
+
+  if (apiKey && baseUrl) {
+    let providerName = "Custom Provider";
+    try {
+      const host = new URL(baseUrl).hostname.toLowerCase();
+      if (host.includes("openai")) providerName = "OpenAI";
+      else if (host.includes("groq")) providerName = "Groq";
+      else if (host.includes("openrouter")) providerName = "OpenRouter";
+      else if (host.includes("deepseek")) providerName = "DeepSeek";
+      else if (host.includes("together")) providerName = "Together AI";
+      else if (host.includes("localhost") || host.includes("127.0.0.1"))
+        providerName = "Ollama / Local LLM";
+      else providerName = host;
+    } catch {
+      providerName = "Custom Gateway";
+    }
+
+    return {
+      mode: "custom-llm",
+      provider: providerName,
+      model,
+      endpoint: baseUrl,
+    };
+  }
+
+  return {
+    mode: "native-grounded-engine",
+    provider: "CampusHub Grounded Engine",
+    model: "campushub-grounded-analyst",
+    endpoint: "embedded",
+  };
+}
+
+export const GROUNDED_SYSTEM_PROMPT = `You are the CampusHub AI Commerce Analyst for campus events and student commerce.
 You answer organizer questions strictly from the live metrics pack provided in the context.
 
 Rules:
@@ -42,56 +99,19 @@ type MetricsPack = {
   refunds: { total_cents: number; count: number };
 };
 
-/**
- * Execute the Astropods Analyst Agent:
- * If an external Astropods agent endpoint (ASTROPODS_AGENT_URL) is running, query it.
- * Otherwise, execute the Astropods agent grounding engine locally against the metrics pack.
- */
-export async function runAstropodsAgent(
+export async function runCommerceAnalyst(
   prompt: string,
   pack: MetricsPack,
 ): Promise<string> {
-  const agentUrl = process.env.ASTROPODS_AGENT_URL;
-
-  if (agentUrl) {
-    try {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (process.env.ASTROPODS_API_KEY) {
-        headers["Authorization"] = `Bearer ${process.env.ASTROPODS_API_KEY}`;
-      }
-      const res = await fetch(`${agentUrl.replace(/\/$/, "")}/`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          message: `${prompt}\n\nMetrics pack:\n${JSON.stringify(pack)}`,
-        }),
-        signal: AbortSignal.timeout(10000),
-      });
-      if (res.ok) {
-        const json = (await res.json()) as { reply?: string; text?: string; response?: string };
-        const reply = json.reply ?? json.text ?? json.response;
-        if (reply) return reply;
-      }
-    } catch {
-      // Fall through to direct LLM or native grounding engine
-    }
-  }
-
-  // Direct LLM Call if API key is configured (OpenAI / OpenRouter / Groq / Astropods Gateway)
-  const llmApiKey =
-    process.env.OPENAI_API_KEY ??
-    process.env.AI_API_KEY ??
-    process.env.ASTRO_GATEWAY_API_KEY;
+  // 1. Direct LLM Call if custom API key is configured (OpenAI, OpenRouter, Groq, DeepSeek, Ollama, etc.)
+  const llmApiKey = process.env.AI_API_KEY ?? process.env.OPENAI_API_KEY;
   const llmBaseUrl =
     process.env.AI_BASE_URL ??
-    process.env.ASTRO_GATEWAY_URL ??
-    "https://api.openai.com/v1";
-  const llmModel =
-    process.env.AI_MODEL ??
-    process.env.MODEL_DEFAULT ??
-    "gpt-4o-mini";
+    process.env.OPENAI_BASE_URL ??
+    (llmApiKey ? "https://api.openai.com/v1" : "");
+  const llmModel = aiModelId();
 
-  if (llmApiKey) {
+  if (llmApiKey && llmBaseUrl) {
     try {
       const res = await fetch(`${llmBaseUrl.replace(/\/$/, "")}/chat/completions`, {
         method: "POST",
@@ -109,7 +129,7 @@ export async function runAstropodsAgent(
             },
           ],
         }),
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(25000),
       });
       if (res.ok) {
         const data = (await res.json()) as {
@@ -117,13 +137,15 @@ export async function runAstropodsAgent(
         };
         const text = data.choices?.[0]?.message?.content;
         if (text) return text;
+      } else {
+        console.warn(`Custom LLM endpoint returned HTTP ${res.status}, falling back to grounded engine.`);
       }
     } catch (err) {
-      console.error("Direct LLM call failed, falling back to grounded engine", err);
+      console.error("Custom LLM call failed, falling back to grounded engine", err);
     }
   }
 
-  // Native Astropods Grounded Analyst Engine
+  // 2. Native CampusHub Grounded Analyst Engine
   interface LooseMetricsPack {
     org?: { name?: string; currency?: string };
     revenue?: { total_cents?: number; paid_cents?: number; refunded_cents?: number; paid_orders_count?: number };
@@ -184,6 +206,7 @@ export async function runAstropodsAgent(
   const windowDays = p.window?.days ?? 30;
   const q = prompt.toLowerCase();
 
+  // Mode: Summary
   if (q.includes("summary") || q.includes("weekly") || q.includes("overview")) {
     const eventText = topEvent
       ? `Event ticket momentum is led by "${topEvent.title}" with ${totalPasses} total passes issued across active tiers.`
@@ -200,7 +223,7 @@ export async function runAstropodsAgent(
           }`
         : "No merchandise products have been published to this catalog yet.";
 
-    return `Astropods Commerce Analysis (${windowDays}-Day Window):
+    return `CampusHub AI Commerce Analysis (${windowDays}-Day Window):
 
 Gross settled revenue reached RM ${rev} across ${orderCount} paid orders, averaging RM ${avg} per transaction.
 
@@ -209,12 +232,13 @@ ${eventText}
 ${inventoryText}`;
   }
 
-  if (q.includes("anomaly") || q.includes("risk") || q.includes("alert")) {
+  // Mode: Anomalies & Risk
+  if (q.includes("anomaly") || q.includes("risk") || q.includes("alert") || q.includes("issue")) {
     const eventAnomaly = topEvent
       ? `Pass Allocation: Event "${topEvent.title}" has achieved ${topEvent.quantity > 0 ? Math.round((topEvent.sold / topEvent.quantity) * 100) : 0}% sell-through.`
       : "Pass Allocation: No active event passes have been issued in this workspace yet.";
 
-    return `Astropods Anomaly & Risk Detection:
+    return `CampusHub AI Anomaly & Risk Detection:
 
 1. Stock Velocity Alert: ${
       lowStock.length > 0
@@ -227,7 +251,8 @@ ${inventoryText}`;
 3. ${eventAnomaly}`;
   }
 
-  if (q.includes("recommend") || q.includes("grow") || q.includes("pricing")) {
+  // Mode: Recommendations
+  if (q.includes("recommend") || q.includes("grow") || q.includes("pricing") || q.includes("suggest")) {
     const restockRec =
       lowStock.length > 0
         ? `Replenish ${lowStock[0].name} immediately to capture demand during peak event check-ins.`
@@ -239,7 +264,7 @@ ${inventoryText}`;
       ? `Bundle event passes for "${topEvent.title}" with official society merchandise in a single guest cart to increase average basket size above the current RM ${avg}.`
       : "Publish upcoming campus events and create ticket tiers to enable bundle promotions.";
 
-    return `Astropods Grounded Strategic Recommendations:
+    return `CampusHub AI Grounded Strategic Recommendations:
 
 1. Merchandise Restock Priority: ${restockRec}
 2. Tier Bundling: ${bundleRec}
@@ -253,7 +278,7 @@ ${inventoryText}`;
   });
   if (matchedEvent) {
     const pct = matchedEvent.quantity > 0 ? Math.round((matchedEvent.sold / matchedEvent.quantity) * 100) : 0;
-    return `Astropods Event Analysis — ${matchedEvent.title}:
+    return `CampusHub AI Event Analysis — ${matchedEvent.title}:
 - Passes Issued: ${matchedEvent.sold} / ${matchedEvent.quantity} (${pct}% of venue capacity)
 - Available Remaining Seats: ${Math.max(0, matchedEvent.quantity - matchedEvent.sold)} seats
 - Box Office Status: ${matchedEvent.sold >= matchedEvent.quantity ? "SOLD OUT" : "Open for Registrations"}`;
@@ -269,7 +294,7 @@ ${inventoryText}`;
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-    return `Astropods Merchandise Analysis — ${matchedProduct.name}:
+    return `CampusHub AI Merchandise Analysis — ${matchedProduct.name}:
 - Total Units Sold: ${matchedProduct.units} units
 - Gross Revenue Generated: RM ${prodRev}
 - Performance: Ranked in official top selling merchandise leaderboard`;
@@ -288,7 +313,7 @@ ${inventoryText}`;
     q.includes("tee")
   ) {
     if (topProducts.length === 0) {
-      return `Astropods Merchandise Telemetry:
+      return `CampusHub AI Merchandise Telemetry:
 There are ${activeProductsCount} merchandise items in your catalog, but no orders have been recorded in this window yet.`;
     }
     const list = topProducts
@@ -297,7 +322,7 @@ There are ${activeProductsCount} merchandise items in your catalog, but no order
           `${i + 1}. ${pr.name}: ${pr.units} units sold (RM ${(pr.revenue_cents / 100).toFixed(2)})`,
       )
       .join("\n");
-    return `Astropods Merchandise & SKU Telemetry:
+    return `CampusHub AI Merchandise & SKU Telemetry:
 
 Top Performing Merchandise by Sales Volume:
 ${list}
@@ -315,7 +340,7 @@ Total catalog size: ${activeProductsCount} active items.`;
     q.includes("seat")
   ) {
     if (sellThrough.length === 0) {
-      return `Astropods Event Telemetry:
+      return `CampusHub AI Event Telemetry:
 No published events or ticket registrations recorded in this workspace.`;
     }
     const list = sellThrough
@@ -326,7 +351,7 @@ No published events or ticket registrations recorded in this workspace.`;
           }% capacity)`,
       )
       .join("\n");
-    return `Astropods Event & Ticketing Telemetry:
+    return `CampusHub AI Event & Ticketing Telemetry:
 
 ${list}
 
@@ -345,7 +370,7 @@ Total passes issued: ${totalPasses} across ${p.events?.published ?? sellThrough.
     q.includes("earn") ||
     q.includes("financial")
   ) {
-    return `Astropods Revenue Telemetry:
+    return `CampusHub AI Revenue Telemetry:
 - Gross Settled Volume: RM ${rev}
 - Paid & Fulfilled Orders: ${paidCount} orders (${orderCount} total orders in history)
 - Average Order Value (AOV): RM ${avg}
@@ -356,7 +381,7 @@ Total passes issued: ${totalPasses} across ${p.events?.published ?? sellThrough.
   // Refund & Cancellation Inquiries
   if (q.includes("refund") || q.includes("cancel") || q.includes("return")) {
     const rate = revenueCents > 0 ? ((refundedCents / revenueCents) * 100).toFixed(1) : "0.0";
-    return `Astropods Refund & Cancellation Telemetry:
+    return `CampusHub AI Refund & Cancellation Telemetry:
 - Total Refund Volume: RM ${refundsVal} across ${refundCount} refund transaction(s)
 - Cancelled Orders: ${cancelledCount} orders
 - Current Refund Rate: ${rate}% (healthy campus threshold < 1.5%)`;
@@ -364,7 +389,7 @@ Total passes issued: ${totalPasses} across ${p.events?.published ?? sellThrough.
 
   // Inventory & Stock Inquiries
   if (q.includes("stock") || q.includes("inventory") || q.includes("baki") || q.includes("supply")) {
-    return `Astropods Inventory & Stock Telemetry:
+    return `CampusHub AI Inventory & Stock Telemetry:
 - Active Catalog Items: ${activeProductsCount} items
 - Low Stock Alerts: ${
       lowStock.length > 0
@@ -374,8 +399,8 @@ Total passes issued: ${totalPasses} across ${p.events?.published ?? sellThrough.
 - Out of Stock Items: ${p.inventory?.out_of_stock ?? 0} items`;
   }
 
-  // Conversational Fallback
-  return `Astropods Grounded Analyst:
+  // Conversational Overview / Greeting Fallback
+  return `CampusHub AI Commerce Analyst:
 Hello! According to your live Postgres metrics for ${p.org?.name ?? "your society"}:
 - Settled Revenue: RM ${rev} across ${paidCount} paid orders
 - Average Order Value: RM ${avg}
@@ -388,3 +413,6 @@ You can ask me specific questions like:
 • "how many tickets did we sell for Innovation Week?"
 • "check our stock and inventory"`;
 }
+
+/** Backward compatibility alias for earlier callers. */
+export const runAstropodsAgent = runCommerceAnalyst;

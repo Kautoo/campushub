@@ -7,7 +7,7 @@ import { aiInsights } from "@/lib/db/repo";
 const bodySchema = { message: "string (min 1)" };
 
 /**
- * Streaming "Ask your data" chat powered exclusively by the Astropods Analyst Agent.
+ * Streaming "Ask your data" chat powered by CampusHub AI Commerce Analyst.
  * Each turn grounds the agent with a freshly built metrics pack.
  */
 export async function POST(request: Request) {
@@ -55,8 +55,8 @@ export async function POST(request: Request) {
       data_window: { since: pack.window.since },
     });
   } catch (err) {
-    console.error("Astropods chat agent failed", err);
-    reply = "Astropods Commerce Analyst: I was unable to complete the query at this moment. Please verify your metrics data or try again.";
+    console.error("AI chat agent failed", err);
+    reply = "AI Commerce Analyst: I was unable to complete the query at this moment. Please verify your metrics data or try again.";
   }
   // Stream text response to simulate streaming chunks
   const encoder = new TextEncoder();

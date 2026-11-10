@@ -1,17 +1,42 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 type Msg = { role: "user" | "assistant"; text: string };
 
-const QUICK_PROMPTS = [
-  "What were our top revenue events?",
-  "List SKUs below low-stock threshold",
-  "Summarize VIP pass sell-through rate",
-  "Break down recent refunds and chargebacks",
+const SUGGESTED_PROMPTS = [
+  {
+    icon: "payments",
+    title: "Revenue & Sales Performance",
+    desc: "Gross revenue, paid orders count, and AOV breakdown",
+    prompt: "How much is our gross revenue, order volume, and average order value?",
+  },
+  {
+    icon: "inventory_2",
+    title: "Best-Selling Merchandise",
+    desc: "Top products ranked by units sold and total revenue",
+    prompt: "Which merchandise items are top-selling and generating the most revenue?",
+  },
+  {
+    icon: "confirmation_number",
+    title: "Event Pass Sell-Through",
+    desc: "Capacity fill rates and seats remaining across events",
+    prompt: "How are our event ticket passes performing across published events?",
+  },
+  {
+    icon: "warning",
+    title: "Stock & Risk Audit",
+    desc: "SKUs below safety thresholds and refund telemetry",
+    prompt: "Are any products low on stock, and what is our refund status?",
+  },
 ];
 
-/** "Ask your data" chat — streams plain text from /api/insights/chat. */
+/**
+ * Modern ChatGPT-style conversational interface for live PostgreSQL data.
+ * Features streaming responses, chat history, suggested prompt cards,
+ * copy-to-clipboard, clear session, and live grounded telemetry.
+ */
 export function InsightsChat({
   disabled,
   notice,
@@ -22,7 +47,30 @@ export function InsightsChat({
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll as messages stream in
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [messages, busy]);
+
+  async function copyText(text: string, idx: number) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
+    } catch {}
+  }
+
+  function handleReset() {
+    setMessages([]);
+    setInput("");
+    inputRef.current?.focus();
+  }
 
   async function send(queryText?: string) {
     const q = (queryText ?? input).trim();
@@ -45,7 +93,7 @@ export function InsightsChat({
             role: "assistant",
             text:
               res.status === 503
-                ? "Astropods Agent is offline. Configure ASTRO_GATEWAY_URL and ASTRO_GATEWAY_API_KEY."
+                ? "AI Commerce Agent is offline or busy. Please verify your connection or try again."
                 : "Unable to process query at this time.",
           },
         ]);
@@ -59,9 +107,6 @@ export function InsightsChat({
         if (done) break;
         acc += decoder.decode(value, { stream: true });
         setMessages([...history, { role: "assistant", text: acc }]);
-        if (listRef.current) {
-          listRef.current.scrollTop = listRef.current.scrollHeight;
-        }
       }
       if (!acc) {
         setMessages([
@@ -74,127 +119,222 @@ export function InsightsChat({
         ...history,
         {
           role: "assistant",
-          text: "Network or streaming error while querying Astropods Agent.",
+          text: "Network or streaming error while querying AI Commerce Agent.",
         },
       ]);
     } finally {
       setBusy(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }
 
   if (disabled) {
     return (
-      <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
-        <p className="text-body-sm text-on-surface-variant">
-          {notice ?? "Create your organization first to enable AI chat."}
+      <div className="rounded-3xl border border-outline-variant/45 bg-surface-lowest p-8 shadow-xs text-center space-y-2">
+        <span className="material-symbols-outlined text-[36px] text-on-surface-variant/40">
+          lock
+        </span>
+        <p className="text-body-md font-semibold text-on-surface">
+          AI Analyst Unavailable
+        </p>
+        <p className="text-body-sm text-on-surface-variant max-w-sm mx-auto">
+          {notice ?? "Create or select your active society workspace to unlock live grounded AI queries."}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-outline-variant/35">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px] text-primary">
-            forum
-          </span>
-          <h2 className="text-headline-sm font-bold text-on-surface">
-            Ask Your Postgres Data
-          </h2>
-        </div>
-        <span className="text-label-sm text-on-surface-variant">
-          Grounded chat via Astropods
-        </span>
-      </div>
-
-      {/* Suggested Quick Prompts */}
-      {messages.length === 0 ? (
-        <div className="space-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant block">
-            Suggested Queries:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                disabled={busy}
-                onClick={() => void send(p)}
-                className="rounded-lg border border-outline-variant/60 bg-surface-low px-3 py-1.5 text-label-sm font-medium text-on-surface hover:bg-surface-container hover:border-primary/50 transition-colors text-left"
-              >
-                {p}
-              </button>
-            ))}
+    <div className="rounded-3xl border border-outline-variant/50 bg-surface-lowest shadow-sm overflow-hidden flex flex-col min-h-[580px] max-h-[700px]">
+      {/* ChatGPT-Style Workspace Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/40 bg-surface-low/40">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-teal-600 text-white flex items-center justify-center shadow-xs">
+            <span className="material-symbols-outlined text-[18px]">
+              auto_awesome
+            </span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-label-lg font-bold text-on-surface leading-tight">
+                CampusHub AI Analyst
+              </h2>
+              <Badge tone="teal">Grounded</Badge>
+            </div>
+            <p className="text-[11px] text-on-surface-variant">
+              Live PostgreSQL telemetry · Zero hallucinations
+            </p>
           </div>
         </div>
-      ) : null}
 
-      {/* Chat History Box */}
+        {messages.length > 0 ? (
+          <button
+            type="button"
+            onClick={handleReset}
+            title="Start new chat"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant/60 bg-surface-lowest hover:bg-surface-low text-on-surface-variant hover:text-on-surface text-label-sm font-semibold transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[15px]">
+              restart_alt
+            </span>
+            <span>New Chat</span>
+          </button>
+        ) : null}
+      </div>
+
+      {/* Main Conversation Canvas */}
       <div
         ref={listRef}
-        className="h-72 overflow-y-auto space-y-3 rounded-xl border border-outline-variant/40 bg-surface-low/60 p-4"
+        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6"
       >
         {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center text-center p-4">
-            <span className="material-symbols-outlined text-[32px] text-on-surface-variant/50 mb-2">
-              smart_toy
-            </span>
-            <p className="text-body-sm font-medium text-on-surface">
-              Ask any question about your campus store or event velocity.
-            </p>
-            <p className="text-xs text-on-surface-variant mt-1">
-              Answers are computed strictly from real Postgres numbers with zero hallucinations.
-            </p>
+          <div className="h-full flex flex-col items-center justify-center max-w-xl mx-auto py-8 text-center space-y-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary/15 to-teal-600/15 text-primary flex items-center justify-center border border-primary/20 shadow-xs">
+              <span className="material-symbols-outlined text-[32px]">
+                auto_awesome
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-headline-md font-bold text-on-surface">
+                How can I help with your campus data today?
+              </h3>
+              <p className="text-body-sm text-on-surface-variant max-w-md mx-auto leading-relaxed">
+                Ask about settled revenue, ticket sell-through rates, top-selling
+                merchandise, or low-stock warnings. Answers are strictly grounded
+                in your database aggregates.
+              </p>
+            </div>
+
+            {/* ChatGPT-style 2x2 Prompt Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left pt-2">
+              {SUGGESTED_PROMPTS.map((item) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void send(item.prompt)}
+                  className="group rounded-2xl border border-outline-variant/60 bg-surface-low/50 hover:bg-surface-low hover:border-primary/50 p-4 transition-all text-left shadow-2xs hover:shadow-xs cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">
+                      {item.icon}
+                    </span>
+                    <span className="text-label-md font-bold text-on-surface">
+                      {item.title}
+                    </span>
+                  </div>
+                  <p className="text-body-sm text-on-surface-variant line-clamp-2 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((m, i) => (
             <div
               key={i}
-              className={`flex flex-col ${
-                m.role === "user" ? "items-end" : "items-start"
+              className={`flex gap-3.5 ${
+                m.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
+              {m.role === "assistant" ? (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-teal-600 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <span className="material-symbols-outlined text-[16px]">
+                    auto_awesome
+                  </span>
+                </div>
+              ) : null}
+
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-body-sm leading-relaxed shadow-xs ${
-                  m.role === "user"
-                    ? "bg-primary text-on-primary font-medium"
-                    : "bg-surface-lowest text-on-surface border border-outline-variant/50"
+                className={`flex flex-col space-y-1.5 ${
+                  m.role === "user" ? "items-end max-w-[80%]" : "items-start max-w-[88%]"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{m.text || "…"}</p>
+                <div
+                  className={`rounded-2xl px-5 py-3.5 text-body-md leading-relaxed ${
+                    m.role === "user"
+                      ? "bg-primary text-on-primary font-medium rounded-tr-sm shadow-xs"
+                      : "bg-surface-low/70 text-on-surface border border-outline-variant/45 rounded-tl-sm shadow-2xs"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{m.text || "…"}</p>
+                </div>
+
+                {m.role === "assistant" && m.text ? (
+                  <div className="flex items-center gap-2 pl-1">
+                    <button
+                      type="button"
+                      onClick={() => void copyText(m.text, i)}
+                      title="Copy response"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors py-0.5 px-1.5 rounded hover:bg-surface-low cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">
+                        {copiedIdx === i ? "check" : "content_copy"}
+                      </span>
+                      <span>{copiedIdx === i ? "Copied" : "Copy"}</span>
+                    </button>
+                  </div>
+                ) : null}
               </div>
+
+              {m.role === "user" ? (
+                <div className="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/60 shadow-2xs mt-0.5">
+                  <span className="material-symbols-outlined text-[18px]">
+                    person
+                  </span>
+                </div>
+              ) : null}
             </div>
           ))
         )}
+
+        {busy && messages[messages.length - 1]?.text === "" ? (
+          <div className="flex items-center gap-3 pl-1 text-on-surface-variant text-xs animate-pulse">
+            <div className="w-8 h-8 rounded-full bg-surface-low flex items-center justify-center">
+              <span className="material-symbols-outlined text-[16px] text-primary">
+                hourglass_top
+              </span>
+            </div>
+            <span>Analyzing live PostgreSQL metrics pack…</span>
+          </div>
+        ) : null}
       </div>
 
-      {/* Input Box & High-Contrast Send Button */}
-      <div className="flex items-center gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              void send();
-            }
+      {/* ChatGPT-Style Pill Input Bar */}
+      <div className="p-4 sm:p-5 border-t border-outline-variant/40 bg-surface-lowest">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
           }}
-          placeholder="Ask about revenue, low stock items, or event ticket sales…"
-          disabled={busy}
-          className="focus-aura h-11 flex-1 rounded-xl border border-outline-variant/70 bg-surface-low px-4 text-body-sm text-on-surface outline-none placeholder:text-on-surface-variant focus:bg-surface-lowest"
-        />
-        <button
-          type="button"
-          onClick={() => void send()}
-          disabled={busy || !input.trim()}
-          className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-primary px-5 text-label-md font-bold text-on-primary hover:opacity-90 disabled:opacity-50 transition-all shrink-0 shadow-xs"
+          className="relative flex items-center rounded-2xl border border-outline-variant/70 bg-surface-low/80 focus-within:bg-surface-lowest focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all p-1.5 pl-4 shadow-xs"
         >
-          <span className="material-symbols-outlined text-[18px]">
-            {busy ? "hourglass_top" : "send"}
-          </span>
-          <span>{busy ? "Thinking…" : "Send"}</span>
-        </button>
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Message CampusHub AI Analyst (e.g. 'how much revenue?', 'which products sold most?')..."
+            disabled={busy}
+            className="flex-1 bg-transparent border-0 outline-none text-body-md text-on-surface placeholder:text-on-surface-variant/70 py-1.5 pr-2"
+          />
+
+          <button
+            type="submit"
+            disabled={busy || !input.trim()}
+            title="Send query"
+            className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center hover:opacity-90 disabled:opacity-30 disabled:bg-surface-container disabled:text-on-surface-variant transition-all shrink-0 cursor-pointer shadow-xs"
+          >
+            <span className="material-symbols-outlined text-[19px]">
+              arrow_upward
+            </span>
+          </button>
+        </form>
+
+        <p className="text-[11px] text-center text-on-surface-variant/70 mt-2">
+          CampusHub AI answers strictly from real-time PostgreSQL aggregates. Zero personally identifiable data.
+        </p>
       </div>
     </div>
   );

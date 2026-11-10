@@ -123,8 +123,8 @@ const FEATURES = [
   },
   {
     icon: "auto_awesome",
-    title: "Grounded AI & Astropods",
-    body: "One-click executive summaries, anomaly scans, streaming data chat, and a deployable Astropods analyst blueprint.",
+    title: "Grounded AI Commerce Analyst",
+    body: "One-click executive summaries, anomaly scans, streaming data chat, and custom AI provider support (OpenAI, Groq, DeepSeek).",
   },
   {
     icon: "shield_person",
@@ -146,7 +146,7 @@ const TECH_MARQUEE = [
   { name: "Render Postgres DB", icon: "database" },
   { name: "Bryntum Scheduler 8.0", icon: "calendar_month" },
   { name: "AG Grid Community 36", icon: "table_chart" },
-  { name: "Astropods Agent Engine", icon: "smart_toy" },
+  { name: "Grounded AI Analyst", icon: "auto_awesome" },
   { name: "Channel3 Market Radar", icon: "travel_explore" },
   { name: "Next.js 16 App Router", icon: "layers" },
   { name: "Tailwind CSS v4 & HeroUI", icon: "palette" },
@@ -197,7 +197,7 @@ const PRICING = [
     features: [
       "Dedicated Render Postgres instance & custom domain",
       "Automated bursary settlement exports & webhook auditing",
-      "Astropods autonomous analyst deployment",
+      "Custom AI model & gateway integrations",
       "Priority campus onboarding & engineering support",
     ],
   },

@@ -2,8 +2,8 @@
 
 AI-powered campus events & commerce platform deployed at **`https://campushub.hyria.top`**:
 multi-page student storefront, Bryntum Scheduler 8.0 venue timelines, AG Grid Community 36
-operational ledgers, PayPal Orders v2 escrow payments, and exclusive Astropods autonomous
-commerce analytics — one Next.js app, one Render Postgres database.
+operational ledgers, PayPal Orders v2 escrow payments, and custom grounded AI commerce
+analytics — one Next.js app, one Render Postgres database.
 
 ## Architecture
 
@@ -17,7 +17,7 @@ commerce analytics — one Next.js app, one Render Postgres database.
 | Payments | PayPal Orders v2 (`@paypal/paypal-server-sdk`, `@paypal/react-paypal-js`) | Atomic guest checkout, escrow capture & cryptographic HMAC webhooks |
 | Scheduling | Bryntum Scheduler Community 8.0 (MIT) | Multi-venue timeline, Day/Week/Semester presets & drag-and-drop rescheduling |
 | Tables | AG Grid Community 36 (MIT) | High-density ledgers for Events, Registrations, Products, Orders, Transactions & Members |
-| AI Engine | Astropods Autonomous Agent (`agents/astropods.yml`, `agents/agent/`) | Grounded commerce analytics; zero third-party commercial AI keys required |
+| AI Engine | Custom AI & Grounded Commerce Analyst (`lib/ai.ts`) | Real-time grounded commerce analytics with OpenAI/Groq/DeepSeek gateway support |
 | Discovery | Channel3 Commercial Product Radar (`lib/channel3.ts`) | Collegiate retail benchmarking and competitor price comparisons |
 
 ## Multi-Page E-Commerce Storefront (`/demo/*`)
@@ -64,14 +64,13 @@ Downloaded CSV reports (`/dashboard/reports`) feature executive formatting:
 - **Formatted Financials**: Outputs localized decimal currency (e.g. `RM 45.00`) alongside raw integer cents.
 - **Human-Readable Dates**: Formatted as clean timestamps (`YYYY-MM-DD HH:mm:ss`) alongside local calendar dates.
 - **Clean Status Columns**: Formatted uppercase labels for order fulfillment, audit verification, and gate check-in status.
-## Astropods Exclusive AI Engine
+## Grounded AI Commerce Analyst Studio
 
-All commerce analysis on `/dashboard/ai-insights` is powered exclusively by the
-**Astropods Agent** (`campushub-analyst`, `agents/astropods.yml`):
-- **Zero Third-Party AI Subscriptions**: CampusHub runs the Astropods Analyst Agent locally against your Postgres metrics pack, or routes to an external Astropods deployment when `ASTROPODS_AGENT_URL` is configured.
-- **Zero Hallucinations**: Every insight, anomaly detection, and streaming chat response is strictly grounded in live database aggregates (revenue by day, tier sell-through, refund totals, low-stock items).
-- **Zero PII**: Customer personal data and emails never enter the analyst pack.
-
+All commerce analysis on `/dashboard/ai-insights` is powered by the **CampusHub AI Commerce Analyst Engine** (`lib/ai.ts`):
+- **Custom AI Providers Supported**: Connect any custom OpenAI-compatible endpoint (`AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL`) such as OpenAI, Groq, DeepSeek, OpenRouter, or local Ollama instances.
+- **Zero-Key Embedded Grounding Engine**: If no external AI key is set, CampusHub executes an embedded grounded engine directly against your PostgreSQL metrics pack with zero external subscriptions required.
+- **ChatGPT-Style Conversational Interface**: Modern chat experience with streaming responses, suggested query chips, copy actions, and a floating bottom tab bar (`AI Chat`, `Quick Briefs`, `Market Radar`, `Audit Ledger`).
+- **Zero Hallucinations & Zero PII**: Every analysis is strictly grounded in live database aggregates (revenue by day, tier sell-through, refund totals, low-stock items). Customer personal data never enters the pack.
 ## Quick start (local)
 
 ```bash

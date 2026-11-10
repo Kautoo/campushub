@@ -130,7 +130,7 @@ export default async function StoreLayout({
                     href="/dashboard/ai-insights"
                     className="hover:text-primary transition-colors"
                   >
-                    Astropods Commerce Analyst
+                    AI Commerce Analyst
                   </Link>
                 </li>
                 <li>

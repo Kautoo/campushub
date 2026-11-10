@@ -20,7 +20,7 @@ const PROMPTS: Record<string, string> = {
     "Give 3 concrete, data-grounded recommendations (pricing, bundling, restock, promotion) based strictly on the metrics pack.",
 };
 
-/** Generate an Astropods grounded insight and persist it to ai_insights. */
+/** Generate a grounded AI commerce insight and persist it to ai_insights. */
 export async function POST(request: Request) {
   const db = getDbSafe();
   if (!db) {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ response: text });
   } catch (err) {
-    console.error("Astropods insight generation failed", err);
-    return NextResponse.json({ error: "astropods_error" }, { status: 502 });
+    console.error("AI commerce insight generation failed", err);
+    return NextResponse.json({ error: "ai_error" }, { status: 502 });
   }
 }

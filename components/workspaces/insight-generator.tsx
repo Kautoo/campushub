@@ -66,7 +66,7 @@ export function InsightGenerator({
       const json = await res.json();
       if (!res.ok) {
         if (json.error === "ai_not_configured") {
-          setError("Astropods Agent is offline or AI gateway is not configured.");
+          setError("AI Commerce Agent is offline or not configured.");
         } else {
           setError(json.error ?? "ai_error");
         }
@@ -74,7 +74,7 @@ export function InsightGenerator({
       }
       setResults((r) => ({ ...r, [kind]: json.response as string }));
     } catch {
-      setError("Analysis generation failed. Check connection to Astropods.");
+      setError("Analysis generation failed. Check AI configuration or try again.");
     } finally {
       setBusy(null);
     }
