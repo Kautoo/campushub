@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { orgSettingsSchema } from "@/lib/validation";
 import { hasDatabaseEnv, getPool } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs, users } from "@/lib/db/repo";
+import { orgs, users, isMasterShowcaseOrg } from "@/lib/db/repo";
 
 export type SettingsState = { ok?: string; error?: string } | null;
 
@@ -28,6 +28,12 @@ export async function updateOrgSettings(
 
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
+
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to customize organization settings.",
+    };
+  }
 
   const settings = (org.settings ?? {}) as Record<string, unknown>;
   settings.gateways = {

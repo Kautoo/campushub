@@ -13,7 +13,8 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
 } from "@/app/actions/notifications";
-import { signOut } from "@/app/actions/auth";
+import { signOut, createDemoSandbox } from "@/app/actions/auth";
+import { SandboxPromptModal } from "@/components/workspaces/sandbox-prompt-modal";
 
 export type NavItem = { href: string; label: string; icon: string };
 export type NavSection = { title: string; items: NavItem[] };
@@ -70,6 +71,8 @@ export function AppShell({
   notifications = [],
   nav,
   initialCurrency = "MYR",
+  isReadOnly = false,
+  orgsList = [],
   children,
 }: {
   orgName: string;
@@ -80,6 +83,8 @@ export function AppShell({
   notifications?: ShellNotification[];
   nav: NavSection[];
   initialCurrency?: CurrencyCode;
+  isReadOnly?: boolean;
+  orgsList?: Array<{ id: string; name: string; slug: string; isReadOnly?: boolean }>;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -88,6 +93,7 @@ export function AppShell({
   const [accountOpen, setAccountOpen] = useState(false);
   const [orgMenuOpen, setOrgMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [sandboxPromptOpen, setSandboxPromptOpen] = useState(false);
   const [query, setQuery] = useState("");
   const searchInput = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -205,7 +211,16 @@ export function AppShell({
                   unfold_more
                 </span>
               </button>
-
+              {isReadOnly ? (
+                <button
+                  type="button"
+                  onClick={() => setSandboxPromptOpen(true)}
+                  className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning-container text-warning text-[11px] font-bold border border-warning/40 hover:bg-warning-container/80 transition-colors shadow-2xs cursor-pointer ml-1.5"
+                >
+                  <span className="material-symbols-outlined text-[13px]">lock</span>
+                  <span>Showcase (Read-Only)</span>
+                </button>
+              ) : null}
               {/* Organization Switcher Popover Menu */}
               {orgMenuOpen ? (
                 <div
@@ -222,10 +237,40 @@ export function AppShell({
                         {orgName}
                       </p>
                       <p className="text-[11px] text-secondary font-semibold">
-                        Verified Society · MYR Escrow
+                        {isReadOnly ? "Protected Showcase Workspace" : "Active Society Workspace"}
                       </p>
                     </div>
                   </div>
+
+                  {orgsList && orgsList.length > 1 ? (
+                    <div className="space-y-1 pb-2 border-b border-outline-variant/40">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant px-2 block">
+                        Switch Workspace:
+                      </span>
+                      {orgsList.map((o) => (
+                        <button
+                          key={o.id}
+                          type="button"
+                          onClick={() => {
+                            document.cookie = `ch-active-org=${o.id}; path=/; max-age=31536000; SameSite=Lax`;
+                            window.location.reload();
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-body-sm font-medium transition-colors ${
+                            o.name === orgName
+                              ? "bg-primary text-on-primary font-bold shadow-2xs"
+                              : "text-on-surface hover:bg-surface-low"
+                          }`}
+                        >
+                          <span className="truncate">{o.name}</span>
+                          {o.isReadOnly ? (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-warning-container text-warning font-semibold">
+                              Read-Only
+                            </span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
 
                   <div className="space-y-1">
                     <Link
@@ -273,6 +318,20 @@ export function AppShell({
                         open_in_new
                       </span>
                     </Link>
+                  </div>
+
+                  <div className="pt-2 border-t border-outline-variant/40">
+                    <form action={createDemoSandbox}>
+                      <button
+                        type="submit"
+                        className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-primary text-on-primary text-label-sm font-bold shadow-xs hover:opacity-90 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          rocket_launch
+                        </span>
+                        <span>Launch 1-Click Sandbox</span>
+                      </button>
+                    </form>
                   </div>
                 </div>
               ) : null}
@@ -532,14 +591,24 @@ export function AppShell({
 
                   <div className="space-y-1">
                     <Link
-                      href="/dashboard/settings"
+                      href="/dashboard/settings?tab=account"
                       onClick={closeAllPopovers}
                       className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
                     >
                       <span className="material-symbols-outlined text-[17px] text-secondary">
-                        settings
+                        person
                       </span>
-                      <span>Organization Settings</span>
+                      <span>Personal Account Profile</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/settings?tab=organization"
+                      onClick={closeAllPopovers}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                        domain
+                      </span>
+                      <span>Organization &amp; Gateways</span>
                     </Link>
                     <Link
                       href="/dashboard/members"
@@ -619,11 +688,11 @@ export function AppShell({
                   CampusHub
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
-                  ORGANIZER 2.0
+                  ORGANIZER
                 </span>
               </div>
             </Link>
-            <Badge tone="teal">v2.0</Badge>
+            <Badge tone="teal">Console</Badge>
           </div>
 
           {/* Navigation Groups */}
@@ -726,13 +795,17 @@ export function AppShell({
                   onClick={() => setMobileDrawerOpen(false)}
                   className="flex items-center gap-2.5"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[20px]">
-                      school
-                    </span>
+                  <div className="w-9 h-9 rounded-xl overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs flex items-center justify-center shrink-0">
+                    <Image
+                      src="/brand/campushub-mark.svg"
+                      alt="CampusHub Logo"
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-contain p-0.5"
+                    />
                   </div>
                   <span className="text-headline-sm font-bold text-on-surface">
-                    CampusHub 2.0
+                    CampusHub
                   </span>
                 </Link>
                 <button
@@ -824,7 +897,7 @@ export function AppShell({
         <footer className="mt-12 border-t border-outline-variant/45 bg-surface-lowest/60 px-4 py-5 lg:px-8">
           <div className="mx-auto flex max-w-7xl flex-col sm:flex-row sm:items-center justify-between gap-2 text-body-sm text-on-surface-variant">
             <p>
-              CampusHub 2.0 Organizer Console · Powered by AG Grid Community &amp; Bryntum Scheduler
+              CampusHub Organizer Console · Powered by AG Grid Community &amp; Bryntum Scheduler
             </p>
             <div className="flex items-center gap-4">
               <Link href="/demo" className="hover:text-primary transition-colors">
@@ -901,6 +974,11 @@ export function AppShell({
           </div>
         </div>
       ) : null}
+      {/* Master Sandbox Prompt Modal */}
+      <SandboxPromptModal
+        isOpen={sandboxPromptOpen}
+        onClose={() => setSandboxPromptOpen(false)}
+      />
       </div>
     </CurrencyProvider>
   );

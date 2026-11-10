@@ -11,6 +11,7 @@ import { Button } from "@heroui/react";
 import { Icon } from "@/components/ui/icon";
 import { setEventStatus } from "@/app/actions/events";
 import { EventModal, type EventRow } from "./event-modal";
+import { SandboxPromptModal } from "@/components/workspaces/sandbox-prompt-modal";
 
 // Bryntum Scheduler is loaded lazily and browser-only (touches window on init).
 const EventScheduler = dynamic(
@@ -67,17 +68,24 @@ function formatDate(iso: string | null): string {
 export function EventsWorkspace({
   rows,
   licensed,
+  isReadOnly = false,
 }: {
   rows: EventRow[];
   licensed: boolean;
+  isReadOnly?: boolean;
 }) {
   const [tab, setTab] = useState<"list" | "timeline">("list");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<EventRow | undefined>(undefined);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [sandboxPromptOpen, setSandboxPromptOpen] = useState(false);
   const [, startTransition] = useTransition();
 
   const openCreate = (defaults?: Partial<EventRow>) => {
+    if (isReadOnly) {
+      setSandboxPromptOpen(true);
+      return;
+    }
     if (defaults) {
       setEditing({
         id: "",
@@ -99,11 +107,19 @@ export function EventsWorkspace({
   };
 
   const openEdit = (row: EventRow) => {
+    if (isReadOnly) {
+      setSandboxPromptOpen(true);
+      return;
+    }
     setEditing(row);
     setModalOpen(true);
   };
 
   const togglePublish = (row: EventRow) => {
+    if (isReadOnly) {
+      setSandboxPromptOpen(true);
+      return;
+    }
     setBusyId(row.id);
     startTransition(async () => {
       await setEventStatus(
@@ -321,9 +337,18 @@ export function EventsWorkspace({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {isReadOnly ? (
+            <button
+              type="button"
+              onClick={() => setSandboxPromptOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning-container text-warning text-label-sm font-bold border border-warning/40 hover:bg-warning-container/80 transition-colors shadow-2xs"
+            >
+              <span className="material-symbols-outlined text-[15px]">lock</span>
+              <span>Showcase (Read-Only)</span>
+            </button>
+          ) : null}
           <Link
             href="/demo/events"
-            target="_blank"
             className="inline-flex h-10 items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-lowest px-4 text-label-md font-semibold text-on-surface hover:bg-surface-low transition-colors"
           >
             <span className="material-symbols-outlined text-[16px] text-secondary">
@@ -387,6 +412,11 @@ export function EventsWorkspace({
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         event={editing?.id ? editing : undefined}
+      />
+
+      <SandboxPromptModal
+        isOpen={sandboxPromptOpen}
+        onClose={() => setSandboxPromptOpen(false)}
       />
     </div>
   );

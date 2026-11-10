@@ -6,16 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { ProductGrid } from "@/components/workspaces/product-grid";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
-import { products } from "@/lib/db/repo";
+import { products, isMasterShowcaseOrg } from "@/lib/db/repo";
 
-export const metadata = { title: "Products & Inventory — CampusHub 2.0" };
+export const metadata = { title: "Products & Inventory — CampusHub" };
 
 export default async function ProductsPage() {
   const db = getDbSafe();
   if (!db) return <SetupNotice what="products" />;
   const session = await getSessionContext();
   if (!session) redirect("/login");
-
+  const isReadOnly = isMasterShowcaseOrg(session.orgIds[0]);
   const [products_, movements] = await Promise.all([
     products.list(session.orgIds),
     products.listMovements(session.orgIds, 50),
@@ -84,7 +84,7 @@ export default async function ProductsPage() {
       />
 
       <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest shadow-xs overflow-hidden">
-        <ProductGrid rows={products_} />
+        <ProductGrid rows={products_} isReadOnly={isReadOnly} />
       </section>
 
       <section className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">

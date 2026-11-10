@@ -11,9 +11,7 @@ import { MarketDiscovery } from "@/components/workspaces/market-discovery";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { aiInsights } from "@/lib/db/repo";
-
-export const metadata = { title: "AI Commerce Intelligence — CampusHub 2.0" };
-
+export const metadata = { title: "AI Commerce Intelligence — CampusHub" };
 export default async function AiInsightsPage() {
   const db = getDbSafe();
   if (!db) return <SetupNotice what="AI insights" />;

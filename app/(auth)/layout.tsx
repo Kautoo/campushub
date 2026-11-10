@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { DotPattern } from "@/components/magicui";
 
 /**
@@ -27,19 +28,19 @@ export default function AuthLayout({
 
           {/* Top branding block */}
           <Link href="/" className="relative flex items-center gap-3">
-            <span className="w-11 h-11 rounded-xl bg-[#5eead4] text-[#00162e] flex items-center justify-center shadow-md">
-              <span className="material-symbols-outlined text-[24px]">
-                school
-              </span>
+            <span className="relative flex h-11 w-11 items-center justify-center rounded-xl overflow-hidden border border-white/20 bg-surface-lowest shadow-md shrink-0">
+              <Image
+                src="/brand/campushub-mark.svg"
+                alt="CampusHub Logo"
+                width={44}
+                height={44}
+                className="w-full h-full object-contain p-1"
+                priority
+              />
             </span>
             <span className="flex flex-col">
-              <span className="flex items-center gap-2">
-                <span className="text-headline-sm font-bold tracking-tight text-white">
-                  CampusHub
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-[#5eead4]/20 text-[#5eead4] text-label-sm font-bold">
-                  2.0
-                </span>
+              <span className="text-headline-sm font-bold tracking-tight text-white">
+                CampusHub
               </span>
               <span className="text-label-sm text-slate-300">
                 Higher Ed Commerce &amp; SaaS Suite
@@ -90,7 +91,7 @@ export default function AuthLayout({
           </div>
 
           <p className="relative text-body-sm text-slate-400">
-            © CampusHub 2.0 · Tech Society Workspace
+            © CampusHub · Tech Society Workspace
           </p>
         </div>
 

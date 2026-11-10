@@ -10,7 +10,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { registrations } from "@/lib/db/repo";
 
-export const metadata = { title: "Registrations — CampusHub 2.0" };
+export const metadata = { title: "Registrations — CampusHub" };
 
 export default async function RegistrationsPage() {
   const db = getDbSafe();

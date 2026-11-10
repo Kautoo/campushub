@@ -1,4 +1,4 @@
-# CampusHub 2.0
+# CampusHub
 
 AI-powered campus events & commerce platform deployed at **`https://campushub.hyria.top`**:
 multi-page student storefront, Bryntum Scheduler 8.0 venue timelines, AG Grid Community 36
@@ -43,12 +43,19 @@ When organizers make changes in the dashboard:
 4. **Wix-Style In-Modal Card Preview**: Rapid single-card preview updating in real time as organizers edit titles, categories, pricing, and photo presets.
 5. **One-Click Live View**: Every active row in AG Grid and the Bryntum inspector includes a direct `open_in_new` link to its live storefront page (`/demo/events/[slug]` or `/demo/products/[slug]`).
 
-## Session-Isolated Demo Sandbox Architecture
+## Protected Master Showcase vs. Private Sandbox Architecture
 
-To prevent multiple evaluators from colliding or corrupting the master showcase template:
-- **Auto-Cloned Isolated Sandboxes**: Signing in via the demo credentials (`owner@campushub.test` / `campushub-demo`) or clicking the 1-Click Sandbox launcher automatically provisions a dedicated sandbox organization (`sandbox-xxxx`) pre-populated with fresh seed events, ticket tiers, and products.
-- **Pristine Public Showroom**: The master university organization (`00000000-0000-4000-8000-000000000001`) remains permanently pristine for public visitors on `https://campushub.hyria.top`.
-- **Personal Profile Customization**: Users can customize their display name and avatar icon (`person`, `school`, `executive`, `admin`, `tech`, `creative`, `esports`, `kinetic`) in `/dashboard/settings`.
+CampusHub features an enterprise-grade multi-tenant workspace architecture:
+1. **Protected Master Showcase (`Tech Society`)**: The default demo organization (`00000000-0000-4000-8000-000000000001`) is a read-only showcase populated with realistic conferences, hackathons, merchandise, and PayPal orders. Evaluators can explore all 12 workspaces, inspect Bryntum schedules, and review AG Grid ledgers without restrictions.
+2. **Mutation Guard & Sandbox Launcher**: Attempting to create or edit items in the master showcase triggers the `SandboxPromptModal` and server action guard, inviting the user to launch their private 1-click sandbox workspace.
+3. **Auto-Cloned Private Sandboxes (`sandbox-xxxx`)**: Clones baseline events, tiers, and 12 products automatically, giving evaluators full unrestricted edit access (drag-and-drop in Bryntum, edit prices in AG Grid, add new events).
+4. **Workspace Switcher**: Evaluators can seamlessly switch back and forth between the Master Showcase (Read-Only) and their private Sandbox Workspace from the header dropdown.
+
+## Separated Personal Account & Organization Settings
+
+Settings in `/dashboard/settings` are cleanly segmented into dedicated tabs:
+- **Organization & Gateways (`/dashboard/settings?tab=organization`)**: Society profile, slug, public description, base currency, PayPal Orders v2 gateway toggles, and authorized committee member access rosters.
+- **Personal Account Profile (`/dashboard/settings?tab=account`)**: Individual user display name, avatar icon presets, and session credentials.
 
 ## Executive CSV Audit Exports
 

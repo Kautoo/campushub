@@ -26,7 +26,7 @@ import {
   Ripple,
 } from "@/components/magicui";
 
-export const metadata = { title: "Styleguide — CampusHub 2.0" };
+export const metadata = { title: "Styleguide — CampusHub" };
 
 function Section({
   title,
@@ -75,7 +75,7 @@ export default function StyleguidePage() {
     <main className="mx-auto w-full max-w-6xl px-4 py-10 lg:px-8">
       <header className="mb-10 flex items-center justify-between gap-4">
         <div>
-          <p className="text-label-md text-muted">CampusHub 2.0</p>
+          <p className="text-label-md text-muted">CampusHub</p>
           <h1 className="text-display text-ink">Styleguide</h1>
           <p className="text-body-md text-muted">
             Stitch design system — components, tokens, and effects. Toggle

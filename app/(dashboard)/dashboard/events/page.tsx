@@ -8,9 +8,9 @@ import {
 } from "@/components/workspaces/events-workspace";
 import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
-import { events } from "@/lib/db/repo";
+import { events, isMasterShowcaseOrg } from "@/lib/db/repo";
 
-export const metadata = { title: "Events & Venue Scheduler — CampusHub 2.0" };
+export const metadata = { title: "Events & Venue Scheduler — CampusHub" };
 
 export default async function EventsPage() {
   const db = getDbSafe();
@@ -18,9 +18,9 @@ export default async function EventsPage() {
 
   const session = await getSessionContext();
   if (!session) redirect("/login");
+  const isReadOnly = isMasterShowcaseOrg(session.orgIds[0]);
 
   const joined = await events.listWithTiers(session.orgIds);
-
   const rows: EventRow[] = joined.map((e) => ({
     id: e.id,
     title: e.title,
@@ -89,6 +89,7 @@ export default async function EventsPage() {
       <EventsWorkspace
         rows={rows}
         licensed={Boolean(process.env.BRYNTUM_LICENSE_KEY)}
+        isReadOnly={isReadOnly}
       />
     </div>
   );

@@ -7,7 +7,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { reports } from "@/lib/db/repo";
 
-export const metadata = { title: "Audit Reports & Exports — CampusHub 2.0" };
+export const metadata = { title: "Audit Reports & Exports — CampusHub" };
 
 type ReportRow = {
   id: string;

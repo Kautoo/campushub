@@ -23,8 +23,8 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL("https://campushub.hyria.top"),
   title: {
-    default: "CampusHub 2.0 — Campus Events & Student Commerce",
-    template: "%s | CampusHub 2.0",
+    default: "CampusHub — Campus Events & Student Commerce",
+    template: "%s | CampusHub",
   },
   description:
     "AI-powered campus event and commerce platform: multi-page student storefront, Bryntum Scheduler 8.0 venue timelines, AG Grid Community 36 ledgers, PayPal Orders v2 escrow settlement, and Astropods autonomous intelligence.",
@@ -41,8 +41,8 @@ export const metadata: Metadata = {
     "Hackathon Passes",
   ],
   authors: [{ name: "CampusHub Platform Engineering" }],
-  creator: "CampusHub 2.0",
-  publisher: "CampusHub 2.0",
+  creator: "CampusHub",
+  publisher: "CampusHub",
   formatDetection: {
     email: false,
     address: false,
@@ -52,17 +52,17 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "CampusHub 2.0 — Campus Events & Student Commerce",
+    title: "CampusHub — Campus Events & Student Commerce",
     description:
       "Autonomous student ticketing, faculty-licensed club merchandise drops, venue scheduling, and verified PayPal Orders v2 escrow settlement.",
     url: "https://campushub.hyria.top",
-    siteName: "CampusHub 2.0",
+    siteName: "CampusHub",
     images: [
       {
         url: "/brand/campushub-mark.svg",
         width: 1254,
         height: 1254,
-        alt: "CampusHub 2.0 Official Logo",
+        alt: "CampusHub Official Logo",
       },
     ],
     locale: "en_MY",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CampusHub 2.0 — Campus Events & Student Commerce",
+    title: "CampusHub — Campus Events & Student Commerce",
     description:
       "Autonomous student ticketing, club merchandise storefronts, venue scheduling, and PayPal Orders v2 settlement.",
     images: ["/brand/campushub-mark.svg"],

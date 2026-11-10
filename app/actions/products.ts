@@ -5,7 +5,7 @@ import { z } from "zod";
 import { productSchema } from "@/lib/validation";
 import { hasDatabaseEnv } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs, products, inventoryMovements } from "@/lib/db/repo";
+import { orgs, products, inventoryMovements, isMasterShowcaseOrg } from "@/lib/db/repo";
 
 export type ProductActionState = { ok?: string; error?: string } | null;
 
@@ -65,6 +65,12 @@ export async function createProduct(
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
 
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to add merchandise.",
+    };
+  }
+
   let created: { id: string } | null = null;
   try {
     created = await products.insert(rowFromParsed(parsed.data), org.id);
@@ -112,6 +118,11 @@ export async function updateProduct(
   const before = await products.getById(id.data, session.orgIds);
   if (!before) return { error: "Product not found." };
 
+  if (isMasterShowcaseOrg(before.org_id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to edit merchandise.",
+    };
+  }
   try {
     const updated = await products.update(id.data, session.orgIds, rowFromParsed(parsed.data));
     if (!updated) return { error: "Product not found." };
@@ -154,7 +165,12 @@ export async function setProductStatus(
 
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
-
+  const before = await products.getById(parsed.data.id, session.orgIds);
+  if (before && isMasterShowcaseOrg(before.org_id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to change status.",
+    };
+  }
   const updated = await products.updateStatus(parsed.data.id, session.orgIds, parsed.data.status);
   if (!updated) return { error: "Product not found." };
 

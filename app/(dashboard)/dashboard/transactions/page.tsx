@@ -7,7 +7,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { transactions } from "@/lib/db/repo";
 
-export const metadata = { title: "Transactions & Webhooks — CampusHub 2.0" };
+export const metadata = { title: "Transactions & Webhooks — CampusHub" };
 
 export default async function TransactionsPage() {
   const db = getDbSafe();

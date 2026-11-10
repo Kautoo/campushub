@@ -57,7 +57,7 @@ export function SiteFooter() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub 2.0 home">
+          <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub home">
             <span className="relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
               <Image
                 src="/brand/campushub-mark.svg"
@@ -67,10 +67,7 @@ export function SiteFooter() {
                 className="w-full h-full object-contain p-0.5"
               />
             </span>
-            <span className="text-headline-sm text-on-surface">CampusHub</span>
-            <span className="rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant">
-              2.0
-            </span>
+            <span className="text-headline-sm font-bold text-on-surface">CampusHub</span>
           </Link>
           <p className="text-on-surface-variant mt-4 max-w-xs text-sm leading-relaxed">
             The campus events &amp; commerce platform — ticketing, storefront,
@@ -105,8 +102,7 @@ export function SiteFooter() {
       <div className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 lg:px-8">
           <p className="text-on-surface-variant text-xs">
-            © CampusHub 2.0 · Built with Next.js,
-            Render Postgres, PayPal, and the Vercel AI SDK
+            © CampusHub · Built with Next.js, Render Postgres, PayPal, and Astropods
           </p>
           <p className="text-on-surface-variant font-mono text-[11px]">
             status:{" "}

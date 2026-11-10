@@ -15,6 +15,7 @@ import {
   type ProductModalRow,
 } from "@/components/workspaces/product-modal";
 import { ProductStatusButton } from "@/components/workspaces/product-actions";
+import { SandboxPromptModal } from "@/components/workspaces/sandbox-prompt-modal";
 
 export type ProductRow = RepoProductRow;
 
@@ -31,17 +32,32 @@ const PRODUCT_FILTER_PILLS: DataTableFilterPill[] = [
 ];
 
 /** Products AG Grid with product media previews, stock health bars, and SKU management. */
-export function ProductGrid({ rows }: { rows: ProductRow[] }) {
+export function ProductGrid({
+  rows,
+  isReadOnly = false,
+}: {
+  rows: ProductRow[];
+  isReadOnly?: boolean;
+}) {
   const [modalProduct, setModalProduct] = useState<ProductModalRow | null>(
     null,
   );
   const [modalOpen, setModalOpen] = useState(false);
+  const [sandboxPromptOpen, setSandboxPromptOpen] = useState(false);
 
   const openNew = () => {
+    if (isReadOnly) {
+      setSandboxPromptOpen(true);
+      return;
+    }
     setModalProduct(null);
     setModalOpen(true);
   };
   const openEdit = (p: ProductModalRow) => {
+    if (isReadOnly) {
+      setSandboxPromptOpen(true);
+      return;
+    }
     setModalProduct(p);
     setModalOpen(true);
   };
@@ -241,9 +257,18 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isReadOnly ? (
+            <button
+              type="button"
+              onClick={() => setSandboxPromptOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning-container text-warning text-label-sm font-bold border border-warning/40 hover:bg-warning-container/80 transition-colors shadow-2xs"
+            >
+              <span className="material-symbols-outlined text-[15px]">lock</span>
+              <span>Showcase (Read-Only)</span>
+            </button>
+          ) : null}
           <Link
             href="/demo/shop"
-            target="_blank"
             className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-lowest px-4 py-2 text-label-md font-semibold text-on-surface hover:bg-surface-low transition-colors"
           >
             <span className="material-symbols-outlined text-[16px] text-secondary">
@@ -295,6 +320,11 @@ export function ProductGrid({ rows }: { rows: ProductRow[] }) {
       {modalOpen ? (
         <ProductModal product={modalProduct} onClose={() => setModalOpen(false)} />
       ) : null}
+
+      <SandboxPromptModal
+        isOpen={sandboxPromptOpen}
+        onClose={() => setSandboxPromptOpen(false)}
+      />
     </div>
   );
 }

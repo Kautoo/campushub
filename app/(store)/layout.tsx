@@ -63,7 +63,7 @@ export default async function StoreLayout({
                   />
                 </span>
                 <span className="text-headline-sm font-bold text-on-surface tracking-tight">
-                  CampusHub <span className="text-secondary">2.0</span>
+                  CampusHub
                 </span>
               </div>
               <p className="text-body-sm text-on-surface-variant max-w-md leading-relaxed">
@@ -154,7 +154,7 @@ export default async function StoreLayout({
           </div>
           <div className="mx-auto max-w-7xl pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-body-sm text-on-surface-variant">
             <p>
-              &copy; {new Date().getFullYear()} CampusHub 2.0. Settled via
+              &copy; {new Date().getFullYear()} CampusHub. Settled via
               PayPal Orders v2.
             </p>
             <p className="text-xs">

@@ -42,7 +42,7 @@ export function SiteNav() {
           <Link
             href="/"
             className="flex items-center gap-2.5"
-            aria-label="CampusHub 2.0 home"
+            aria-label="CampusHub home"
           >
             <span className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
               <Image
@@ -55,7 +55,7 @@ export function SiteNav() {
               />
             </span>
             <span className="text-headline-sm font-bold text-on-surface tracking-tight">
-              CampusHub <span className="text-secondary">2.0</span>
+              CampusHub
             </span>
           </Link>
 

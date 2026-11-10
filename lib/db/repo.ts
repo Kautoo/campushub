@@ -6,6 +6,16 @@
  */
 import { query, withTransaction, type QueryRow } from "./index";
 
+export const MASTER_SHOWCASE_ORG_ID = "00000000-0000-4000-8000-000000000001";
+
+export function isMasterShowcaseOrg(orgId: string | null | undefined): boolean {
+  if (!orgId) return false;
+  return (
+    orgId === MASTER_SHOWCASE_ORG_ID ||
+    orgId.toLowerCase() === "tech-society"
+  );
+}
+
 // ---------- Row types (kept from the old Database type) ----------
 
 export type OrganizationRow = {
@@ -404,6 +414,14 @@ export const events = {
       [orgIds],
     );
   },
+  async getById(id: string, orgIds: string[]): Promise<EventRow | null> {
+    const rows = await query<EventRow>(
+      `select * from public.events where id = $1::uuid and org_id = ANY($2::uuid[]) limit 1`,
+      [id, orgIds],
+    );
+    return rows[0] ?? null;
+  },
+
 
   /** Org events with nested tiers (replaces the `*, ticket_tiers(*)` embed). */
   async listWithTiers(orgIds: string[]): Promise<Array<EventRow & { ticket_tiers: TicketTierRow[] }>> {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — CampusHub 2.0",
+  title: "Privacy Policy — CampusHub",
   description:
     "What CampusHub collects, the single first-party cookie it sets, how payments are handled, and how to reach us.",
 };
@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
       <footer className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-10 lg:px-8">
           <p className="text-on-surface-variant text-sm">
-            © CampusHub 2.0 · Built with Next.js, Render Postgres, and PayPal
+            © CampusHub · Built with Next.js, Render Postgres, and PayPal
           </p>
           <nav className="flex gap-6" aria-label="Footer">
             <Link href="/tos" className="link-draw text-on-surface-variant text-sm hover:text-on-surface">

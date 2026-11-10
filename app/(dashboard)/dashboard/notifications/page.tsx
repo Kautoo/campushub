@@ -10,7 +10,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { notifications } from "@/lib/db/repo";
 
-export const metadata = { title: "Notifications & Alerts — CampusHub 2.0" };
+export const metadata = { title: "Notifications & Alerts — CampusHub" };
 
 const typeIcons: Record<string, string> = {
   order: "receipt_long",

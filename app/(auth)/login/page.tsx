@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useActionState } from "react";
 import { Button } from "@heroui/react";
 import { signIn, createDemoSandbox, type AuthState } from "@/app/actions/auth";
@@ -22,6 +23,23 @@ export default function LoginPage({
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-3 mb-2 lg:hidden">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
+            <Image
+              src="/brand/campushub-mark.svg"
+              alt="CampusHub Logo"
+              width={36}
+              height={36}
+              className="w-full h-full object-contain p-0.5"
+            />
+          </span>
+          <span className="text-headline-sm font-bold text-on-surface">
+            CampusHub
+          </span>
+        </Link>
+      </div>
+
       <div>
         <Badge tone="teal" icon="verified_user">
           Organizer Portal
@@ -30,7 +48,7 @@ export default function LoginPage({
           Welcome back
         </h1>
         <p className="text-body-md text-on-surface-variant mt-1">
-          Sign in to access your CampusHub 2.0 organizer console, Bryntum
+          Sign in to access your CampusHub organizer console, Bryntum
           timelines, and AG Grid ledgers.
         </p>
       </div>

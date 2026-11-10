@@ -5,7 +5,7 @@ import { z } from "zod";
 import { eventSchema, type EventInput } from "@/lib/validation";
 import { hasDatabaseEnv } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs, events } from "@/lib/db/repo";
+import { orgs, events, isMasterShowcaseOrg } from "@/lib/db/repo";
 
 export type EventActionResult = { ok?: string; error?: string } | null;
 
@@ -33,6 +33,11 @@ export async function createEvent(
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
 
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to create new events.",
+    };
+  }
   try {
     await events.insert({
       org_id: org.id,
@@ -74,6 +79,12 @@ export async function updateEvent(
   if (!session) return { error: "You must be signed in." };
 
   try {
+    const existing = await events.getById(id, session.orgIds);
+    if (existing && isMasterShowcaseOrg(existing.org_id)) {
+      return {
+        error: "The master showcase workspace is read-only. Switch or launch your private sandbox to edit events.",
+      };
+    }
     const updated = await events.update(id, session.orgIds, {
       title: parsed.data.title,
       slug: parsed.data.slug,
@@ -111,6 +122,12 @@ export async function setEventStatus(
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
 
+  const existing = await events.getById(id, session.orgIds);
+  if (existing && isMasterShowcaseOrg(existing.org_id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to change status.",
+    };
+  }
   const updated = await events.updateStatus(id, session.orgIds, parsed.data);
   if (!updated) return { error: "Event not found." };
   revalidatePath("/demo", "layout");

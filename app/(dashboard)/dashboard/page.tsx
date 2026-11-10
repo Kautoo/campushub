@@ -12,7 +12,7 @@ import { getSessionContext } from "@/lib/auth/session";
 import { orders, ticketTiers, products, orgs, events } from "@/lib/db/repo";
 
 export const metadata = {
-  title: "Organizer Management Dashboard — CampusHub 2.0",
+  title: "Organizer Management Dashboard — CampusHub",
 };
 
 const RANGES = [7, 30, 90] as const;

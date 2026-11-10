@@ -8,7 +8,7 @@ import { getDbSafe } from "@/lib/db/safe";
 import { getSessionContext } from "@/lib/auth/session";
 import { orgs, orgMembers, users } from "@/lib/db/repo";
 
-export const metadata = { title: "Committee Members — CampusHub 2.0" };
+export const metadata = { title: "Committee Members — CampusHub" };
 
 export default async function MembersPage() {
   const db = getDbSafe();

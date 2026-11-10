@@ -14,7 +14,7 @@ import {
 } from "@/lib/storefront";
 
 export const metadata = {
-  title: "Storefront & Campus Marketplace — CampusHub 2.0",
+  title: "Storefront & Campus Marketplace — CampusHub",
 };
 
 export const instant = false;
@@ -70,7 +70,7 @@ export default async function DemoStorefront({
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-low text-on-surface border border-outline-variant/60 w-fit">
                 <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
                 <span className="text-label-sm font-bold tracking-wider uppercase text-secondary">
-                  {org.isCustomOrg ? `${org.name} Official Storefront` : "CampusHub 2.0 Marketplace"}
+                  {org.isCustomOrg ? `${org.name} Official Storefront` : "CampusHub Marketplace"}
                 </span>
                 <span className="text-outline-variant">•</span>
                 <span className="text-label-sm text-on-surface-variant">

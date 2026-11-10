@@ -15,7 +15,7 @@ export function StorefrontBanner({
           <span className="text-on-surface font-semibold">
             {isCustomOrg
               ? `Live Storefront: ${orgName}`
-              : "CampusHub 2.0 Official University Marketplace"}
+              : "CampusHub Official University Marketplace"}
           </span>
           <span className="text-outline-variant hidden sm:inline">•</span>
           <span className="text-on-surface-variant hidden sm:inline">

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — CampusHub 2.0",
+  title: "Terms of Service — CampusHub",
   description:
     "The terms that govern your use of CampusHub: accounts, acceptable use, payments, and liability.",
 };
@@ -139,7 +139,7 @@ export default function TermsOfServicePage() {
       <footer className="border-t border-outline-variant">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-4 py-10 lg:px-8">
           <p className="text-on-surface-variant text-sm">
-            © CampusHub 2.0 · Built with Next.js, Render Postgres, and PayPal
+            © CampusHub · Built with Next.js, Render Postgres, and PayPal
           </p>
           <nav className="flex gap-6" aria-label="Footer">
             <Link

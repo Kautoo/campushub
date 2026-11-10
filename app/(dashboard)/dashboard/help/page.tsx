@@ -10,7 +10,7 @@ import {
   AccordionBody,
 } from "@heroui/react";
 
-export const metadata = { title: "Documentation & Runbook — CampusHub 2.0" };
+export const metadata = { title: "Documentation & Runbook — CampusHub" };
 
 const FAQS: {
   id: string;
@@ -107,7 +107,7 @@ const FAQS: {
 ];
 
 export default function HelpPage() {
-  const subject = encodeURIComponent("CampusHub 2.0 support request");
+  const subject = encodeURIComponent("CampusHub support request");
   const body = encodeURIComponent(
     "Hi CampusHub team,\n\nOrganization: \nIssue/question: \n\nThanks,",
   );
