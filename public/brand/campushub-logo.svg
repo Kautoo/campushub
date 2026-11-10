@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 180" width="100%" height="100%">
+  <!-- Icon Mark on Left (180x180 box) -->
+  <g transform="translate(10, 10) scale(0.3125)">
+    <!-- Outer Collegiate Geometric "C" in Deep Navy #00162e -->
+    <path
+      d="M 256,76
+         C 156.6,76 76,156.6 76,256
+         C 76,355.4 156.6,436 256,436
+         C 324.8,436 384.5,397.3 414.5,340.5
+         L 348.2,340.5
+         C 327.4,374.8 289.4,396 256,396
+         C 178.7,396 116,333.3 116,256
+         C 116,178.7 178.7,116 256,116
+         C 289.4,116 327.4,137.2 348.2,171.5
+         L 414.5,171.5
+         C 384.5,114.7 324.8,76 256,76 Z"
+      fill="#00162e"
+    />
+    <rect x="76" y="270" width="40" height="70" rx="6" fill="#00162e" />
+    <rect x="395" y="270" width="40" height="70" rx="6" fill="#00162e" />
+
+    <!-- Inner H Pillars -->
+    <path d="M 180,146 L 226,172 L 226,340 L 180,366 Z" fill="#006a60" />
+    <path d="M 180,146 L 204,160 L 204,352 L 180,366 Z" fill="#004d46" />
+    <path d="M 204,160 L 226,172 L 226,340 L 204,352 Z" fill="#00897b" />
+
+    <path d="M 286,172 L 332,146 L 332,366 L 286,340 Z" fill="#006a60" />
+    <path d="M 308,160 L 332,146 L 332,366 L 308,352 Z" fill="#004d46" />
+    <path d="M 286,172 L 308,160 L 308,352 L 286,340 Z" fill="#00897b" />
+
+    <path d="M 204,270 L 308,214 L 308,242 L 204,298 Z" fill="#004d46" />
+
+    <circle cx="256" cy="256" r="30" fill="#ffffff" stroke="#006a60" stroke-width="12" />
+    <circle cx="256" cy="256" r="12" fill="#5eead4" />
+
+    <line x1="256" y1="226" x2="256" y2="168" stroke="#006a60" stroke-width="10" stroke-linecap="round" />
+    <circle cx="256" cy="168" r="18" fill="#006a60" />
+    <circle cx="256" cy="168" r="7" fill="#ffffff" />
+
+    <line x1="256" y1="286" x2="256" y2="344" stroke="#006a60" stroke-width="10" stroke-linecap="round" />
+    <circle cx="256" cy="344" r="18" fill="#006a60" />
+    <circle cx="256" cy="344" r="7" fill="#ffffff" />
+  </g>
+
+  <!-- Typography "CampusHub 2.0" -->
+  <text x="190" y="102" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="64" fill="#00162e" letter-spacing="-1.5px">Campus<tspan fill="#006a60">Hub</tspan></text>
+  <text x="192" y="132" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="16" fill="#006a60" letter-spacing="3.5px">CAMPUS EVENTS &amp; COMMERCE</text>
+  
+  <rect x="585" y="60" width="60" height="28" rx="14" fill="#006a60" />
+  <text x="615" y="79" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="14" fill="#ffffff" text-anchor="middle">v2.0</text>
+</svg>

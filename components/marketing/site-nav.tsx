@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -43,8 +44,14 @@ export function SiteNav() {
             className="flex items-center gap-2.5"
             aria-label="CampusHub 2.0 home"
           >
-            <span className="bg-primary text-on-primary flex h-8 w-8 items-center justify-center rounded-lg shadow-2xs">
-              <span className="material-symbols-outlined text-[18px]">hub</span>
+            <span className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-white shadow-2xs shrink-0">
+              <Image
+                src="/brand/campushub-mark.svg"
+                alt="CampusHub Logo"
+                width={32}
+                height={32}
+                className="w-full h-full object-contain p-0.5"
+              />
             </span>
             <span className="text-headline-sm font-bold text-on-surface tracking-tight">
               CampusHub <span className="text-secondary">2.0</span>

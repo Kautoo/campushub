@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -603,10 +604,14 @@ export function AppShell({
           {/* Brand Lockup */}
           <div className="flex items-center justify-between px-2 mb-6">
             <Link href="/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-xs">
-                <span className="material-symbols-outlined text-[22px]">
-                  school
-                </span>
+              <div className="w-10 h-10 rounded-xl bg-white border border-outline-variant/60 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+                <Image
+                  src="/brand/campushub-mark.svg"
+                  alt="CampusHub Logo"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-contain p-0.5"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-headline-sm font-bold text-on-surface leading-tight tracking-tight">

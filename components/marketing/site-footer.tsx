@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -57,8 +58,14 @@ export function SiteFooter() {
           transition={{ duration: 0.5 }}
         >
           <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub 2.0 home">
-            <span className="bg-primary-container flex h-9 w-9 items-center justify-center rounded-lg text-white dark:bg-primary dark:text-[#00201c]">
-              <span className="material-symbols-outlined text-[20px]">hub</span>
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-white shadow-2xs shrink-0">
+              <Image
+                src="/brand/campushub-mark.svg"
+                alt="CampusHub Logo"
+                width={36}
+                height={36}
+                className="w-full h-full object-contain p-0.5"
+              />
             </span>
             <span className="text-headline-sm text-on-surface">CampusHub</span>
             <span className="rounded-full border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant">

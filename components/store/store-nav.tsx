@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -117,10 +118,14 @@ export function StoreNav() {
             className="flex items-center gap-2.5 shrink-0"
             aria-label="CampusHub Storefront home"
           >
-            <span className="bg-primary text-on-primary flex h-8 w-8 items-center justify-center rounded-lg shadow-2xs">
-              <span className="material-symbols-outlined text-[18px]">
-                storefront
-              </span>
+            <span className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-white shadow-2xs shrink-0">
+              <Image
+                src="/brand/campushub-mark.svg"
+                alt="CampusHub Logo"
+                width={32}
+                height={32}
+                className="w-full h-full object-contain p-0.5"
+              />
             </span>
             <span className="text-headline-sm font-bold text-on-surface tracking-tight">
               CampusHub <span className="text-secondary">Store</span>
