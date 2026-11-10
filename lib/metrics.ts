@@ -37,6 +37,7 @@ export type MetricsPack = {
     sell_through: { title: string; sold: number; quantity: number }[];
   };
   inventory: {
+    total_active: number;
     low_stock: { name: string; stock: number; threshold: number }[];
     out_of_stock: number;
   };
@@ -131,6 +132,7 @@ export async function buildMetricsPack(
       sell_through,
     },
     inventory: {
+      total_active: active.length,
       low_stock: active
         .filter((p) => p.stock <= p.low_stock_threshold && p.stock > 0)
         .map((p) => ({
