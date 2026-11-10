@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { formatMoney } from "@/lib/money";
 import { MoneyDisplay } from "@/components/ui/currency-context";
 import { Badge } from "@/components/ui/badge";
 

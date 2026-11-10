@@ -57,7 +57,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "webhook_unconfigured" }, { status: 503 });
   }
 
-  const event = eventSchema.parse(body);
+  const parsedEvent = eventSchema.safeParse(body);
+  if (!parsedEvent.success) {
+    return NextResponse.json({ error: "invalid_event_structure" }, { status: 400 });
+  }
+  const event = parsedEvent.data;
 
   // Dedupe: unique provider_event_id
   const { duplicate } = await webhookEvents.insert({
@@ -71,9 +75,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "duplicate" });
   }
 
-  const resource = event.resource
-    ? captureResourceSchema.parse(event.resource)
+  const parsedResource = event.resource
+    ? captureResourceSchema.safeParse(event.resource)
     : null;
+  const resource = parsedResource?.success ? parsedResource.data : null;
 
   try {
     switch (event.event_type) {

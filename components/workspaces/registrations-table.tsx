@@ -5,7 +5,6 @@ import type { ColDef } from "ag-grid-community";
 import { DataTable, type DataTableFilterPill } from "@/components/grid/data-table";
 import { Badge, type ChipTone } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
-import { formatMoney } from "@/lib/money";
 import { MoneyDisplay } from "@/components/ui/currency-context";
 import {
   RegistrationActions,

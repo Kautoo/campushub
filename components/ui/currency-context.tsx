@@ -57,6 +57,7 @@ export function CurrencyProvider({
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as CurrencyCode | null;
       if (saved && saved in CURRENCY_CONFIG) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrencyState(saved);
       }
     } catch {

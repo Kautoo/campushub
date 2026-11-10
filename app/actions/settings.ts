@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { orgSettingsSchema } from "@/lib/validation";
 import { hasDatabaseEnv, getPool } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs, users, isMasterShowcaseOrg } from "@/lib/db/repo";
+import { orgs, orgMembers, users, isMasterShowcaseOrg } from "@/lib/db/repo";
 
 export type SettingsState = { ok?: string; error?: string } | null;
 
@@ -35,6 +35,11 @@ export async function updateOrgSettings(
     };
   }
 
+  const myMemberships = await orgMembers.listByUser(session.user.id);
+  const me = myMemberships.find((m) => m.org_id === org.id);
+  if (!me || (me.role !== "owner" && me.role !== "admin")) {
+    return { error: "Only admins and owners can update organization settings." };
+  }
   const settings = (org.settings ?? {}) as Record<string, unknown>;
   settings.gateways = {
     ...(settings.gateways as Record<string, unknown> | undefined),
@@ -85,6 +90,11 @@ export async function resetDemoCatalog(): Promise<SettingsState> {
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found." };
 
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to reset catalog data.",
+    };
+  }
   const pool = getPool();
   await pool.query(
     `update public.products set status = 'active', stock = case when stock <= 0 then 45 else stock end where org_id = $1::uuid`,

@@ -8,7 +8,6 @@ import { DataTable, type DataTableFilterPill } from "@/components/grid/data-tabl
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/icon";
-import { formatMoney } from "@/lib/money";
 import { MoneyDisplay } from "@/components/ui/currency-context";
 import {
   ProductModal,
@@ -50,15 +49,18 @@ export function ProductGrid({
   const [convertedNotice, setConvertedNotice] = useState(false);
 
   // Auto-conversion handoff: after the session swaps into a fresh sandbox and
-  // the page reloads, reopen the new-product editor or show the notice banner.
   useEffect(() => {
     const pending = consumePendingSandboxAction();
     if (isReadOnly) return; // conversion fell through; drop the stale flag
     if (pending === "products:new") {
-      setModalProduct(null);
-      setModalOpen(true);
+      queueMicrotask(() => {
+        setModalProduct(null);
+        setModalOpen(true);
+      });
     } else if (pending) {
-      setConvertedNotice(true);
+      queueMicrotask(() => {
+        setConvertedNotice(true);
+      });
     }
   }, [isReadOnly]);
 

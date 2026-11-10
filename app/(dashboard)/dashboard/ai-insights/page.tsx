@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { InsightsChat } from "@/components/workspaces/insights-chat";
 import { InsightGenerator } from "@/components/workspaces/insight-generator";
 import { AnimatedBeamDemo } from "@/components/workspaces/insights-diagram";
-import { aiConfigured, aiModelId } from "@/lib/ai";
 import { hasChannel3 } from "@/lib/channel3";
 import { MarketDiscovery } from "@/components/workspaces/market-discovery";
 import { getDbSafe } from "@/lib/db/safe";
@@ -21,7 +20,6 @@ export default async function AiInsightsPage() {
 
   const recent = await aiInsights.listRecent(session.orgIds, 5);
 
-  const aiReady = aiConfigured();
   const orgReady = session.orgIds.length > 0;
 
   return (

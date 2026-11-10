@@ -60,8 +60,16 @@ export async function signIn(
     }
     return { error: "Sign-in failed. Please try again." };
   }
-  const next = String(formData.get("next") || "/dashboard");
-  redirect(next.startsWith("/") ? next : "/dashboard");
+  const rawNext = String(formData.get("next") || "/dashboard");
+  const next =
+    rawNext.startsWith("/") &&
+    !rawNext.startsWith("//") &&
+    !rawNext.startsWith("/\\") &&
+    !rawNext.includes("\r") &&
+    !rawNext.includes("\n")
+      ? rawNext
+      : "/dashboard";
+  redirect(next);
 }
 
 export async function signUp(

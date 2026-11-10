@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { productSchema } from "@/lib/validation";
+import { parseMoneyToCents } from "@/lib/money";
 import { hasDatabaseEnv } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
 import { orgs, products, inventoryMovements, isMasterShowcaseOrg } from "@/lib/db/repo";
@@ -45,6 +46,49 @@ function isUniqueViolation(err: unknown): boolean {
   const e = err as { code?: string; message?: string };
   return e?.code === "23505" || /duplicate key|unique constraint/i.test(e?.message ?? "");
 }
+function normalizeProductInput(raw: Record<string, string>) {
+  if (!raw.slug) {
+    raw.slug = slugify(raw.name ?? "") || `item-${Date.now().toString(36)}`;
+  }
+  if (
+    raw.price_cents === undefined ||
+    raw.price_cents === "" ||
+    Number.isNaN(Number(raw.price_cents))
+  ) {
+    if (raw.price !== undefined && raw.price !== "") {
+      const cents = parseMoneyToCents(raw.price);
+      if (cents !== null) {
+        raw.price_cents = String(cents);
+      }
+    }
+  }
+  if (raw.stock === "" || raw.stock === undefined) raw.stock = "0";
+  if (raw.low_stock_threshold === "" || raw.low_stock_threshold === undefined) {
+    raw.low_stock_threshold = "5";
+  }
+}
+
+function formatProductError(issues: z.ZodIssue[]): string {
+  const issue = issues[0];
+  if (!issue) return "Invalid input";
+  const path = issue.path?.[0];
+  if (path === "price_cents") {
+    return "Please enter a valid price (e.g. 45.00).";
+  }
+  if (path === "stock") {
+    return "Please enter a valid stock quantity.";
+  }
+  if (path === "low_stock_threshold") {
+    return "Please enter a valid low stock threshold.";
+  }
+  if (path === "name") {
+    return "Product name is required.";
+  }
+  if (path === "slug") {
+    return "URL slug must contain only lowercase letters, numbers, and dashes.";
+  }
+  return issue.message ?? "Invalid input";
+}
 
 export async function createProduct(
   _prev: ProductActionState,
@@ -53,10 +97,10 @@ export async function createProduct(
   if (!hasDatabaseEnv()) return { error: "Database is not configured." };
 
   const raw = Object.fromEntries(formData) as Record<string, string>;
-  if (!raw.slug) raw.slug = slugify(raw.name ?? "");
+  normalizeProductInput(raw);
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return { error: formatProductError(parsed.error.issues) };
   }
 
   const session = await getSessionContext();
@@ -106,10 +150,10 @@ export async function updateProduct(
   if (!id.success) return { error: "Missing or invalid product id." };
 
   const raw = Object.fromEntries(formData) as Record<string, string>;
-  if (!raw.slug) raw.slug = slugify(raw.name ?? "");
+  normalizeProductInput(raw);
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    return { error: formatProductError(parsed.error.issues) };
   }
 
   const session = await getSessionContext();

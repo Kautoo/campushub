@@ -90,7 +90,13 @@ export async function verifyWebhookSignature(
   const missing = required.filter((h) => !headers.get(h));
   if (missing.length > 0) return "FAILURE";
 
-  const token = await paypalAccessToken();
+  let token: string;
+  try {
+    token = await paypalAccessToken();
+  } catch (err) {
+    console.error("paypal access token acquisition failed during webhook verify", err);
+    return "FAILURE";
+  }
   const res = await fetch(`${paypalBase()}/v1/notifications/verify-webhook-signature`, {
     method: "POST",
     headers: {

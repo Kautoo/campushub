@@ -91,10 +91,14 @@ export function EventsWorkspace({
     const pending = consumePendingSandboxAction();
     if (isReadOnly) return; // conversion fell through; drop the stale flag
     if (pending === "events:new") {
-      setEditing(undefined);
-      setModalOpen(true);
+      queueMicrotask(() => {
+        setEditing(undefined);
+        setModalOpen(true);
+      });
     } else if (pending) {
-      setConvertedNotice(true);
+      queueMicrotask(() => {
+        setConvertedNotice(true);
+      });
     }
   }, [isReadOnly]);
 

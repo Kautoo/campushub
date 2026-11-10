@@ -12,10 +12,13 @@ const exportSchema = z.object({
 
 type CsvCell = string | number | boolean | null | undefined;
 
-/** RFC-4180 CSV cell escaping. */
+/** RFC-4180 CSV cell escaping with formula injection (DDE) neutralization. */
 function csvEscape(value: CsvCell): string {
   if (value === null || value === undefined) return "";
-  const str = String(value).trim();
+  let str = String(value).trim();
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }

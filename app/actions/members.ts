@@ -5,7 +5,8 @@ import { z } from "zod";
 import { hashPassword } from "@/lib/auth/password";
 import { hasDatabaseEnv, withTransaction } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orgs, orgMembers } from "@/lib/db/repo";
+import { orgs, orgMembers, isMasterShowcaseOrg } from "@/lib/db/repo";
+import { canManageMembers, type OrgRole } from "@/lib/rbac";
 import { randomBytes } from "node:crypto";
 
 export type MemberActionResult = { ok?: string; error?: string } | null;
@@ -43,9 +44,20 @@ export async function inviteMember(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
+
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to invite members.",
+    };
+  }
+
+  const myMemberships = await orgMembers.listByUser(session.user.id);
+  const me = myMemberships.find((m) => m.org_id === org.id);
+  if (!me || !canManageMembers(me.role as OrgRole)) {
+    return { error: "You do not have permission to invite members." };
+  }
 
   const email = parsed.data.email.toLowerCase();
 
@@ -104,6 +116,28 @@ export async function updateMemberRole(
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
 
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to edit member roles.",
+    };
+  }
+
+  const myMemberships = await orgMembers.listByUser(session.user.id);
+  const me = myMemberships.find((m) => m.org_id === org.id);
+  if (!me || !canManageMembers(me.role as OrgRole)) {
+    return { error: "You do not have permission to manage member roles." };
+  }
+
+  if (parsedRole.data === "owner" && me.role !== "owner") {
+    return { error: "Only existing owners can assign the owner role." };
+  }
+
+  const allOrgMembers = await orgMembers.listByOrgs([org.id]);
+  const target = allOrgMembers.find((m) => m.user_id === userId);
+  if (target?.role === "owner" && me.role !== "owner") {
+    return { error: "Only owners can modify an owner's role." };
+  }
+
   const updated = await orgMembers.updateRole(org.id, session.orgIds, userId, parsedRole.data);
   if (!updated) return { error: "Member not found in your organization." };
 
@@ -123,6 +157,30 @@ export async function removeMember(
 
   const org = await orgs.firstForUser(session.user.id);
   if (!org) return { error: "No organization found for your account." };
+
+  if (isMasterShowcaseOrg(org.id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to remove members.",
+    };
+  }
+
+  const myMemberships = await orgMembers.listByUser(session.user.id);
+  const me = myMemberships.find((m) => m.org_id === org.id);
+  if (!me || !canManageMembers(me.role as OrgRole)) {
+    return { error: "You do not have permission to remove members." };
+  }
+
+  const allOrgMembers = await orgMembers.listByOrgs([org.id]);
+  const target = allOrgMembers.find((m) => m.user_id === userId);
+  if (target?.role === "owner") {
+    const ownerCount = allOrgMembers.filter((m) => m.role === "owner").length;
+    if (ownerCount <= 1) {
+      return { error: "Cannot remove the only owner of the organization." };
+    }
+    if (me.role !== "owner") {
+      return { error: "Only owners can remove an owner." };
+    }
+  }
 
   const removed = await orgMembers.delete(org.id, session.orgIds, userId);
   if (!removed) return { error: "Member not found in your organization." };

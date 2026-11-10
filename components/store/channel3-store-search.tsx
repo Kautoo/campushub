@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { useStoreCurrency } from "@/components/store/currency-provider";
 

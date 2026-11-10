@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasDatabaseEnv } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { registrations } from "@/lib/db/repo";
+import { registrations, isMasterShowcaseOrg } from "@/lib/db/repo";
 
 export type RegistrationActionResult = { ok?: string; error?: string } | null;
 
@@ -29,6 +29,13 @@ export async function updateRegistrationStatus(
 
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
+  const regList = await registrations.listWithJoins(session.orgIds, 1000);
+  const target = regList.find((r) => r.id === parsedId.data);
+  if (target && isMasterShowcaseOrg(target.org_id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to update registrations.",
+    };
+  }
 
   const updated = await registrations.updateStatus(parsedId.data, session.orgIds, {
     status: parsed.data,

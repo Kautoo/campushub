@@ -18,8 +18,8 @@ export function ThemeToggle({ className }: { className?: string }) {
       document.documentElement.getAttribute("data-theme") === "dark"
         ? "dark"
         : "light";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(current);
-
     const handleSync = () => {
       const active =
         typeof document !== "undefined" &&

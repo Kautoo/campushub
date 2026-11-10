@@ -49,8 +49,8 @@ CampusHub features an enterprise-grade multi-tenant workspace architecture:
 1. **Protected Master Showcase (`Tech Society`)**: The default demo organization (`00000000-0000-4000-8000-000000000001`) is a read-only showcase populated with realistic conferences, hackathons, merchandise, and PayPal orders. Evaluators can explore all 12 workspaces, inspect Bryntum schedules, and review AG Grid ledgers without restrictions.
 2. **Auto-Conversion on Edit Attempt**: Attempting to create or edit events or products in the master showcase automatically converts the session — a `Launching your private sandbox…` overlay appears, `createDemoSandbox()` provisions the private workspace, and the page reloads on the same route with the editor reopened (for New actions) or a `Private sandbox is live` notice. The server action guard remains as a backstop and rejects any showcase mutation that reaches the API.
 3. **Auto-Cloned Private Sandboxes (`sandbox-xxxx`)**: Clones baseline events, tiers, and 12 products automatically, giving evaluators full unrestricted edit access (drag-and-drop in Bryntum, edit prices in AG Grid, add new events).
-4. **Workspace Switcher**: Evaluators can seamlessly switch back and forth between the Master Showcase (Read-Only) and their private Sandbox Workspace from the header dropdown.
-
+4. **Workspace Switcher & Showcase Indicator**: The top dashboard header displays a refined, non-intrusive Showcase Mode pill in the right utility actions area, keeping the primary breadcrumb clean (`[Organization] / [Page]`). Evaluators can also seamlessly switch back and forth between the Master Showcase (Read-Only) and their private Sandbox Workspace from the header dropdown.
+5. **Security & Mutation Boundaries**: All write operations (products, events, ticket tiers, orders, registrations, members, and organization settings) are strictly guarded against showcase modification, with role-based authorization enforced server-side.
 ## Separated Personal Account & Organization Settings
 
 Settings in `/dashboard/settings` are cleanly segmented into dedicated tabs:
@@ -94,7 +94,7 @@ Sign in at `/login` with seeded credentials:
 ```bash
 npx tsc --noEmit                                    # Typecheck (0 errors)
 npm run lint                                        # ESLint (0 errors)
-node --test tests/unit.test.mjs                     # 17/17 unit tests
+node --test tests/unit.test.mjs                     # 18/18 unit tests
 node --test tests/db-integration.test.mjs           # 13/13 Postgres integration tests
-npm test                                            # Full test suite (49/49 passed)
+npm test                                            # Full test suite (50/50 passed)
 ```

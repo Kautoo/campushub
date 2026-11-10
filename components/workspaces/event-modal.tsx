@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@heroui/react";
 import { createEvent, updateEvent } from "@/app/actions/events";
@@ -94,9 +94,15 @@ export function EventModal({
   const [startDate, setStartDate] = useState(toLocalInput(event?.start_at ?? null));
   const [capacity, setCapacity] = useState(event?.capacity ?? 150);
   const [previewMode, setPreviewMode] = useState<"edit" | "card" | "storefront">("edit");
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   if (!open) return null;
-
   async function handleSubmit(formData: FormData) {
     setPending(true);
     setError(null);
@@ -140,9 +146,11 @@ export function EventModal({
       role="dialog"
       aria-modal="true"
       aria-label={event?.id ? "Edit event" : "New event"}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-outline-variant/70 bg-surface-lowest p-6 sm:p-8 shadow-2xl opacity-100 space-y-6">
-        {/* Modal Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/40 pb-4">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">

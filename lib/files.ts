@@ -33,18 +33,22 @@ export function verifyToken(
   token: string,
   now = Date.now(),
 ): boolean {
-  const parts = token.split(".");
-  if (parts.length !== 3) return false;
-  const [tokenFileId, expiresStr, sig] = parts;
-  if (tokenFileId !== fileId) return false;
-  const expires = Number(expiresStr);
-  if (!Number.isFinite(expires) || expires * 1000 < now) return false;
-  const expected = createHmac("sha256", secret())
-    .update(`${fileId}.${expiresStr}`)
-    .digest("hex");
-  const a = Buffer.from(sig, "hex");
-  const b = Buffer.from(expected, "hex");
-  return a.length === b.length && timingSafeEqual(a, b);
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const [tokenFileId, expiresStr, sig] = parts;
+    if (tokenFileId !== fileId) return false;
+    const expires = Number(expiresStr);
+    if (!Number.isFinite(expires) || expires * 1000 < now) return false;
+    const expected = createHmac("sha256", secret())
+      .update(`${fileId}.${expiresStr}`)
+      .digest("hex");
+    const a = Buffer.from(sig, "hex");
+    const b = Buffer.from(expected, "hex");
+    return a.length === b.length && timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 export async function putFile(fields: {

@@ -211,16 +211,6 @@ export function AppShell({
                   unfold_more
                 </span>
               </button>
-              {isReadOnly ? (
-                <button
-                  type="button"
-                  onClick={() => setSandboxPromptOpen(true)}
-                  className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning-container text-warning text-[11px] font-bold border border-warning/40 hover:bg-warning-container/80 transition-colors shadow-2xs cursor-pointer ml-1.5"
-                >
-                  <span className="material-symbols-outlined text-[13px]">lock</span>
-                  <span>Showcase (Read-Only)</span>
-                </button>
-              ) : null}
               {/* Organization Switcher Popover Menu */}
               {orgMenuOpen ? (
                 <div
@@ -347,6 +337,19 @@ export function AppShell({
 
           {/* Right Command Actions */}
           <div className="flex items-center gap-2 relative">
+            {isReadOnly ? (
+              <button
+                type="button"
+                onClick={() => setSandboxPromptOpen(true)}
+                title="Showcase Workspace (Read-Only) — Click to view sandbox options"
+                className="focus-aura hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-outline-variant/60 bg-surface-low/80 text-on-surface-variant hover:text-on-surface hover:bg-surface-container text-body-sm font-medium transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[15px] text-amber-500">
+                  lock
+                </span>
+                <span>Showcase (Read-Only)</span>
+              </button>
+            ) : null}
             {/* Command Search Trigger */}
             <button
               type="button"

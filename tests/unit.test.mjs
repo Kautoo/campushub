@@ -153,6 +153,30 @@ test("productSchema: rejects negative price, bad slug and bad status", () => {
   assert.equal(productSchema.safeParse({ ...base, stock: -5 }).success, false);
 });
 
+test("product form: converts user decimal price string to price_cents before validation", () => {
+  const raw = {
+    name: "Classic Tee",
+    price: "45.00",
+    stock: "50",
+    low_stock_threshold: "5",
+    status: "active",
+  };
+  const cents = parseMoneyToCents(raw.price);
+  assert.equal(cents, 4500);
+  const parsed = productSchema.safeParse({
+    name: raw.name,
+    slug: "classic-tee",
+    price_cents: cents,
+    stock: raw.stock,
+    low_stock_threshold: raw.low_stock_threshold,
+    status: raw.status,
+  });
+  assert.equal(parsed.success, true);
+  if (parsed.success) {
+    assert.equal(parsed.data.price_cents, 4500);
+  }
+});
+
 // ---------- lib/rbac.ts ----------
 
 test("hasRole: staff < admin < owner ordering", () => {

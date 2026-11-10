@@ -70,12 +70,23 @@ export function ProductModal({
   product: ProductModalRow | null;
   onClose: () => void;
 }) {
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-label={product ? "Edit product" : "New product"}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-outline-variant/70 bg-surface-lowest p-6 sm:p-8 shadow-2xl opacity-100 space-y-6">
         <ProductModalForm
@@ -359,6 +370,7 @@ function ProductModalForm({
           <span className="text-label-md font-semibold text-on-surface">
             Price (RM)
           </span>
+          <input type="hidden" name="price_cents" value={Math.round(numPrice * 100)} />
           <input
             name="price"
             required

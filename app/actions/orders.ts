@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasDatabaseEnv } from "@/lib/db";
 import { getSessionContext } from "@/lib/auth/session";
-import { orders } from "@/lib/db/repo";
+import { orders, isMasterShowcaseOrg } from "@/lib/db/repo";
 
 export type OrderActionState = { ok?: string; error?: string };
 
@@ -32,6 +32,11 @@ export async function setOrderStatus(
   const order = await orders.getById(parsed.data.orderId, session.orgIds);
   if (!order) return { error: "Order not found." };
 
+  if (isMasterShowcaseOrg(order.org_id)) {
+    return {
+      error: "The master showcase workspace is read-only. Switch or launch your private sandbox to update orders.",
+    };
+  }
   const allowed: Record<string, string[]> = {
     paid: ["fulfilled"],
     pending: ["cancelled"],
