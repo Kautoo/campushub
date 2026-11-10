@@ -173,6 +173,12 @@ export async function createDemoSandbox(): Promise<void> {
          values ($1::uuid, $2::uuid, 'owner', 'active')`,
         [newOrgId, userId],
       );
+      await client.query(
+        `insert into public.org_members (org_id, user_id, role, status)
+         values ('00000000-0000-4000-8000-000000000001'::uuid, $1::uuid, 'staff', 'active')
+         on conflict (org_id, user_id) do nothing`,
+        [userId],
+      );
 
       // Clone baseline events + tiers into sandbox
       const baseEvents = await client.query<{
