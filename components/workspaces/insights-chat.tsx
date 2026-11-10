@@ -147,7 +147,7 @@ export function InsightsChat({
   return (
     <div className="rounded-3xl border border-outline-variant/50 bg-surface-lowest shadow-sm overflow-hidden flex flex-col min-h-[580px] max-h-[700px]">
       {/* ChatGPT-Style Workspace Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/40 bg-surface-low/40">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/40 bg-surface-low/30">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-teal-600 text-white flex items-center justify-center shadow-xs">
             <span className="material-symbols-outlined text-[18px]">
@@ -172,7 +172,7 @@ export function InsightsChat({
             type="button"
             onClick={handleReset}
             title="Start new chat"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant/60 bg-surface-lowest hover:bg-surface-low text-on-surface-variant hover:text-on-surface text-label-sm font-semibold transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-outline-variant/60 bg-surface-lowest hover:bg-surface-low text-on-surface-variant hover:text-on-surface text-label-sm font-semibold transition-colors cursor-pointer outline-none focus:outline-none"
           >
             <span className="material-symbols-outlined text-[15px]">
               restart_alt
@@ -214,7 +214,7 @@ export function InsightsChat({
                   type="button"
                   disabled={busy}
                   onClick={() => void send(item.prompt)}
-                  className="group rounded-2xl border border-outline-variant/60 bg-surface-low/50 hover:bg-surface-low hover:border-primary/50 p-4 transition-all text-left shadow-2xs hover:shadow-xs cursor-pointer"
+                  className="group rounded-2xl border border-outline-variant/60 bg-surface-low/50 hover:bg-surface-low hover:border-primary/50 p-4 transition-all text-left shadow-2xs hover:shadow-xs cursor-pointer outline-none focus:outline-none"
                 >
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="material-symbols-outlined text-[18px] text-primary group-hover:scale-110 transition-transform">
@@ -268,7 +268,7 @@ export function InsightsChat({
                       type="button"
                       onClick={() => void copyText(m.text, i)}
                       title="Copy response"
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors py-0.5 px-1.5 rounded hover:bg-surface-low cursor-pointer"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors py-0.5 px-1.5 rounded hover:bg-surface-low cursor-pointer outline-none focus:outline-none"
                     >
                       <span className="material-symbols-outlined text-[14px]">
                         {copiedIdx === i ? "check" : "content_copy"}
@@ -302,14 +302,14 @@ export function InsightsChat({
         ) : null}
       </div>
 
-      {/* ChatGPT-Style Pill Input Bar */}
+      {/* ChatGPT-Style Pill Input Bar — No Black Outline, High-Contrast Enter Button */}
       <div className="p-4 sm:p-5 border-t border-outline-variant/40 bg-surface-lowest">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void send();
           }}
-          className="relative flex items-center rounded-2xl border border-outline-variant/70 bg-surface-low/80 focus-within:bg-surface-lowest focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all p-1.5 pl-4 shadow-xs"
+          className="relative flex items-center rounded-2xl border border-outline-variant/70 bg-surface-low/70 focus-within:bg-surface-lowest focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25 transition-all p-1.5 pl-4 shadow-xs outline-none focus:outline-none"
         >
           <input
             ref={inputRef}
@@ -317,16 +317,20 @@ export function InsightsChat({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Message CampusHub AI Analyst (e.g. 'how much revenue?', 'which products sold most?')..."
             disabled={busy}
-            className="flex-1 bg-transparent border-0 outline-none text-body-md text-on-surface placeholder:text-on-surface-variant/70 py-1.5 pr-2"
+            className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 text-body-md text-on-surface placeholder:text-on-surface-variant/70 py-1.5 pr-2"
           />
 
           <button
             type="submit"
             disabled={busy || !input.trim()}
-            title="Send query"
-            className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center hover:opacity-90 disabled:opacity-30 disabled:bg-surface-container disabled:text-on-surface-variant transition-all shrink-0 cursor-pointer shadow-xs"
+            title={input.trim() ? "Send message" : "Type a message to send"}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shrink-0 cursor-pointer outline-none focus:outline-none ${
+              input.trim() && !busy
+                ? "bg-primary text-on-primary shadow-xs hover:opacity-90 active:scale-95"
+                : "bg-surface-container text-on-surface-variant/50 border border-outline-variant/50 cursor-not-allowed opacity-60"
+            }`}
           >
-            <span className="material-symbols-outlined text-[19px]">
+            <span className="material-symbols-outlined text-[19px] font-bold">
               arrow_upward
             </span>
           </button>

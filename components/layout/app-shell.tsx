@@ -397,13 +397,13 @@ export function AppShell({
                 setSearchOpen(true);
                 closeAllPopovers();
               }}
-              className="focus-aura hidden h-9 w-56 xl:w-64 items-center gap-2 rounded-lg border border-outline-variant/60 bg-surface-low/80 px-3 text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors md:flex"
+              className="focus-aura hidden h-9 w-60 xl:w-72 items-center gap-2.5 rounded-xl border border-outline-variant/60 bg-surface-low/80 px-3 text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface hover:border-primary/50 transition-all md:flex cursor-pointer shadow-2xs group"
             >
-              <span className="material-symbols-outlined text-[17px]">
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:text-primary transition-colors">
                 search
               </span>
-              <span>Quick jump…</span>
-              <kbd className="ml-auto rounded border border-outline-variant/60 bg-surface-lowest px-1.5 py-0.2 font-mono text-[10px] font-semibold">
+              <span className="truncate">Search or quick jump…</span>
+              <kbd className="ml-auto rounded-md border border-outline-variant/60 bg-surface-lowest px-1.5 py-0.5 font-mono text-[10px] font-bold text-on-surface-variant shadow-2xs">
                 ⌘K
               </kbd>
             </button>
@@ -957,63 +957,171 @@ export function AppShell({
         </footer>
       </main>
 
-      {/* Command Palette Modal */}
+      {/* Raycast / Vercel-Style Command Palette Modal */}
       {searchOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 backdrop-blur-xs px-4 pt-24"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-md px-4 pt-20 sm:pt-28"
           onClick={closeSearch}
           role="presentation"
         >
           <div
-            className="w-full max-w-lg overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-lowest shadow-2xl"
+            className="w-full max-w-xl overflow-hidden rounded-3xl border border-outline-variant/60 bg-surface-lowest shadow-2xl transition-all"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Search navigation"
+            aria-label="Command search navigation"
           >
-            <div className="flex items-center gap-2.5 border-b border-outline-variant/50 px-4 py-3.5">
-              <span className="material-symbols-outlined text-[20px] text-secondary">
+            {/* Search Input Bar */}
+            <div className="flex items-center gap-3 border-b border-outline-variant/50 px-5 py-4 bg-surface-low/30">
+              <span className="material-symbols-outlined text-[22px] text-primary">
                 search
               </span>
               <input
                 ref={searchInput}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Jump to workspace, ledger, or tool…"
-                className="w-full bg-transparent text-body-md text-on-surface outline-none placeholder:text-on-surface-variant"
+                placeholder="Type a command or search workspace, ledger, or tool…"
+                className="w-full bg-transparent text-body-md text-on-surface outline-none focus:outline-none placeholder:text-on-surface-variant/70 border-none ring-0 focus:ring-0"
               />
-              <kbd className="rounded border border-outline-variant px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant">
-                Esc
+              <kbd className="rounded-lg border border-outline-variant/60 bg-surface-low px-2 py-1 font-mono text-[11px] font-bold text-on-surface-variant shadow-2xs">
+                ESC
               </kbd>
             </div>
-            <ul className="max-h-80 overflow-y-auto p-2">
-              {results.length === 0 ? (
-                <li className="px-3 py-6 text-center text-body-sm text-on-surface-variant">
-                  No matching workspace found
-                </li>
-              ) : (
-                results.map((item) => (
-                  <li key={item.href}>
+
+            {/* Quick Actions & Workspace Results */}
+            <div className="max-h-96 overflow-y-auto p-3 space-y-3">
+              {/* Quick Actions Shortcuts (when query matches actions or is fresh) */}
+              {!query.trim() || /event|product|merch|sandbox|store/i.test(query) ? (
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant px-3 block">
+                    Quick Actions
+                  </span>
+                  <div className="space-y-0.5">
                     <Link
-                      href={item.href}
+                      href="/dashboard/events"
                       onClick={closeSearch}
-                      className={cn(
-                        "flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-body-md text-on-surface hover:bg-surface-low transition-colors",
-                        isActive(item.href) &&
-                          "bg-secondary-container/35 text-primary font-semibold",
-                      )}
+                      className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-body-sm text-on-surface hover:bg-surface-low transition-colors group"
                     >
                       <div className="flex items-center gap-3">
-                        <Icon name={item.icon} size={18} />
-                        <span>{item.label}</span>
+                        <div className="w-8 h-8 rounded-lg bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[17px]">
+                            add_circle
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-on-surface">Schedule Event Initiative</p>
+                          <p className="text-[11px] text-on-surface-variant">Create event &amp; Bryntum timeline slot</p>
+                        </div>
                       </div>
-                      <span className="font-mono text-[11px] text-on-surface-variant">
-                        {item.href}
+                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+                        keyboard_return
                       </span>
                     </Link>
-                  </li>
-                ))
-              )}
-            </ul>
+
+                    <Link
+                      href="/dashboard/products"
+                      onClick={closeSearch}
+                      className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-body-sm text-on-surface hover:bg-surface-low transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[17px]">
+                            inventory_2
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-on-surface">Add Merchandise SKU</p>
+                          <p className="text-[11px] text-on-surface-variant">Publish official society apparel or tech gear</p>
+                        </div>
+                      </div>
+                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+                        keyboard_return
+                      </span>
+                    </Link>
+
+                    <Link
+                      href="/demo"
+                      onClick={closeSearch}
+                      className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-body-sm text-on-surface hover:bg-surface-low transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[17px]">
+                            storefront
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-on-surface">Open Live Storefront</p>
+                          <p className="text-[11px] text-on-surface-variant">View student shopping bag &amp; checkout</p>
+                        </div>
+                      </div>
+                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+                        open_in_new
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Workspaces List */}
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant px-3 block">
+                  Workspaces &amp; Ledgers
+                </span>
+                {results.length === 0 ? (
+                  <div className="px-3 py-8 text-center text-body-sm text-on-surface-variant">
+                    No matching workspace found for &quot;{query}&quot;.
+                  </div>
+                ) : (
+                  <div className="space-y-0.5">
+                    {results.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeSearch}
+                        className={cn(
+                          "flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-body-sm text-on-surface hover:bg-surface-low transition-colors group",
+                          isActive(item.href) &&
+                            "bg-primary/10 text-primary font-semibold border border-primary/25",
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-surface-low border border-outline-variant/50 text-on-surface flex items-center justify-center group-hover:bg-surface-container transition-colors">
+                            <Icon name={item.icon} size={17} />
+                          </div>
+                          <span>{item.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[11px] text-on-surface-variant/70">
+                            {item.href}
+                          </span>
+                          <span className="material-symbols-outlined text-[15px] text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+                            keyboard_return
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer Navigation Hints */}
+            <div className="flex items-center justify-between px-5 py-2.5 border-t border-outline-variant/40 bg-surface-low/40 text-[11px] text-on-surface-variant">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <kbd className="font-mono bg-surface-lowest px-1.5 py-0.5 rounded border border-outline-variant/60 font-bold">↑↓</kbd>
+                  <span>navigate</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="font-mono bg-surface-lowest px-1.5 py-0.5 rounded border border-outline-variant/60 font-bold">↵</kbd>
+                  <span>open</span>
+                </span>
+              </div>
+              <span className="flex items-center gap-1">
+                <kbd className="font-mono bg-surface-lowest px-1.5 py-0.5 rounded border border-outline-variant/60 font-bold">esc</kbd>
+                <span>close</span>
+              </span>
+            </div>
           </div>
         </div>
       ) : null}

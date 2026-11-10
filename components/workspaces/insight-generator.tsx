@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BorderBeam } from "@/components/magicui";
+import { Badge } from "@/components/ui/badge";
 
 type Kind = "summary" | "anomaly" | "recommendation";
 
@@ -11,34 +12,38 @@ const CARDS: {
   subtitle: string;
   icon: string;
   accentColor: string;
+  badge: string;
   btnClass: string;
 }[] = [
   {
     kind: "summary",
-    title: "Commerce Summary",
+    title: "Executive Summary",
     subtitle: "Real revenue, AOV, and top ticket velocity",
     icon: "auto_awesome",
-    accentColor: "border-primary/30",
+    accentColor: "border-primary/40",
+    badge: "Financial Health",
     btnClass:
-      "bg-primary text-on-primary hover:opacity-90 border-primary/50 shadow-xs",
+      "bg-primary text-on-primary hover:opacity-95 shadow-xs",
   },
   {
     kind: "anomaly",
-    title: "Anomaly Scan",
+    title: "Anomaly & Risk Radar",
     subtitle: "Stock out risks, stalled tiers, low margins",
     icon: "warning",
-    accentColor: "border-warning/30",
+    accentColor: "border-warning/40",
+    badge: "Risk Radar",
     btnClass:
-      "bg-[#b3261e] text-white hover:bg-[#8c1d18] border-[#b3261e]/50 shadow-xs",
+      "bg-warning text-on-warning hover:opacity-95 shadow-xs",
   },
   {
     kind: "recommendation",
-    title: "Smart Recommendations",
+    title: "Strategic Growth",
     subtitle: "Actionable pricing, bundle & restocking strategy",
     icon: "lightbulb",
     accentColor: "border-secondary/40",
+    badge: "Optimization",
     btnClass:
-      "bg-[#006a60] text-white hover:bg-[#005249] border-[#006a60]/50 shadow-xs",
+      "bg-secondary text-on-secondary hover:opacity-95 shadow-xs",
   },
 ];
 
@@ -53,6 +58,15 @@ export function InsightGenerator({
   const [busy, setBusy] = useState<Kind | null>(null);
   const [results, setResults] = useState<Partial<Record<Kind, string>>>({});
   const [error, setError] = useState<string | null>(null);
+  const [copiedKind, setCopiedKind] = useState<Kind | null>(null);
+
+  async function copyText(text: string, kind: Kind) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKind(kind);
+      setTimeout(() => setCopiedKind(null), 2000);
+    } catch {}
+  }
 
   async function generate(kind: Kind) {
     setBusy(kind);
@@ -82,7 +96,7 @@ export function InsightGenerator({
 
   if (disabled) {
     return (
-      <div className="rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
+      <div className="rounded-3xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
         <p className="text-body-sm text-on-surface-variant">
           {notice ?? "Create your organization first to generate grounded intelligence."}
         </p>
@@ -91,85 +105,123 @@ export function InsightGenerator({
   }
 
   return (
-    <div className="space-y-4 rounded-2xl border border-outline-variant/45 bg-surface-lowest p-6 shadow-xs">
+    <div className="space-y-6 rounded-3xl border border-outline-variant/45 bg-surface-lowest p-6 sm:p-7 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/35">
         <div>
           <span className="text-label-sm uppercase tracking-wider font-bold text-secondary">
-            Grounded AI Actions
+            Grounded Intelligence Actions
           </span>
           <h2 className="text-headline-md font-bold text-on-surface mt-0.5">
-            Instant Metric Briefs
+            Instant Executive Diagnostic Briefs
           </h2>
         </div>
-        <span className="text-label-sm text-on-surface-variant">
-          Computed from live SQL aggregates · Zero fabricated figures
-        </span>
+        <Badge tone="teal">Computed from live PostgreSQL data</Badge>
       </div>
 
-      {/* High-Contrast Interactive Generator Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Generator Action Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {CARDS.map((c) => {
           const isAnalyzing = busy === c.kind;
+          const hasResult = Boolean(results[c.kind]);
           return (
-            <button
+            <div
               key={c.kind}
-              type="button"
-              disabled={busy !== null}
-              onClick={() => void generate(c.kind)}
-              className={
-                "focus-aura relative flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] disabled:opacity-60 " +
-                c.btnClass
-              }
+              className={`rounded-2xl border p-5 flex flex-col justify-between space-y-4 transition-all shadow-2xs hover:shadow-xs ${
+                hasResult
+                  ? "bg-surface-low/80 border-primary/40 ring-1 ring-primary/20"
+                  : "bg-surface-low/40 border-outline-variant/50 hover:bg-surface-low/70"
+              }`}
             >
-              <div className="w-9 h-9 rounded-lg bg-black/20 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[20px] text-white">
-                  {isAnalyzing ? "hourglass_top" : c.icon}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-surface-container text-primary flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[22px]">
+                      {c.icon}
+                    </span>
+                  </div>
+                  <Badge tone={c.kind === "anomaly" ? "warning" : "teal"}>
+                    {c.badge}
+                  </Badge>
+                </div>
+                <div>
+                  <h3 className="text-label-lg font-bold text-on-surface">
+                    {c.title}
+                  </h3>
+                  <p className="text-body-sm text-on-surface-variant mt-0.5 leading-relaxed">
+                    {c.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() => void generate(c.kind)}
+                className={`w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-label-md font-bold transition-all cursor-pointer ${
+                  c.btnClass
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {isAnalyzing ? "hourglass_top" : hasResult ? "refresh" : "play_arrow"}
                 </span>
-              </div>
-              <div className="min-w-0 flex-1 leading-tight">
-                <p className="text-label-md font-bold text-white">
-                  {isAnalyzing ? "Analyzing Live Ledger…" : c.title}
-                </p>
-                <p className="text-[11px] text-white/80 truncate mt-0.5">
-                  {c.subtitle}
-                </p>
-              </div>
-            </button>
+                <span>
+                  {isAnalyzing
+                    ? "Generating…"
+                    : hasResult
+                      ? "Regenerate Brief"
+                      : "Generate Brief"}
+                </span>
+              </button>
+            </div>
           );
         })}
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-error/30 bg-error/10 p-3 text-body-sm text-error flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">error</span>
+        <div className="rounded-2xl border border-error/30 bg-error/10 p-4 text-body-sm text-error flex items-center gap-2.5">
+          <span className="material-symbols-outlined text-[20px]">error</span>
           <span>{error}</span>
         </div>
       ) : null}
 
       {/* Generated Result Briefs */}
-      <div className="grid gap-4 md:grid-cols-3 pt-2">
-        {CARDS.map((c) =>
-          results[c.kind] ? (
-            <div
-              key={c.kind}
-              className={`relative overflow-hidden rounded-2xl border ${c.accentColor} bg-surface-low/80 p-5 shadow-xs`}
-            >
-              <BorderBeam size={80} duration={8} />
-              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-outline-variant/30">
-                <span className="material-symbols-outlined text-[18px] text-secondary">
-                  {c.icon}
-                </span>
-                <h3 className="text-headline-sm font-bold text-on-surface">
-                  {c.title}
-                </h3>
+      {Object.keys(results).length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-3 pt-2">
+          {CARDS.map((c) =>
+            results[c.kind] ? (
+              <div
+                key={c.kind}
+                className={`relative overflow-hidden rounded-2xl border ${c.accentColor} bg-surface-low/90 p-5 shadow-xs space-y-3`}
+              >
+                <BorderBeam size={90} duration={8} />
+                <div className="flex items-center justify-between pb-2.5 border-b border-outline-variant/30">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px] text-primary">
+                      {c.icon}
+                    </span>
+                    <h4 className="text-label-md font-bold text-on-surface">
+                      {c.title}
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void copyText(results[c.kind]!, c.kind)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-secondary hover:underline cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[13px]">
+                      {copiedKind === c.kind ? "check" : "content_copy"}
+                    </span>
+                    <span>{copiedKind === c.kind ? "Copied" : "Copy"}</span>
+                  </button>
+                </div>
+                <p className="text-body-sm text-on-surface leading-relaxed whitespace-pre-wrap">
+                  {results[c.kind]}
+                </p>
               </div>
-              <p className="text-body-sm text-on-surface-variant leading-relaxed whitespace-pre-wrap">
-                {results[c.kind]}
-              </p>
-            </div>
-          ) : null,
-        )}
-      </div>
+            ) : null,
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
