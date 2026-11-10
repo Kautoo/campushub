@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     siteName: "CampusHub 2.0",
     images: [
       {
-        url: "/brand/campushub-logo.png",
+        url: "/brand/campushub-mark.svg",
         width: 1254,
         height: 1254,
         alt: "CampusHub 2.0 Official Logo",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "CampusHub 2.0 — Campus Events & Student Commerce",
     description:
       "Autonomous student ticketing, club merchandise storefronts, venue scheduling, and PayPal Orders v2 settlement.",
-    images: ["/brand/campushub-logo.png"],
+    images: ["/brand/campushub-mark.svg"],
     creator: "@campushub",
   },
   robots: {
@@ -89,14 +89,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/brand/campushub-mark.png", type: "image/png", sizes: "512x512" },
       { url: "/brand/campushub-mark.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
     ],
-    apple: [
-      { url: "/app/apple-icon.png", sizes: "180x180", type: "image/png" },
-      { url: "/brand/campushub-mark.png", sizes: "512x512", type: "image/png" },
-    ],
+    apple: "/brand/campushub-mark.svg",
   },
 };
 
@@ -125,9 +121,9 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
         />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/brand/campushub-mark.png" />
-        <link rel="apple-touch-icon" href="/app/apple-icon.png" />
+        <link rel="icon" href="/brand/campushub-mark.svg" type="image/svg+xml" />
+        <link rel="alternate icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/brand/campushub-mark.svg" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>

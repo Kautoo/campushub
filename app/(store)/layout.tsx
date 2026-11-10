@@ -55,7 +55,7 @@ export default async function StoreLayout({
               <div className="flex items-center gap-2.5">
                 <span className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
                   <Image
-                    src="/brand/campushub-mark.png"
+                    src="/brand/campushub-mark.svg"
                     alt="CampusHub Logo"
                     width={32}
                     height={32}

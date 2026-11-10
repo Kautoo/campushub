@@ -60,7 +60,7 @@ export function SiteFooter() {
           <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub 2.0 home">
             <span className="relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
               <Image
-                src="/brand/campushub-mark.png"
+                src="/brand/campushub-mark.svg"
                 alt="CampusHub Logo"
                 width={36}
                 height={36}

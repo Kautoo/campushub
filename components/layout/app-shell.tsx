@@ -606,7 +606,7 @@ export function AppShell({
             <Link href="/dashboard" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-surface-low border border-outline-variant/60 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
                 <Image
-                  src="/brand/campushub-mark.png"
+                  src="/brand/campushub-mark.svg"
                   alt="CampusHub Logo"
                   width={36}
                   height={36}
