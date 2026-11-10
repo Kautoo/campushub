@@ -136,6 +136,7 @@ export default function CheckoutPage() {
   }
 
   const buttonProps: PayPalButtonsComponentProps = {
+    fundingSource: "paypal",
     style: { layout: "vertical", shape: "pill", color: "blue" },
     createOrder: async () => {
       setError(null);
@@ -512,9 +513,11 @@ export default function CheckoutPage() {
                     clientId: paypalClientId,
                     currency: "MYR",
                     intent: "capture",
+                    disableFunding: "card,credit,paylater,venmo",
                   }}
                 >
                   <PayPalButtons
+                    fundingSource="paypal"
                     {...buttonProps}
                     disabled={stage !== "paying"}
                   />

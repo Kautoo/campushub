@@ -150,13 +150,12 @@ function formatDateTimeRange(startIso: string | null, endIso: string | null): st
  */
 export function EventScheduler({
   events,
-  licensed,
   onEditEvent,
   onCreateEvent,
 }: {
   events: EventRow[];
   /** True when BRYNTUM_LICENSE_KEY is configured server-side. */
-  licensed: boolean;
+  licensed?: boolean;
   onEditEvent?: (event: EventRow) => void;
   onCreateEvent?: (defaults?: Partial<EventRow>) => void;
 }) {
@@ -709,15 +708,6 @@ export function EventScheduler({
               <Badge tone="teal" icon="hub">
                 Bryntum Scheduler 8.0
               </Badge>
-              {!licensed ? (
-                <Badge tone="warning" icon="verified_user">
-                  Community Edition
-                </Badge>
-              ) : (
-                <Badge tone="success" icon="verified">
-                  Enterprise Licensed
-                </Badge>
-              )}
             </div>
             <p className="text-body-sm text-on-surface-variant mt-0.5">
               Drag events to reschedule dates or reassign venues, resize duration bars, or double-click any slot to edit.

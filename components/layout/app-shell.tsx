@@ -216,112 +216,152 @@ export function AppShell({
                 <div
                   role="menu"
                   aria-label="Organization workspace menu"
-                  className="absolute left-0 top-12 z-50 w-72 rounded-2xl border border-outline-variant/70 bg-surface-lowest p-3 shadow-2xl space-y-2.5"
+                  className="absolute left-0 top-12 z-50 w-80 sm:w-88 rounded-2xl border border-outline-variant/70 bg-surface-lowest p-3 shadow-2xl space-y-3"
                 >
-                  <div className="flex items-center gap-3 rounded-xl bg-surface-low p-3 border border-outline-variant/40">
+                  {/* Current Active Workspace Header Card */}
+                  <div className="flex items-center gap-3 rounded-xl bg-surface-low p-3 border border-outline-variant/50">
                     <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center text-label-lg font-bold shrink-0">
                       {orgName.slice(0, 2).toUpperCase()}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-body-md font-bold text-on-surface truncate">
                         {orgName}
                       </p>
-                      <p className="text-[11px] text-secondary font-semibold">
-                        {isReadOnly ? "Protected Showcase Workspace" : "Active Society Workspace"}
-                      </p>
+                      <div className="mt-0.5">
+                        {isReadOnly ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                            <span className="material-symbols-outlined text-[13px]">lock</span>
+                            Read-Only Showcase
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full">
+                            <span className="material-symbols-outlined text-[13px]">verified</span>
+                            Editable Sandbox
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {orgsList && orgsList.length > 1 ? (
-                    <div className="space-y-1 pb-2 border-b border-outline-variant/40">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant px-2 block">
-                        Switch Workspace:
+                  {/* Workspaces List */}
+                  <div className="space-y-1.5 pb-2 border-b border-outline-variant/40">
+                    <div className="flex items-center justify-between px-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">
+                        Select Workspace
                       </span>
-                      {orgsList.map((o) => (
-                        <button
-                          key={o.id}
-                          type="button"
-                          onClick={() => {
-                            document.cookie = `ch-active-org=${o.id}; path=/; max-age=31536000; SameSite=Lax`;
-                            window.location.reload();
-                          }}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-body-sm font-medium transition-colors ${
-                            o.name === orgName
-                              ? "bg-primary text-on-primary font-bold shadow-2xs"
-                              : "text-on-surface hover:bg-surface-low"
-                          }`}
-                        >
-                          <span className="truncate">{o.name}</span>
-                          {o.isReadOnly ? (
-                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-warning-container text-warning font-semibold">
-                              Read-Only
-                            </span>
-                          ) : null}
-                        </button>
-                      ))}
+                      <span className="text-[11px] font-medium text-secondary">
+                        {orgsList?.length ?? 1} available
+                      </span>
                     </div>
-                  ) : null}
+                    <div className="space-y-1 max-h-52 overflow-y-auto">
+                      {orgsList && orgsList.length > 0 ? (
+                        orgsList.map((o) => {
+                          const isActive = o.name === orgName;
+                          return (
+                            <button
+                              key={o.id}
+                              type="button"
+                              onClick={() => {
+                                document.cookie = `ch-active-org=${o.id}; path=/; max-age=31536000; SameSite=Lax`;
+                                window.location.reload();
+                              }}
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all ${
+                                isActive
+                                  ? "bg-primary/10 border border-primary/30 text-on-surface font-semibold shadow-2xs"
+                                  : "hover:bg-surface-low text-on-surface-variant hover:text-on-surface border border-transparent"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span
+                                  className={`material-symbols-outlined text-[18px] shrink-0 ${
+                                    isActive
+                                      ? "text-primary font-bold"
+                                      : "text-outline-variant"
+                                  }`}
+                                >
+                                  {isActive
+                                    ? "check_circle"
+                                    : "radio_button_unchecked"}
+                                </span>
+                                <div className="min-w-0">
+                                  <p className="text-body-sm font-semibold truncate text-on-surface">
+                                    {o.name}
+                                  </p>
+                                  <p className="text-[11px] text-on-surface-variant">
+                                    {o.isReadOnly
+                                      ? "Master Showcase · Read-Only"
+                                      : "Private Sandbox · Full Access"}
+                                  </p>
+                                </div>
+                              </div>
+                              {o.isReadOnly ? (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-warning-container text-warning font-bold shrink-0 ml-1">
+                                  Template
+                                </span>
+                              ) : (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary-container/40 text-secondary font-bold shrink-0 ml-1">
+                                  Sandbox
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })
+                      ) : null}
+                    </div>
+                  </div>
 
-                  <div className="space-y-1">
+                  {/* 1-Click Launch Button */}
+                  <div className="pt-1">
+                    <form action={createDemoSandbox}>
+                      <button
+                        type="submit"
+                        className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-primary text-on-primary text-label-sm font-bold shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          science
+                        </span>
+                        <span>Launch New Sandbox Workspace</span>
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Quick Settings Links */}
+                  <div className="pt-2 border-t border-outline-variant/40 space-y-0.5">
                     <Link
                       href="/dashboard/settings"
                       onClick={closeAllPopovers}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                      className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-body-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-low transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                      <span className="material-symbols-outlined text-[16px] text-secondary">
                         settings
                       </span>
-                      <span>Organization Profile &amp; Gateway</span>
+                      <span>Workspace Profile &amp; Gateways</span>
                     </Link>
                     <Link
                       href="/dashboard/members"
                       onClick={closeAllPopovers}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
+                      className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-body-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-low transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[17px] text-secondary">
+                      <span className="material-symbols-outlined text-[16px] text-secondary">
                         groups
                       </span>
-                      <span>Committee &amp; Role Permissions</span>
-                    </Link>
-                    <Link
-                      href="/dashboard/events"
-                      onClick={closeAllPopovers}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-body-sm font-medium text-on-surface hover:bg-surface-low transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[17px] text-secondary">
-                        view_timeline
-                      </span>
-                      <span>Bryntum Venue Timeline</span>
+                      <span>Committee &amp; Permissions</span>
                     </Link>
                     <Link
                       href="/demo"
                       onClick={closeAllPopovers}
-                      className="flex items-center justify-between gap-2.5 rounded-xl border-t border-outline-variant/40 pt-2 mt-1 px-3 py-2 text-body-sm font-semibold text-primary hover:bg-surface-low transition-colors"
+                      className="flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-1.5 text-body-sm font-semibold text-primary hover:bg-surface-low transition-colors"
                     >
                       <span className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[17px] text-secondary">
+                        <span className="material-symbols-outlined text-[16px] text-secondary">
                           storefront
                         </span>
-                        Public Storefront
+                        <span>Public Storefront</span>
                       </span>
-                      <span className="material-symbols-outlined text-[15px]">
+                      <span className="material-symbols-outlined text-[14px]">
                         open_in_new
                       </span>
                     </Link>
-                  </div>
-
-                  <div className="pt-2 border-t border-outline-variant/40">
-                    <form action={createDemoSandbox}>
-                      <button
-                        type="submit"
-                        className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-primary text-on-primary text-label-sm font-bold shadow-xs hover:opacity-90 transition-opacity"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          rocket_launch
-                        </span>
-                        <span>Launch 1-Click Sandbox</span>
-                      </button>
-                    </form>
                   </div>
                 </div>
               ) : null}

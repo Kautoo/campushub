@@ -37,18 +37,21 @@ export async function POST(request: Request) {
   const pack = await buildMetricsPack(orgId, 30);
   if (!pack) return Response.json({ error: "pack_failed" }, { status: 500 });
 
-  const reply = await runAstropodsAgent(message, pack as never);
-
-  // Persist the question and answer with the grounding window for audit
-  await aiInsights.insert({
-    org_id: orgId,
-    kind: "chat",
-    prompt: message,
-    response: reply,
-    model: aiModelId(),
-    data_window: { since: pack.window.since },
-  });
-
+  let reply = "";
+  try {
+    reply = await runAstropodsAgent(message, pack as never);
+    await aiInsights.insert({
+      org_id: orgId,
+      kind: "chat",
+      prompt: message,
+      response: reply,
+      model: aiModelId(),
+      data_window: { since: pack.window.since },
+    });
+  } catch (err) {
+    console.error("Astropods chat agent failed", err);
+    reply = "Astropods Commerce Analyst: I was unable to complete the query at this moment. Please verify your metrics data or try again.";
+  }
   // Stream text response to simulate streaming chunks
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
