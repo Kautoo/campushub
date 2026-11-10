@@ -29,7 +29,9 @@ export default async function DemoStorefront({
   let targetOrg = params?.org;
   if (!targetOrg) {
     const session = await getSessionContext();
-    if (session?.orgIds?.[0]) {
+    if (session?.activeOrgId) {
+      targetOrg = session.activeOrgId;
+    } else if (session?.orgIds?.[0]) {
       targetOrg = session.orgIds[0];
     }
   }

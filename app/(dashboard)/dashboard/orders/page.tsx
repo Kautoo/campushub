@@ -18,7 +18,7 @@ export default async function OrdersPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const fetched = await orders.listWithItems(session.orgIds, 200);
+  const fetched = await orders.listWithItems([session.activeOrgId], 200);
   const orderRows = fetched as unknown as OrderWithItems[];
 
   const paidOrFulfilled = orderRows.filter(

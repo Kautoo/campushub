@@ -30,7 +30,7 @@ export default async function SettingsPage({
     orgMembers.listByOrgs(session.orgIds),
     users.getById(session.user.id),
   ]);
-  const org = orgList[0];
+  const org = orgList.find((o) => o.id === session.activeOrgId) ?? orgList[0];
   if (!org) return <SetupNotice what="an organization" />;
 
   const userIds = members.map((m) => m.user_id);

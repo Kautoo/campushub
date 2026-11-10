@@ -33,7 +33,7 @@ export default async function DashboardOverview({
   if (!db) return <SetupNotice what="the dashboard" />;
   const session = await getSessionContext();
   if (!session) redirect("/login");
-  const orgIds = session.orgIds;
+  const orgIds = [session.activeOrgId];
 
   const params = await searchParams;
   const raw = Number(params.window);

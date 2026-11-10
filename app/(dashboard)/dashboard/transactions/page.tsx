@@ -15,7 +15,7 @@ export default async function TransactionsPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const txns = (await transactions.list(session.orgIds, 200)) as TxnRow[];
+  const txns = (await transactions.list([session.activeOrgId], 200)) as TxnRow[];
 
   const completedPaymentsCents = txns
     .filter((t) => t.type === "payment" && t.status === "completed")

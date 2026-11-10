@@ -24,11 +24,11 @@ export default async function MembersPage() {
 
   const me = await orgMembers.listByUser(session.user.id);
 
-  const org = orgList[0];
+  const org = orgList.find((o) => o.id === session.activeOrgId) ?? orgList[0];
   if (!org) return <SetupNotice what="an organization" />;
 
   const orgMembersRows = members.filter((m) => m.org_id === org.id);
-  const myRole = me[0]?.role;
+  const myRole = me.find((m) => m.org_id === org.id)?.role;
   const canManage = myRole === "owner" || myRole === "admin";
 
   const userIds = orgMembersRows.map((m) => m.user_id);

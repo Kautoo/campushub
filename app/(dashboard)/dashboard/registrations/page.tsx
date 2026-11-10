@@ -19,7 +19,7 @@ export default async function RegistrationsPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const joined = await registrations.listWithJoins(session.orgIds, 500);
+  const joined = await registrations.listWithJoins([session.activeOrgId], 500);
 
   const rows: RegistrationRow[] = joined.map((r) => ({
     id: r.id,

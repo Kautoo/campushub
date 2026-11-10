@@ -233,13 +233,23 @@ export type FileRow = {
 // ---------- orgs ----------
 
 export const orgs = {
-  /** First org for a user — resolves membership by user id (no RLS). */
-  async firstForUser(userId: string): Promise<OrganizationRow | null> {
+  /** First org for a user — resolves membership by user id (no RLS). Prefers preferredOrgId, then owned orgs, then newest. */
+  async firstForUser(userId: string, preferredOrgId?: string): Promise<OrganizationRow | null> {
+    if (preferredOrgId) {
+      const rows = await query<OrganizationRow>(
+        `select o.* from public.organizations o
+         join public.org_members m on m.org_id = o.id
+         where m.user_id = $1::uuid and m.status = 'active' and o.id = $2::uuid
+         limit 1`,
+        [userId, preferredOrgId],
+      );
+      if (rows[0]) return rows[0];
+    }
     const rows = await query<OrganizationRow>(
       `select o.* from public.organizations o
        join public.org_members m on m.org_id = o.id
        where m.user_id = $1::uuid and m.status = 'active'
-       order by o.created_at asc
+       order by (m.role = 'owner') desc, o.created_at desc
        limit 1`,
       [userId],
     );

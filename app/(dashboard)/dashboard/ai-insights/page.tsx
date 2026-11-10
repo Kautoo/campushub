@@ -18,9 +18,9 @@ export default async function AiInsightsPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const recent = await aiInsights.listRecent(session.orgIds, 5);
+  const recent = await aiInsights.listRecent([session.activeOrgId], 5);
 
-  const orgReady = session.orgIds.length > 0;
+  const orgReady = Boolean(session.activeOrgId);
 
   return (
     <div className="space-y-6">

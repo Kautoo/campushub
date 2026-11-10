@@ -30,7 +30,7 @@ export default async function ReportsPage() {
   const session = await getSessionContext();
   if (!session) redirect("/login");
 
-  const rows = (await reports.list(session.orgIds, 25)) as ReportRow[];
+  const rows = (await reports.list([session.activeOrgId], 25)) as ReportRow[];
 
   const downloadUrls = new Map<string, string>();
   for (const row of rows) {

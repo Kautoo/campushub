@@ -15,10 +15,10 @@ export default async function ProductsPage() {
   if (!db) return <SetupNotice what="products" />;
   const session = await getSessionContext();
   if (!session) redirect("/login");
-  const isReadOnly = isMasterShowcaseOrg(session.orgIds[0]);
+  const isReadOnly = isMasterShowcaseOrg(session.activeOrgId);
   const [products_, movements] = await Promise.all([
-    products.list(session.orgIds),
-    products.listMovements(session.orgIds, 50),
+    products.list([session.activeOrgId]),
+    products.listMovements([session.activeOrgId], 50),
   ]);
 
   const active = products_.filter((p) => p.status === "active");

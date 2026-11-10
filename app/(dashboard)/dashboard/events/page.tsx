@@ -18,9 +18,9 @@ export default async function EventsPage() {
 
   const session = await getSessionContext();
   if (!session) redirect("/login");
-  const isReadOnly = isMasterShowcaseOrg(session.orgIds[0]);
+  const isReadOnly = isMasterShowcaseOrg(session.activeOrgId);
 
-  const joined = await events.listWithTiers(session.orgIds);
+  const joined = await events.listWithTiers([session.activeOrgId]);
   const rows: EventRow[] = joined.map((e) => ({
     id: e.id,
     title: e.title,

@@ -1,10 +1,12 @@
 import { auth } from "@/auth";
 import { orgs, users } from "@/lib/db/repo";
 import { hasDatabaseEnv } from "@/lib/db";
+import { cookies } from "next/headers";
 
 export type SessionContext = {
   user: { id: string; email?: string | null; name?: string | null };
   orgIds: string[];
+  activeOrgId: string;
 };
 
 /**
@@ -36,5 +38,14 @@ export async function getSessionContext(): Promise<SessionContext | null> {
     return null;
   }
 
-  return { user: resolvedUser, orgIds };
+  let activeOrgId = orgIds[0];
+  try {
+    const cookieStore = await cookies();
+    const cookieActive = cookieStore.get("ch-active-org")?.value;
+    if (cookieActive && orgIds.includes(cookieActive)) {
+      activeOrgId = cookieActive;
+    }
+  } catch {}
+
+  return { user: resolvedUser, orgIds, activeOrgId };
 }

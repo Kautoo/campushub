@@ -44,7 +44,7 @@ export async function inviteMember(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  const org = await orgs.firstForUser(session.user.id);
+  const org = await orgs.firstForUser(session.user.id, session.activeOrgId);
   if (!org) return { error: "No organization found for your account." };
 
   if (isMasterShowcaseOrg(org.id)) {
@@ -113,7 +113,7 @@ export async function updateMemberRole(
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
 
-  const org = await orgs.firstForUser(session.user.id);
+  const org = await orgs.firstForUser(session.user.id, session.activeOrgId);
   if (!org) return { error: "No organization found for your account." };
 
   if (isMasterShowcaseOrg(org.id)) {
@@ -155,7 +155,7 @@ export async function removeMember(
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
 
-  const org = await orgs.firstForUser(session.user.id);
+  const org = await orgs.firstForUser(session.user.id, session.activeOrgId);
   if (!org) return { error: "No organization found for your account." };
 
   if (isMasterShowcaseOrg(org.id)) {

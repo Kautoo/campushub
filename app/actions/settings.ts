@@ -26,7 +26,7 @@ export async function updateOrgSettings(
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
 
-  const org = await orgs.firstForUser(session.user.id);
+  const org = await orgs.firstForUser(session.user.id, session.activeOrgId);
   if (!org) return { error: "No organization found for your account." };
 
   if (isMasterShowcaseOrg(org.id)) {
@@ -87,7 +87,7 @@ export async function resetDemoCatalog(): Promise<SettingsState> {
   const session = await getSessionContext();
   if (!session) return { error: "You must be signed in." };
 
-  const org = await orgs.firstForUser(session.user.id);
+  const org = await orgs.firstForUser(session.user.id, session.activeOrgId);
   if (!org) return { error: "No organization found." };
 
   if (isMasterShowcaseOrg(org.id)) {
