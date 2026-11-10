@@ -58,9 +58,9 @@ export function SiteFooter() {
           transition={{ duration: 0.5 }}
         >
           <Link href="/" className="flex items-center gap-2.5" aria-label="CampusHub 2.0 home">
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-white shadow-2xs shrink-0">
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
               <Image
-                src="/brand/campushub-mark.svg"
+                src="/brand/campushub-mark.png"
                 alt="CampusHub Logo"
                 width={36}
                 height={36}

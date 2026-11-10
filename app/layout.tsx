@@ -21,15 +21,82 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "CampusHub 2.0 — Campus events & commerce",
+  metadataBase: new URL("https://campushub.hyria.top"),
+  title: {
+    default: "CampusHub 2.0 — Campus Events & Student Commerce",
+    template: "%s | CampusHub 2.0",
+  },
   description:
-    "AI-powered campus event and commerce platform: ticketing, storefront, PayPal payments, and grounded AI insights.",
+    "AI-powered campus event and commerce platform: multi-page student storefront, Bryntum Scheduler 8.0 venue timelines, AG Grid Community 36 ledgers, PayPal Orders v2 escrow settlement, and Astropods autonomous intelligence.",
+  keywords: [
+    "CampusHub",
+    "Campus Events",
+    "Student Ticketing",
+    "Student Society Marketplace",
+    "University Commerce",
+    "Bryntum Scheduler",
+    "AG Grid",
+    "PayPal Campus Payments",
+    "Collegiate Merch",
+    "Hackathon Passes",
+  ],
+  authors: [{ name: "CampusHub Platform Engineering" }],
+  creator: "CampusHub 2.0",
+  publisher: "CampusHub 2.0",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "CampusHub 2.0 — Campus Events & Student Commerce",
+    description:
+      "Autonomous student ticketing, faculty-licensed club merchandise drops, venue scheduling, and verified PayPal Orders v2 escrow settlement.",
+    url: "https://campushub.hyria.top",
+    siteName: "CampusHub 2.0",
+    images: [
+      {
+        url: "/brand/campushub-logo.png",
+        width: 1254,
+        height: 1254,
+        alt: "CampusHub 2.0 Official Logo",
+      },
+    ],
+    locale: "en_MY",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CampusHub 2.0 — Campus Events & Student Commerce",
+    description:
+      "Autonomous student ticketing, club merchandise storefronts, venue scheduling, and PayPal Orders v2 settlement.",
+    images: ["/brand/campushub-logo.png"],
+    creator: "@campushub",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: [
-      { url: "/brand/campushub-mark.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
+      { url: "/brand/campushub-mark.png", type: "image/png", sizes: "512x512" },
+      { url: "/brand/campushub-mark.svg", type: "image/svg+xml" },
     ],
-    apple: "/brand/campushub-mark.svg",
+    apple: [
+      { url: "/app/apple-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/brand/campushub-mark.png", sizes: "512x512", type: "image/png" },
+    ],
   },
 };
 
@@ -58,9 +125,9 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
         />
-        <link rel="icon" href="/brand/campushub-mark.svg" type="image/svg+xml" />
-        <link rel="alternate icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/brand/campushub-mark.svg" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/brand/campushub-mark.png" />
+        <link rel="apple-touch-icon" href="/app/apple-icon.png" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { StoreNav } from "@/components/store/store-nav";
 import { StoreCurrencyProvider } from "@/components/store/currency-provider";
 import { StorefrontBanner } from "@/components/store/storefront-banner";
@@ -52,10 +53,14 @@ export default async function StoreLayout({
           <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-outline-variant/40">
             <div className="md:col-span-2 space-y-2.5">
               <div className="flex items-center gap-2.5">
-                <span className="bg-primary text-on-primary flex h-8 w-8 items-center justify-center rounded-lg shadow-2xs">
-                  <span className="material-symbols-outlined text-[18px]">
-                    storefront
-                  </span>
+                <span className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-outline-variant/60 bg-surface-low shadow-2xs shrink-0">
+                  <Image
+                    src="/brand/campushub-mark.png"
+                    alt="CampusHub Logo"
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-contain p-0.5"
+                  />
                 </span>
                 <span className="text-headline-sm font-bold text-on-surface tracking-tight">
                   CampusHub <span className="text-secondary">2.0</span>
