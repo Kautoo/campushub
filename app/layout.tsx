@@ -88,10 +88,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: "/brand/campushub-mark.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
+    icon: [{ url: "/brand/campushub-mark.svg", type: "image/svg+xml" }],
     apple: "/brand/campushub-mark.svg",
   },
 };
@@ -122,7 +119,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
         />
         <link rel="icon" href="/brand/campushub-mark.svg" type="image/svg+xml" />
-        <link rel="alternate icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/brand/campushub-mark.svg" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
