@@ -7,7 +7,7 @@ import { signIn as authSignIn, signOut as authSignOut } from "@/auth";
 import { CredentialsSignin } from "@auth/core/errors";
 import { hashPassword } from "@/lib/auth/password";
 import { hasDatabaseEnv, withTransaction } from "@/lib/db";
-import { users } from "@/lib/db/repo";
+import { users, orgs } from "@/lib/db/repo";
 import { randomBytes } from "node:crypto";
 
 const credentialsSchema = z.object({
@@ -40,14 +40,6 @@ export async function signIn(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-  if (
-    parsed.data.email.toLowerCase() === "owner@campushub.test" &&
-    parsed.data.password === "campushub-demo"
-  ) {
-    // Route demo user to an isolated per-session sandbox cloned from the master template
-    await createDemoSandbox();
-    return null;
-  }
 
   try {
     await authSignIn("credentials", {
@@ -60,6 +52,18 @@ export async function signIn(
       return { error: "Invalid email or password." };
     }
     return { error: "Sign-in failed. Please try again." };
+  }
+  const user = await users.getByEmail(parsed.data.email);
+  if (user) {
+    const userOrgs = await orgs.listIdsByUser(user.id);
+    if (userOrgs.length > 0) {
+      const cookieStore = await cookies();
+      cookieStore.set("ch-active-org", userOrgs[0], {
+        path: "/",
+        maxAge: 31536000,
+        sameSite: "lax",
+      });
+    }
   }
   const rawNext = String(formData.get("next") || "/dashboard");
   const next =

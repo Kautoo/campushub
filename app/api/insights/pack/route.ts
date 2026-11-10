@@ -62,7 +62,13 @@ export async function POST(request: Request) {
     if (!session) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    orgId = session.orgIds[0];
+    const cookieHeader = request.headers.get("cookie") ?? "";
+    const match = cookieHeader.match(/ch-active-org=([a-f0-9-]+)/i);
+    const activeOrgCookie = match ? match[1] : null;
+    orgId =
+      activeOrgCookie && session.orgIds.includes(activeOrgCookie)
+        ? activeOrgCookie
+        : session.orgIds[0];
     if (!orgId) return NextResponse.json({ error: "no_org" }, { status: 400 });
   }
 

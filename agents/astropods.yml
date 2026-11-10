@@ -17,7 +17,7 @@ inputs:
   PACK_ENDPOINT:
     name: PACK_ENDPOINT
     datatype: string
-    default: https://campushub-2.onrender.com/api/insights/pack
+    default: https://campushub.hyria.top/api/insights/pack
     description: CampusHub metrics-pack endpoint URL
 
 models:

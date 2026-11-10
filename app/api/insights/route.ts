@@ -37,7 +37,13 @@ export async function POST(request: Request) {
   }
   const { kind, window_days } = parsed.data;
 
-  const orgId = session.orgIds[0];
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const match = cookieHeader.match(/ch-active-org=([a-f0-9-]+)/i);
+  const activeOrgCookie = match ? match[1] : null;
+  const orgId =
+    activeOrgCookie && session.orgIds.includes(activeOrgCookie)
+      ? activeOrgCookie
+      : session.orgIds[0];
   if (!orgId) return NextResponse.json({ error: "no_org" }, { status: 400 });
 
   const pack = await buildMetricsPack(orgId, window_days);

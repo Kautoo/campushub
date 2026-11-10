@@ -31,7 +31,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid_body", expected: bodySchema }, { status: 400 });
   }
 
-  const orgId = session.orgIds[0];
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const match = cookieHeader.match(/ch-active-org=([a-f0-9-]+)/i);
+  const activeOrgCookie = match ? match[1] : null;
+  const orgId =
+    activeOrgCookie && session.orgIds.includes(activeOrgCookie)
+      ? activeOrgCookie
+      : session.orgIds[0];
   if (!orgId) return Response.json({ error: "no_org" }, { status: 400 });
 
   const pack = await buildMetricsPack(orgId, 30);
