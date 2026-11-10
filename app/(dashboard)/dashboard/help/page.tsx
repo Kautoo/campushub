@@ -210,7 +210,7 @@ export default function HelpPage() {
           </p>
         </div>
         <a
-          href={`mailto:support@campushub.example?subject=${subject}&body=${body}`}
+          href={`mailto:support@campushub.hyria.top?subject=${subject}&body=${body}`}
           className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-5 text-label-md font-semibold text-on-primary hover:bg-primary-container transition-colors shrink-0"
         >
           <span className="material-symbols-outlined text-[17px]">mail</span>
