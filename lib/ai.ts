@@ -73,7 +73,53 @@ export async function runAstropodsAgent(
         if (reply) return reply;
       }
     } catch {
-      // Fall through to native Astropods grounding engine
+      // Fall through to direct LLM or native grounding engine
+    }
+  }
+
+  // Direct LLM Call if API key is configured (OpenAI / OpenRouter / Groq / Astropods Gateway)
+  const llmApiKey =
+    process.env.OPENAI_API_KEY ??
+    process.env.AI_API_KEY ??
+    process.env.ASTRO_GATEWAY_API_KEY;
+  const llmBaseUrl =
+    process.env.AI_BASE_URL ??
+    process.env.ASTRO_GATEWAY_URL ??
+    "https://api.openai.com/v1";
+  const llmModel =
+    process.env.AI_MODEL ??
+    process.env.MODEL_DEFAULT ??
+    "gpt-4o-mini";
+
+  if (llmApiKey) {
+    try {
+      const res = await fetch(`${llmBaseUrl.replace(/\/$/, "")}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${llmApiKey}`,
+        },
+        body: JSON.stringify({
+          model: llmModel,
+          messages: [
+            { role: "system", content: GROUNDED_SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: `Live Metrics Pack:\n${JSON.stringify(pack)}\n\nOrganizer Question: ${prompt}`,
+            },
+          ],
+        }),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+        };
+        const text = data.choices?.[0]?.message?.content;
+        if (text) return text;
+      }
+    } catch (err) {
+      console.error("Direct LLM call failed, falling back to grounded engine", err);
     }
   }
 
