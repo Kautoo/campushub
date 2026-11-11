@@ -1,4 +1,0 @@
-# Build context is the agents/ directory. Copy only the agent runtime.
-*
-!agent/index.ts
-!agent/server.ts
