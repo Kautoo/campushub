@@ -5,6 +5,29 @@ multi-page student storefront, Bryntum Scheduler 8.0 venue timelines, AG Grid Co
 operational ledgers, PayPal Orders v2 escrow payments, and custom grounded AI commerce
 analytics — one Next.js app, one Render Postgres database.
 
+## How CampusHub Uses PayPal and AI
+
+**PayPal (developer platform, free sandbox environment)** — CampusHub runs a genuine end-to-end PayPal checkout:
+
+- **`@paypal/paypal-server-sdk`** (server side, `lib/paypal.ts`): a PayPal `Client` pointed at `Environment.Sandbox` (a single `PAYPAL_ENV` flag switches to production later). Its `OrdersController` powers `POST /api/paypal/create-order` (builds the order from the shopper's cart) and `POST /api/paypal/capture` (captures the approved payment and writes the order into the Postgres ledger).
+- **`@paypal/react-paypal-js`** (client side): renders the real **PayPal Buttons** (`PayPalScriptProvider` + `PayPalButtons`) on `/demo/checkout`. Button clicks call our server to create the sandbox order; on approval the browser hands control to the capture endpoint — a real browser-to-server PayPal round trip.
+- **PayPal Webhooks + signature verification** (`/api/paypal/webhook`): receives async PayPal events, verifies the signature server-to-server, deduplicates by event ID, and reconciles order status, transactions, and organizer notifications — so payments stay truthful even if a shopper closes the tab.
+- Every AI insight on the dashboard is grounded in revenue captured through these real sandbox PayPal orders.
+
+**AI (models, SDKs, and services)**:
+
+- **Vercel AI SDK (`ai` + `@ai-sdk/openai-compatible`)**: streams the conversational AI analyst responses token-by-token in the ChatGPT-style insights chat.
+- **OpenAI-compatible LLMs (OpenAI, Groq, DeepSeek, OpenRouter, Together AI, local Ollama/vLLM)**: `lib/ai.ts` speaks the OpenAI chat-completions protocol, so the model is swappable purely via env (`AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL`) — no code changes to switch providers.
+- **Grounded Commerce Analyst Engine (built in-house, `lib/ai.ts`)**: before any LLM call, the server assembles a strict "metrics pack" from live SQL aggregates (revenue by day, tier sell-through, refunds, low-stock items). The system prompt forbids the model from inventing numbers, and with no external AI key configured, a deterministic embedded engine answers directly from the pack. Result: the AI cannot hallucinate a revenue figure, and customer PII never enters the pack.
+- **Channel3 (AI-powered market intelligence API, `lib/channel3.ts`)**: the "Market Radar" tab benchmarks campus merchandise pricing against real commercial retail prices so organizers can price student products competitively.
+
+## Sponsor Integrations
+
+- **Render**: full production hosting — the Next.js web service and the PostgreSQL database both run on Render, provisioned by the included Render Blueprint (`render.yaml`). Deploy it yourself via Render Dashboard → New → Blueprint → point at this repo.
+- **Astropods (Astro agent platform)**: `agents/` and `astropods.yml` define the **CampusHub Analyst** — a standalone autonomous commerce-analyst agent that answers revenue, sell-through, refund, and inventory questions against the CampusHub metrics pack API, with the same zero-hallucination grounding contract.
+- **Bryntum Scheduler Community (MIT)**: powers the drag-and-drop multi-venue event timeline.
+- **AG Grid Community (MIT)**: powers the high-density operational data ledgers.
+
 ## Architecture
 
 | Layer | Technology | Primary Role |
@@ -97,3 +120,9 @@ node --test tests/unit.test.mjs                     # 18/18 unit tests
 node --test tests/db-integration.test.mjs           # 13/13 Postgres integration tests
 npm test                                            # Full test suite (50/50 passed)
 ```
+
+## License
+
+Released under the [MIT License](LICENSE) — an OSI-approved open source license.
+Third-party UI libraries used under their own MIT licenses: Bryntum Scheduler
+Community and AG Grid Community.
