@@ -24,6 +24,7 @@ analytics — one Next.js app, one Render Postgres database.
 ## Sponsor Integrations
 
 - **Render**: full production hosting — the Next.js web service and the PostgreSQL database both run on Render, provisioned by the included Render Blueprint (`render.yaml`). Deploy it yourself via Render Dashboard → New → Blueprint → point at this repo.
+- **Channel3**: AI-powered commercial product search and market intelligence (`lib/channel3.ts` + `CHANNEL3_API_KEY`). The dashboard "Market Radar" tab queries Channel3's live retail search API (`api.trychannel3.com`) to benchmark campus merchandise pricing against real commercial retail products; a built-in collegiate retail benchmark fallback keeps the radar functional even before an API key is configured.
 - **Bryntum Scheduler Community (MIT)**: powers the drag-and-drop multi-venue event timeline.
 - **AG Grid Community (MIT)**: powers the high-density operational data ledgers.
 
