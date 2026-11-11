@@ -24,7 +24,6 @@ analytics — one Next.js app, one Render Postgres database.
 ## Sponsor Integrations
 
 - **Render**: full production hosting — the Next.js web service and the PostgreSQL database both run on Render, provisioned by the included Render Blueprint (`render.yaml`). Deploy it yourself via Render Dashboard → New → Blueprint → point at this repo.
-- **Astropods (Astro agent platform)**: `agents/` and `astropods.yml` define the **CampusHub Analyst** — a standalone autonomous commerce-analyst agent that answers revenue, sell-through, refund, and inventory questions against the CampusHub metrics pack API, with the same zero-hallucination grounding contract.
 - **Bryntum Scheduler Community (MIT)**: powers the drag-and-drop multi-venue event timeline.
 - **AG Grid Community (MIT)**: powers the high-density operational data ledgers.
 
